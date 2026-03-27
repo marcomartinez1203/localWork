@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Crea tu cuenta en LocalWork — Regístrate como buscador de empleo o como empleador en Aguachica, Cesar.">
+  <title>Registrarse — LocalWork</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/pages/auth.css">
+</head>
+<body>
+
+  <div class="auth-page">
+    <!-- Left panel (desktop only) -->
+    <div class="auth-page__side">
+      <div class="auth-page__side-content">
+        <h2 class="auth-page__side-title">Empieza a conectar<br>con oportunidades</h2>
+        <p class="auth-page__side-desc">
+          Crea tu cuenta en menos de 2 minutos, es totalmente gratis. 
+          Ya seas buscador o empleador, hay un espacio para ti.
+        </p>
+      </div>
+    </div>
+
+    <!-- Right panel — Form -->
+    <div class="auth-page__main">
+      <div class="auth-card">
+        <a href="../index.html" class="auth-card__logo" aria-label="Volver a la página principal">
+          <img src="../assets/img/logo.png" alt="LocalWork" style="height: 60px; width: auto;">
+        </a>
+
+        <div class="auth-card__header">
+          <h1 class="auth-card__title">Crear cuenta</h1>
+          <p class="auth-card__desc">Elige tu rol y completa tus datos</p>
+        </div>
+
+        <!-- Steps indicator -->
+        <div class="steps-indicator" aria-label="Progreso del registro">
+          <div class="steps-indicator__step active" id="step1Indicator"></div>
+          <div class="steps-indicator__step" id="step2Indicator"></div>
+        </div>
+
+        <form class="auth-card__form" id="registerForm" novalidate>
+
+          <!-- ── STEP 1: Role Selection ── -->
+          <div id="step1" class="auth-fields-enter">
+            <div class="form-group" style="margin-bottom: var(--space-6);">
+              <label class="form-label form-label--required">¿Qué tipo de cuenta deseas?</label>
+              <div class="role-selector" id="roleSelector">
+
+                <div class="role-option" data-role="seeker" id="roleSeekerOption" tabindex="0" 
+                     role="radio" aria-checked="false" aria-label="Busco empleo">
+                  <div class="role-option__icon">🔍</div>
+                  <span class="role-option__title">Busco Empleo</span>
+                  <p class="role-option__desc">Encuentra ofertas y postúlate</p>
+                </div>
+
+                <div class="role-option" data-role="employer" id="roleEmployerOption" tabindex="0"
+                     role="radio" aria-checked="false" aria-label="Ofrezco empleo">
+                  <div class="role-option__icon">💼</div>
+                  <span class="role-option__title">Ofrezco Empleo</span>
+                  <p class="role-option__desc">Publica ofertas y contrata</p>
+                </div>
+              </div>
+              <span class="form-error" id="roleError" role="alert" style="display: none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+                </svg>
+                Selecciona un tipo de cuenta
+              </span>
+            </div>
+
+            <!-- Common fields -->
+            <div class="form-group">
+              <label for="fullName" class="form-label form-label--required">Nombre completo</label>
+              <input type="text" id="fullName" name="full_name" class="form-input"
+                     placeholder="Ej: Juan Pérez" required autocomplete="name"
+                     aria-describedby="fullNameError">
+              <span class="form-error" id="fullNameError" role="alert" style="display: none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+                </svg>
+                El nombre es obligatorio
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="regEmail" class="form-label form-label--required">Correo electrónico</label>
+              <div class="form-input-wrapper">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="2" y="4" width="20" height="16" rx="2"/>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7"/>
+                </svg>
+                <input type="email" id="regEmail" name="email" class="form-input"
+                       placeholder="tu@correo.com" required autocomplete="email"
+                       aria-describedby="regEmailError">
+              </div>
+              <span class="form-error" id="regEmailError" role="alert" style="display: none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+                </svg>
+                Ingresa un correo electrónico válido
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="regPhone" class="form-label">Teléfono</label>
+              <input type="tel" id="regPhone" name="phone" class="form-input"
+                     placeholder="300 000 0000" autocomplete="tel">
+            </div>
+
+            <button type="button" class="btn btn--primary btn--lg btn--block" id="nextStepBtn">
+              Continuar
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14m-7-7 7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- ── STEP 2: Password + Role-specific fields ── -->
+          <div id="step2" style="display: none;" class="auth-fields-enter">
+
+            <!-- Employer-only fields -->
+            <div id="employerFields" style="display: none;">
+              <div class="form-group">
+                <label for="companyName" class="form-label form-label--required">Nombre de la empresa</label>
+                <input type="text" id="companyName" name="company_name" class="form-input"
+                       placeholder="Ej: Comercializadora XYZ">
+              </div>
+              <div class="form-group" style="margin-bottom: var(--space-5);">
+                <label for="companyNit" class="form-label">NIT</label>
+                <input type="text" id="companyNit" name="company_nit" class="form-input"
+                       placeholder="000.000.000-0">
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+              <label for="regPassword" class="form-label form-label--required">Contraseña</label>
+              <div class="form-input-wrapper password-wrapper">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+                <input type="password" id="regPassword" name="password" class="form-input"
+                       placeholder="Mínimo 8 caracteres" required minlength="8" autocomplete="new-password"
+                       style="padding-left: var(--space-10);"
+                       aria-describedby="regPasswordError">
+                <button type="button" class="password-toggle" id="toggleRegPassword" aria-label="Mostrar contraseña">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2.062 12.348a1 1 0 010-.696 10.75 10.75 0 0119.876 0 1 1 0 010 .696 10.75 10.75 0 01-19.876 0"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="form-hint">Usa letras, números y al menos un carácter especial</span>
+              <span class="form-error" id="regPasswordError" role="alert" style="display: none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+                </svg>
+                La contraseña debe tener al menos 8 caracteres
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="regConfirmPassword" class="form-label form-label--required">Confirmar contraseña</label>
+              <div class="form-input-wrapper password-wrapper">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+                <input type="password" id="regConfirmPassword" name="confirm_password" class="form-input"
+                       placeholder="Repite tu contraseña" required minlength="8" autocomplete="new-password"
+                       style="padding-left: var(--space-10);"
+                       aria-describedby="confirmPasswordError">
+              </div>
+              <span class="form-error" id="confirmPasswordError" role="alert" style="display: none;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+                </svg>
+                Las contraseñas no coinciden
+              </span>
+            </div>
+
+            <!-- Terms -->
+            <div class="auth-terms">
+              <input type="checkbox" id="terms" name="terms" required>
+              <label for="terms">
+                Acepto los <a href="#">Términos de Servicio</a> y la 
+                <a href="#">Política de Privacidad</a> de LocalWork.
+              </label>
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: var(--space-3); margin-top: var(--space-2);">
+              <button type="button" class="btn btn--ghost btn--lg" id="prevStepBtn" style="flex: 0 0 auto;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M19 12H5m7-7-7 7 7 7"/>
+                </svg>
+                Atrás
+              </button>
+              <button type="submit" class="btn btn--primary btn--lg btn--block" id="registerBtn">
+                Crear Cuenta
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="auth-card__footer">
+          ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="../assets/js/config/api.js"></script>
+  <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/utils/helpers.js"></script>
+  <script>
+    AuthService.redirectIfAuthenticated();
+
+    let selectedRole = null;
+
+    const roleOptions = document.querySelectorAll('.role-option');
+    const roleError = document.getElementById('roleError');
+    const employerFields = document.getElementById('employerFields');
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('role') === 'employer') selectRole('employer');
+
+    roleOptions.forEach(option => {
+      option.addEventListener('click', () => selectRole(option.dataset.role));
+      option.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectRole(option.dataset.role); }
+      });
+    });
+
+    function selectRole(role) {
+      selectedRole = role;
+      roleError.style.display = 'none';
+      roleOptions.forEach(opt => {
+        const isActive = opt.dataset.role === role;
+        opt.classList.toggle('active', isActive);
+        opt.setAttribute('aria-checked', isActive);
+      });
+    }
+
+    // ── Steps ──
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step1Indicator = document.getElementById('step1Indicator');
+    const step2Indicator = document.getElementById('step2Indicator');
+
+    document.getElementById('nextStepBtn').addEventListener('click', () => {
+      let valid = true;
+      if (!selectedRole) { roleError.style.display = 'flex'; valid = false; }
+
+      const fullName = document.getElementById('fullName');
+      const fullNameError = document.getElementById('fullNameError');
+      if (!fullName.value.trim()) { fullName.classList.add('form-input--error'); fullNameError.style.display = 'flex'; valid = false; }
+      else { fullName.classList.remove('form-input--error'); fullNameError.style.display = 'none'; }
+
+      const regEmail = document.getElementById('regEmail');
+      const regEmailError = document.getElementById('regEmailError');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regEmail.value)) { regEmail.classList.add('form-input--error'); regEmailError.style.display = 'flex'; valid = false; }
+      else { regEmail.classList.remove('form-input--error'); regEmailError.style.display = 'none'; }
+
+      if (!valid) return;
+      step1.style.display = 'none'; step2.style.display = 'block';
+      step1Indicator.classList.add('completed'); step1Indicator.classList.remove('active');
+      step2Indicator.classList.add('active');
+      employerFields.style.display = selectedRole === 'employer' ? 'block' : 'none';
+    });
+
+    document.getElementById('prevStepBtn').addEventListener('click', () => {
+      step2.style.display = 'none'; step1.style.display = 'block';
+      step1Indicator.classList.remove('completed'); step1Indicator.classList.add('active');
+      step2Indicator.classList.remove('active');
+    });
+
+    // ── Password toggle ──
+    const regPasswordInput = document.getElementById('regPassword');
+    document.getElementById('toggleRegPassword').addEventListener('click', () => {
+      const isPassword = regPasswordInput.type === 'password';
+      regPasswordInput.type = isPassword ? 'text' : 'password';
+    });
+
+    // ── Submit (REAL API) ──
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      let valid = true;
+
+      const regPassword = document.getElementById('regPassword');
+      const regPasswordError = document.getElementById('regPasswordError');
+      const confirmPassword = document.getElementById('regConfirmPassword');
+      const confirmPasswordError = document.getElementById('confirmPasswordError');
+
+      if (regPassword.value.length < 8) { regPassword.classList.add('form-input--error'); regPasswordError.style.display = 'flex'; valid = false; }
+      else { regPassword.classList.remove('form-input--error'); regPasswordError.style.display = 'none'; }
+
+      if (confirmPassword.value !== regPassword.value) { confirmPassword.classList.add('form-input--error'); confirmPasswordError.style.display = 'flex'; valid = false; }
+      else { confirmPassword.classList.remove('form-input--error'); confirmPasswordError.style.display = 'none'; }
+
+      if (!document.getElementById('terms').checked) { valid = false; document.getElementById('terms').focus(); }
+
+      if (valid) {
+        const btn = document.getElementById('registerBtn');
+        btn.classList.add('btn--loading'); btn.disabled = true;
+
+        try {
+          await AuthService.register({
+            fullName: document.getElementById('fullName').value.trim(),
+            email: document.getElementById('regEmail').value.trim(),
+            phone: document.getElementById('regPhone').value.trim() || undefined,
+            password: regPassword.value,
+            role: selectedRole,
+            companyName: selectedRole === 'employer' ? document.getElementById('companyName').value.trim() : undefined,
+            companyNit: selectedRole === 'employer' ? document.getElementById('companyNit').value.trim() : undefined,
+          });
+          window.location.href = 'home.html';
+        } catch (err) {
+          btn.classList.remove('btn--loading'); btn.disabled = false;
+          showToast(err.message || 'Error al crear la cuenta', 'error');
+        }
+      }
+    });
+
+    // ── Real-time validation ──
+    document.getElementById('fullName').addEventListener('input', function() { if (this.value.trim()) { this.classList.remove('form-input--error'); document.getElementById('fullNameError').style.display = 'none'; } });
+    document.getElementById('regEmail').addEventListener('input', function() { if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value)) { this.classList.remove('form-input--error'); document.getElementById('regEmailError').style.display = 'none'; } });
+    document.getElementById('regPassword').addEventListener('input', function() { if (this.value.length >= 8) { this.classList.remove('form-input--error'); document.getElementById('regPasswordError').style.display = 'none'; } });
+    document.getElementById('regConfirmPassword').addEventListener('input', function() { if (this.value === document.getElementById('regPassword').value) { this.classList.remove('form-input--error'); document.getElementById('confirmPasswordError').style.display = 'none'; } });
+  </script>
+
+</body>
+</html>
+

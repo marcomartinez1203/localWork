@@ -1,0 +1,143 @@
+// ============================================
+// LocalWork — Auth Service (Backend)
+// ============================================
+import { supabaseAdmin } from '../config/supabase';
+import { AppError } from '../middleware/error.middleware';
+import { RegisterRequest, LoginRequest, AuthResponse, Profile } from '../types';
+
+export class AuthService {
+
+  static async register(data: RegisterRequest): Promise<AuthResponse> {
+    // 1. Crear usuario en Supabase Auth
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: data.full_name,
+        role: data.role,
+        phone: data.phone,
+      },
+    });
+
+    if (authError) {
+      console.error('🔴 Supabase createUser error:', JSON.stringify(authError, null, 2));
+      if (authError.message.includes('already registered')) {
+        throw new AppError('Este correo ya está registrado', 409);
+      }
+      throw new AppError(authError.message, 400);
+    }
+
+    // 2. Crear perfil manualmente (no depender del trigger)
+    const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
+      id: authData.user.id,
+      email: data.email,
+      full_name: data.full_name,
+      role: data.role || 'seeker',
+      phone: data.phone || null,
+    });
+
+    if (profileError) {
+      console.error('🔴 Profile creation error:', profileError);
+    }
+
+    // 3. Si es empleador y tiene empresa, crearla
+    if (data.role === 'employer' && data.company_name) {
+      await supabaseAdmin.from('companies').insert({
+        owner_id: authData.user.id,
+        name: data.company_name,
+        nit: data.company_nit || null,
+      });
+    }
+
+    // 4. Iniciar sesión para obtener el token
+    const { data: loginData, error: loginErr } =
+      await supabaseAdmin.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+    if (loginErr || !loginData.session) {
+      throw new AppError('Error al crear la sesión', 500);
+    }
+
+    // 5. Obtener perfil
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', authData.user.id)
+      .single();
+
+    return {
+      user: profile as Profile,
+      token: loginData.session.access_token,
+    };
+  }
+
+  static async login(data: LoginRequest): Promise<AuthResponse> {
+    const { data: loginData, error } = await supabaseAdmin.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (error) {
+      throw new AppError('Correo o contraseña incorrectos', 401);
+    }
+
+    if (!loginData.session) {
+      throw new AppError('Error al crear la sesión', 500);
+    }
+
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', loginData.user.id)
+      .single();
+
+    return {
+      user: profile as Profile,
+      token: loginData.session.access_token,
+    };
+  }
+
+  static async getProfile(userId: string): Promise<Profile> {
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (error || !data) {
+      throw new AppError('Perfil no encontrado', 404);
+    }
+
+    return data as Profile;
+  }
+
+  static async updateProfile(userId: string, updates: Partial<Profile>): Promise<Profile> {
+    // Campos permitidos
+    const allowed: (keyof Profile)[] = ['full_name', 'phone', 'bio', 'location'];
+    const cleanUpdates: Record<string, unknown> = {};
+    for (const key of allowed) {
+      if (key in updates) {
+        cleanUpdates[key] = updates[key];
+      }
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .update(cleanUpdates)
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw new AppError('Error al actualizar el perfil', 500);
+
+    return data as Profile;
+  }
+
+  static async resetPassword(email: string): Promise<void> {
+    const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email);
+    if (error) throw new AppError('Error al enviar el correo de recuperación', 500);
+  }
+}

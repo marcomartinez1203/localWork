@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LocalWork — Plataforma de empleo local para Aguachica, Cesar. Encuentra o publica ofertas de trabajo en tu municipio. Patrocinado por la Alcaldía Municipal.">
+  <meta name="theme-color" content="#007200">
+  <title>LocalWork — Empleo Local en Aguachica</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/components.css">
+  <link rel="stylesheet" href="assets/css/pages/landing.css">
+</head>
+<body>
+
+  <!-- Skip Link -->
+  <a href="#main-content" class="skip-link">Ir al contenido principal</a>
+
+  <!-- ═══════════════ NAVBAR ═══════════════ -->
+  <nav class="navbar" id="navbar" aria-label="Navegación principal">
+    <div class="navbar__inner">
+      <a href="index.html" class="navbar__brand" aria-label="LocalWork — Inicio">
+        <span class="navbar__brand-icon" aria-hidden="true">LW</span>
+        LocalWork
+      </a>
+
+      <div class="navbar__links" id="navLinks">
+        <a href="pages/home.html" class="navbar__link">Empleos</a>
+        <a href="#features" class="navbar__link">Beneficios</a>
+        <a href="#categories" class="navbar__link">Categorías</a>
+        <a href="#about" class="navbar__link">Nosotros</a>
+      </div>
+
+      <div class="navbar__actions">
+        <a href="pages/login.html" class="btn btn--ghost btn--sm">Iniciar Sesión</a>
+        <a href="pages/register.html" class="btn btn--primary btn--sm">Registrarse</a>
+
+        <button class="navbar__hamburger" id="hamburgerBtn"
+                aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="navbar__mobile-menu" id="mobileMenu" role="navigation" aria-label="Menú móvil">
+      <a href="pages/home.html" class="navbar__link">Empleos</a>
+      <a href="#features" class="navbar__link">Beneficios</a>
+      <a href="#categories" class="navbar__link">Categorías</a>
+      <a href="#about" class="navbar__link">Nosotros</a>
+      <div style="margin-top: var(--space-6); display: flex; flex-direction: column; gap: var(--space-3);">
+        <a href="pages/login.html" class="btn btn--outline btn--block">Iniciar Sesión</a>
+        <a href="pages/register.html" class="btn btn--primary btn--block">Registrarse</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <main id="main-content">
+
+    <!-- ── Hero ── -->
+    <section class="hero page-wrapper">
+      <div class="container">
+        <div class="hero__content">
+          <div class="hero__badge">
+            <span class="hero__badge-dot" aria-hidden="true"></span>
+            Plataforma oficial de empleo — Aguachica
+          </div>
+
+          <h1 class="hero__title">
+            Conectamos el <span>talento local</span> con las mejores oportunidades
+          </h1>
+
+          <p class="hero__subtitle">
+            Encuentra empleo o publica ofertas de trabajo en Aguachica, Cesar. 
+            Una iniciativa de la Alcaldía Municipal para impulsar el desarrollo económico de nuestra comunidad.
+          </p>
+
+          <div class="hero__actions">
+            <a href="pages/register.html" class="btn btn--white btn--lg">
+              <!-- Search icon -->
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.3-4.3"/>
+              </svg>
+              Buscar Empleo
+            </a>
+            <a href="pages/register.html?role=employer" class="btn btn--outline btn--lg" style="border-color: rgba(255,255,255,0.4); color: #fff;">
+              <!-- Briefcase icon -->
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+              </svg>
+              Publicar Oferta
+            </a>
+          </div>
+
+
+        </div>
+
+        <!-- Illustration: floating preview cards -->
+        <div class="hero__illustration" aria-hidden="true">
+          <div class="hero__illustration-cards">
+            <div class="hero-mini-card">
+              <div class="hero-mini-card__icon hero-mini-card__icon--blue">💼</div>
+              <div class="hero-mini-card__text">
+                <div class="hero-mini-card__title">Coordinador de Ventas</div>
+                <p class="hero-mini-card__desc">Supermercado Central · Presencial</p>
+              </div>
+            </div>
+            <div class="hero-mini-card">
+              <div class="hero-mini-card__icon hero-mini-card__icon--green">🏥</div>
+              <div class="hero-mini-card__text">
+                <div class="hero-mini-card__title">Enfermero/a Profesional</div>
+                <p class="hero-mini-card__desc">Clínica Aguachica · Tiempo completo</p>
+              </div>
+            </div>
+            <div class="hero-mini-card">
+              <div class="hero-mini-card__icon hero-mini-card__icon--orange">🔧</div>
+              <div class="hero-mini-card__text">
+                <div class="hero-mini-card__title">Técnico en Mantenimiento</div>
+                <p class="hero-mini-card__desc">Palm Oil S.A.S. · $1.800.000</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Features ── -->
+    <section class="features" id="features">
+      <div class="container">
+        <div class="features__header">
+          <span class="features__label">¿Por qué LocalWork?</span>
+          <h2 class="features__title">Todo lo que necesitas para conectar con el empleo</h2>
+          <p class="features__desc">
+            Una plataforma diseñada para las necesidades reales de nuestra comunidad, 
+            con herramientas simples y efectivas.
+          </p>
+        </div>
+
+        <div class="grid grid--3">
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--blue" aria-hidden="true">🔍</div>
+            <h3 class="feature-card__title">Búsqueda Inteligente</h3>
+            <p class="feature-card__desc">
+              Filtra por categoría, modalidad, zona y salario. 
+              Encuentra el empleo ideal en segundos.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--green" aria-hidden="true">📄</div>
+            <h3 class="feature-card__title">Postulación Fácil</h3>
+            <p class="feature-card__desc">
+              Sube tu CV una vez y postúlate a cualquier oferta con un solo clic. 
+              Sin formularios repetitivos.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--orange" aria-hidden="true">🔔</div>
+            <h3 class="feature-card__title">Notificaciones en Tiempo Real</h3>
+            <p class="feature-card__desc">
+              Recibe alertas cuando una empresa revisa tu perfil o cambia el estado de tu postulación.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--purple" aria-hidden="true">⭐</div>
+            <h3 class="feature-card__title">Calificación Mutua</h3>
+            <p class="feature-card__desc">
+              Empleadores y buscadores se califican mutuamente, 
+              creando un ecosistema de confianza.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--blue" aria-hidden="true">🏛️</div>
+            <h3 class="feature-card__title">Respaldo Institucional</h3>
+            <p class="feature-card__desc">
+              Plataforma patrocinada por la Alcaldía de Aguachica. 
+              Seguridad y seriedad garantizadas.
+            </p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card__icon feature-card__icon--green" aria-hidden="true">📊</div>
+            <h3 class="feature-card__title">Panel de Gestión</h3>
+            <p class="feature-card__desc">
+              Los empleadores gestionan sus ofertas, 
+              ven métricas y administran postulantes desde un solo lugar.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Categories ── -->
+    <section class="categories" id="categories">
+      <div class="container">
+        <div class="categories__header">
+          <span class="features__label">Explora por categoría</span>
+          <h2>Sectores con oportunidades</h2>
+        </div>
+
+        <div class="categories__grid">
+          <div class="category-card">
+            <span class="category-card__icon" aria-hidden="true">🏥</span>
+            <span class="category-card__name">Salud</span>
+          </div>
+          <div class="category-card">
+            <span class="category-card__icon" aria-hidden="true">💻</span>
+            <span class="category-card__name">Tecnología</span>
+          </div>
+          <div class="category-card">
+            <span class="category-card__icon" aria-hidden="true">🛒</span>
+            <span class="category-card__name">Comercio</span>
+          </div>
+          <div class="category-card">
+            <span class="category-card__icon" aria-hidden="true">🏗️</span>
+            <span class="category-card__name">Construcción</span>
+          </div>
+          <div class="category-card">
+            <span class="category-card__icon" aria-hidden="true">🎓</span>
+            <span class="category-card__name">Educación</span>
+          </div>
+          <div class="category-card">
+            <span class="category-card__icon" aria-hidden="true">🌾</span>
+            <span class="category-card__name">Agropecuario</span>
+          </div>
+          <div class="category-card">
+            <span class="category-card__icon" aria-hidden="true">🔧</span>
+            <span class="category-card__name">Servicios Varios</span>
+            <span class="category-card__count">Plomería, electricidad…</span>
+          </div>
+          <div class="category-card" style="background: var(--color-primary-50); border-color: var(--color-primary-200);">
+            <span class="category-card__icon" aria-hidden="true">✨</span>
+            <span class="category-card__name">¡Y muchas más!</span>
+            <span class="category-card__count">Profesionales, técnicos, oficios…</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── CTA Section ── -->
+    <section class="cta-section" id="about">
+      <div class="container">
+        <h2 class="cta-section__title">¿Listo para dar el siguiente paso?</h2>
+        <p class="cta-section__desc">
+          Únete a miles de aguachiquenses que ya están conectando con las mejores oportunidades de empleo en el municipio.
+        </p>
+        <div class="cta-section__actions">
+          <a href="pages/register.html" class="btn btn--white btn--lg">Crea tu cuenta gratis</a>
+          <a href="pages/register.html?role=employer" class="btn btn--outline btn--lg" style="border-color: rgba(255,255,255,0.4); color: #fff;">
+            Soy empleador
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Sponsors ── -->
+    <section class="sponsors">
+      <div class="container">
+        <p class="sponsors__label">Con el respaldo de</p>
+        <div class="sponsors__logos">
+          <span class="sponsors__logo">🏛️ Alcaldía de Aguachica</span>
+          <span class="sponsors__logo">🎓 Universidad Popular del Cesar</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div>
+          <div class="footer__brand">LocalWork</div>
+          <p class="footer__desc">
+            Plataforma de empleo local para Aguachica, Cesar, Colombia. 
+            Conectamos el talento de nuestra comunidad con las oportunidades que merece.
+          </p>
+        </div>
+        <div>
+          <h4 class="footer__heading">Plataforma</h4>
+          <a href="pages/home.html" class="footer__link">Buscar empleos</a>
+          <a href="pages/register.html" class="footer__link">Crear cuenta</a>
+          <a href="pages/login.html" class="footer__link">Iniciar sesión</a>
+          <a href="#" class="footer__link">Preguntas frecuentes</a>
+        </div>
+        <div>
+          <h4 class="footer__heading">Contacto</h4>
+          <a href="#" class="footer__link">soporte@localwork.co</a>
+          <a href="#" class="footer__link">+57 300 000 0000</a>
+          <a href="#" class="footer__link">Aguachica, Cesar, Colombia</a>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <p class="footer__copy">&copy; 2026 LocalWork. Todos los derechos reservados.</p>
+        <p class="footer__sponsor">Patrocinado por la Alcaldía Municipal de Aguachica</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS -->
+  <script src="assets/js/config/api.js"></script>
+  <script src="assets/js/services/auth.service.js"></script>
+  <script src="assets/js/utils/helpers.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    // ── Smooth scroll for anchor links ──
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', (e) => {
+        const target = document.querySelector(anchor.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

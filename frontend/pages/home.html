@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explora ofertas de empleo en Aguachica, Cesar. Filtra por categoría, modalidad y zona.">
+  <title>Empleos — LocalWork</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/pages/home.css">
+</head>
+<body>
+
+  <!-- Skip Link -->
+  <a href="#main-content" class="skip-link">Ir al contenido principal</a>
+
+  <!-- ═══════════════ NAVBAR (logged-in state) ═══════════════ -->
+  <nav class="navbar" id="navbar" aria-label="Navegación principal">
+    <div class="navbar__inner">
+      <a href="../index.html" class="navbar__brand" aria-label="LocalWork — Inicio">
+        <span class="navbar__brand-icon" aria-hidden="true">LW</span>
+        LocalWork
+      </a>
+
+      <div class="navbar__links" id="navLinks">
+        <a href="home.html" class="navbar__link active">Empleos</a>
+        <a href="#" class="navbar__link">Mis Postulaciones</a>
+        <a href="#" class="navbar__link">Perfil</a>
+      </div>
+
+      <div class="navbar__actions">
+        <!-- Notification bell -->
+        <button class="navbar__notification" aria-label="Notificaciones (3 sin leer)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
+            <path d="M10.3 21a1.94 1.94 0 003.4 0"/>
+          </svg>
+          <span class="navbar__notification-badge" aria-hidden="true"></span>
+        </button>
+
+        <!-- User avatar -->
+        <div class="navbar__avatar" aria-label="Menú de usuario" role="button" tabindex="0">
+          JP
+        </div>
+
+        <button class="navbar__hamburger" id="hamburgerBtn"
+                aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="navbar__mobile-menu" id="mobileMenu" role="navigation" aria-label="Menú móvil">
+      <a href="home.html" class="navbar__link active">Empleos</a>
+      <a href="#" class="navbar__link">Mis Postulaciones</a>
+      <a href="#" class="navbar__link">Perfil</a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <main id="main-content" class="page-wrapper">
+    <div class="container home-page">
+
+      <!-- Page Header -->
+      <div class="home-header">
+        <p class="home-header__greeting">👋 Hola, Juan</p>
+        <h1 class="home-header__title">Encuentra tu próximo empleo</h1>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <svg class="search-bar__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input type="text" class="search-bar__input" id="searchInput"
+                 placeholder="Buscar por cargo, empresa o palabra clave..."
+                 aria-label="Buscar empleos">
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="quick-stats" aria-label="Estadísticas rápidas">
+        <div class="quick-stat">
+          <div class="quick-stat__icon quick-stat__icon--blue" aria-hidden="true">💼</div>
+          <div>
+            <span class="quick-stat__value" id="totalJobsStat">—</span>
+            <span class="quick-stat__label">Ofertas activas</span>
+          </div>
+        </div>
+        <div class="quick-stat">
+          <div class="quick-stat__icon quick-stat__icon--green" aria-hidden="true">🏢</div>
+          <div>
+            <span class="quick-stat__value">45</span>
+            <span class="quick-stat__label">Empresas</span>
+          </div>
+        </div>
+        <div class="quick-stat">
+          <div class="quick-stat__icon quick-stat__icon--orange" aria-hidden="true">📋</div>
+          <div>
+            <span class="quick-stat__value">320</span>
+            <span class="quick-stat__label">Postulaciones hoy</span>
+          </div>
+        </div>
+        <div class="quick-stat">
+          <div class="quick-stat__icon quick-stat__icon--purple" aria-hidden="true">✅</div>
+          <div>
+            <span class="quick-stat__value">89%</span>
+            <span class="quick-stat__label">Tasa de respuesta</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters" aria-label="Filtros de búsqueda">
+        <div class="filters__row">
+          <div class="filters__chips" id="categoryChips" role="radiogroup" aria-label="Filtrar por categoría">
+            <button class="chip active" data-category="all">Todos</button>
+            <button class="chip" data-category="Salud">🏥 Salud</button>
+            <button class="chip" data-category="Tecnología">💻 Tecnología</button>
+            <button class="chip" data-category="Comercio">🛒 Comercio</button>
+            <button class="chip" data-category="Construcción">🏗️ Construcción</button>
+            <button class="chip" data-category="Educación">🎓 Educación</button>
+            <button class="chip" data-category="Agropecuario">🌾 Agropecuario</button>
+            <button class="chip" data-category="Restaurantes">🍽️ Restaurantes</button>
+            <button class="chip" data-category="Transporte">🚛 Transporte</button>
+          </div>
+        </div>
+        <div class="filters__row">
+          <div class="filters__selects">
+            <select class="filters__select" id="modalityFilter" aria-label="Filtrar por modalidad">
+              <option value="all">Todas las modalidades</option>
+              <option value="Presencial">Presencial</option>
+              <option value="Remoto">Remoto</option>
+              <option value="Híbrido">Híbrido</option>
+            </select>
+            <select class="filters__select" id="locationFilter" aria-label="Filtrar por zona">
+              <option value="all">Todas las zonas</option>
+              <option value="Centro">Centro</option>
+              <option value="Norte">Zona Norte</option>
+              <option value="Sur">Zona Sur</option>
+              <option value="Industrial">Zona Industrial</option>
+              <option value="Comercial">Zona Comercial</option>
+            </select>
+            <select class="filters__select" id="sortFilter" aria-label="Ordenar por">
+              <option value="newest">Más recientes</option>
+              <option value="salary-desc">Mayor salario</option>
+              <option value="salary-asc">Menor salario</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Info -->
+      <div class="results-info">
+        <p class="results-info__count" id="resultsCount">
+          Mostrando <strong>0</strong> ofertas
+        </p>
+      </div>
+
+      <!-- Job Cards Grid -->
+      <div class="jobs-grid" id="jobsGrid" aria-label="Lista de ofertas de empleo">
+        <!-- Cards rendered by JS -->
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.3-4.3"/>
+          <path d="M8 11h6"/>
+        </svg>
+        <h3 class="empty-state__title">No se encontraron ofertas</h3>
+        <p class="empty-state__desc">Intenta ajustar los filtros o cambia la búsqueda para encontrar lo que buscas.</p>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination" aria-label="Paginación">
+        <!-- Rendered by JS -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom" style="border-top: none; padding-top: 0;">
+        <p class="footer__copy">&copy; 2026 LocalWork. Todos los derechos reservados.</p>
+        <p class="footer__sponsor">Patrocinado por la Alcaldía Municipal de Aguachica</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS -->
+  <script src="../assets/js/config/api.js"></script>
+  <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/services/jobs.service.js"></script>
+  <script src="../assets/js/utils/helpers.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    // ── Auth check ──
+    if (!AuthService.requireAuth()) { /* redirects */ }
+
+    // ══════════════════════════════════════════════
+    // STATE
+    // ══════════════════════════════════════════════
+    const ITEMS_PER_PAGE = 9;
+    let currentPage = 1;
+    let activeCategory = 'all';
+    let activeModality = 'all';
+    let activeLocation = 'all';
+    let activeSort = 'newest';
+    let searchQuery = '';
+
+    // ══════════════════════════════════════════════
+    // INIT — greeting + stats + categories
+    // ══════════════════════════════════════════════
+    (async function init() {
+      // Greeting
+      const user = AuthService.getUser();
+      if (user) {
+        const firstName = user.full_name ? user.full_name.split(' ')[0] : '';
+        const greeting = document.querySelector('.home-header__greeting');
+        if (greeting) greeting.textContent = `👋 Hola, ${firstName}`;
+
+        // Update avatar
+        const avatar = document.querySelector('.navbar__avatar');
+        if (avatar && user.full_name) {
+          const initials = user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+          avatar.textContent = initials;
+        }
+      }
+
+      // Stats
+      try {
+        const stats = await JobsService.getStats();
+        document.getElementById('totalJobsStat').textContent = stats.active_jobs || 0;
+        const companyStat = document.querySelector('.quick-stat__value:not(#totalJobsStat)');
+      } catch (e) { console.warn('Stats error:', e); }
+
+      // Load jobs
+      await render();
+    })();
+
+
+    // ══════════════════════════════════════════════
+    // HELPERS
+    // ══════════════════════════════════════════════
+    function getModalityBadge(modality) {
+      const classes = {
+        'Presencial': 'badge--primary',
+        'Remoto': 'badge--accent',
+        'Híbrido': 'badge--warning',
+      };
+      return `<span class="badge ${classes[modality] || 'badge--neutral'}">${modality}</span>`;
+    }
+
+
+    // ══════════════════════════════════════════════
+    // RENDER
+    // ══════════════════════════════════════════════
+    function renderJobCard(job) {
+      const companyInitial = job.company_name
+        ? job.company_name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase()
+        : '??';
+      const salaryDisplay = job.salary_text
+        || (job.salary_min ? formatCurrency(job.salary_min) + (job.salary_max ? ' – ' + formatCurrency(job.salary_max) : '') : 'A convenir');
+
+      return `
+        <article class="job-card" tabindex="0" role="link" aria-label="Ver oferta: ${escapeHtml(job.title)}">
+          <div class="job-card__header">
+            <div class="job-card__company-logo" aria-hidden="true">${companyInitial}</div>
+            <div class="job-card__title-group">
+              <h3 class="job-card__title">${escapeHtml(job.title)}</h3>
+              <p class="job-card__company">${escapeHtml(job.company_name || '')}</p>
+            </div>
+            ${getModalityBadge(job.modality)}
+          </div>
+
+          <div class="job-card__body">
+            <p class="job-card__description">${escapeHtml(truncate(job.description, 120))}</p>
+            <div class="job-card__meta">
+              <span class="job-card__meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0116 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                ${escapeHtml(job.location || 'Sin especificar')}
+              </span>
+              <span class="job-card__meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                  <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+                </svg>
+                ${escapeHtml(job.category_name || '')}
+              </span>
+              ${job.vacancies > 1 ? `
+              <span class="job-card__meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+                ${job.vacancies} vacantes
+              </span>` : ''}
+            </div>
+          </div>
+
+          <div class="job-card__footer">
+            <span class="job-card__salary">${salaryDisplay}</span>
+            <span class="job-card__date">${timeAgo(job.created_at)}</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById('pagination');
+      if (totalPages <= 1) { pagination.innerHTML = ''; return; }
+
+      let html = '';
+      html += `<button class="pagination__btn" ${currentPage === 1 ? 'disabled' : ''} 
+               onclick="goToPage(${currentPage - 1})" aria-label="Página anterior">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+               </button>`;
+
+      for (let i = 1; i <= totalPages; i++) {
+        if (totalPages > 7) {
+          if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+            html += `<button class="pagination__btn ${i === currentPage ? 'active' : ''}"
+                     onclick="goToPage(${i})" aria-label="Página ${i}" ${i === currentPage ? 'aria-current="page"' : ''}>
+                     ${i}</button>`;
+          } else if (i === currentPage - 2 || i === currentPage + 2) {
+            html += `<span class="pagination__btn" style="border: none; cursor: default;">…</span>`;
+          }
+        } else {
+          html += `<button class="pagination__btn ${i === currentPage ? 'active' : ''}"
+                   onclick="goToPage(${i})" aria-label="Página ${i}" ${i === currentPage ? 'aria-current="page"' : ''}>
+                   ${i}</button>`;
+        }
+      }
+
+      html += `<button class="pagination__btn" ${currentPage === totalPages ? 'disabled' : ''}
+               onclick="goToPage(${currentPage + 1})" aria-label="Página siguiente">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+               </button>`;
+
+      pagination.innerHTML = html;
+    }
+
+
+    // ══════════════════════════════════════════════
+    // FETCH & RENDER (API)
+    // ══════════════════════════════════════════════
+    async function render() {
+      const grid = document.getElementById('jobsGrid');
+      const emptyState = document.getElementById('emptyState');
+      const resultsCount = document.getElementById('resultsCount');
+
+      // Show loading
+      grid.innerHTML = Array(3).fill(`
+        <div class="skeleton" style="height:280px;border-radius:var(--radius-lg);"></div>
+      `).join('');
+      grid.style.display = '';
+      emptyState.style.display = 'none';
+
+      try {
+        const result = await JobsService.list({
+          page: currentPage,
+          perPage: ITEMS_PER_PAGE,
+          category: activeCategory !== 'all' ? activeCategory : undefined,
+          modality: activeModality !== 'all' ? activeModality : undefined,
+          location: activeLocation !== 'all' ? activeLocation : undefined,
+          sort: activeSort,
+          search: searchQuery || undefined,
+        });
+
+        const jobs = result.data || [];
+        const total = result.total || 0;
+        const totalPages = result.total_pages || 1;
+
+        if (jobs.length === 0) {
+          grid.innerHTML = '';
+          grid.style.display = 'none';
+          emptyState.style.display = 'flex';
+          resultsCount.innerHTML = `Mostrando <strong>0</strong> ofertas`;
+        } else {
+          emptyState.style.display = 'none';
+          grid.style.display = '';
+          grid.innerHTML = jobs.map(renderJobCard).join('');
+          const start = (currentPage - 1) * ITEMS_PER_PAGE;
+          resultsCount.innerHTML = `Mostrando <strong>${start + 1}–${Math.min(start + ITEMS_PER_PAGE, total)}</strong> de <strong>${total}</strong> ofertas`;
+        }
+
+        renderPagination(totalPages);
+      } catch (err) {
+        grid.innerHTML = `<div class="empty-state"><p>Error al cargar los empleos. Intenta de nuevo.</p></div>`;
+        console.error('Error loading jobs:', err);
+      }
+    }
+
+    async function goToPage(page) {
+      currentPage = page;
+      await render();
+      document.getElementById('jobsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+
+    // ══════════════════════════════════════════════
+    // EVENT LISTENERS
+    // ══════════════════════════════════════════════
+
+    // Category chips
+    document.getElementById('categoryChips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      activeCategory = chip.dataset.category;
+      document.querySelectorAll('#categoryChips .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      currentPage = 1;
+      render();
+    });
+
+    // Modality select
+    document.getElementById('modalityFilter').addEventListener('change', (e) => {
+      activeModality = e.target.value;
+      currentPage = 1;
+      render();
+    });
+
+    // Location select
+    document.getElementById('locationFilter').addEventListener('change', (e) => {
+      activeLocation = e.target.value;
+      currentPage = 1;
+      render();
+    });
+
+    // Sort select
+    document.getElementById('sortFilter').addEventListener('change', (e) => {
+      activeSort = e.target.value;
+      currentPage = 1;
+      render();
+    });
+
+    // Search with debounce
+    document.getElementById('searchInput').addEventListener('input', debounce((e) => {
+      searchQuery = e.target.value.trim();
+      currentPage = 1;
+      render();
+    }, 400));
+
+    // Navbar scroll effect
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 10);
+    });
+
+    // Hamburger menu
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    hamburgerBtn.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      hamburgerBtn.classList.toggle('active', isOpen);
+      hamburgerBtn.setAttribute('aria-expanded', isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    });
+  </script>
+
+</body>
+</html>
+
