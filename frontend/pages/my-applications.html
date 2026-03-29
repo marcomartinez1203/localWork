@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Historial de tus postulaciones en LocalWork">
+  <title>Mis Postulaciones — LocalWork</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <style>
+    .apps-page { padding-top: var(--space-8); padding-bottom: var(--space-16); }
+    .apps-header { margin-bottom: var(--space-8); }
+    .apps-header h1 { font-size: var(--fs-2xl); margin-bottom: var(--space-2); }
+    .apps-header p { color: var(--color-text-secondary); margin: 0; }
+    .apps-filters { display: flex; gap: var(--space-3); margin-bottom: var(--space-6); flex-wrap: wrap; }
+    .app-card { background: var(--color-surface); border: 1px solid var(--color-border-light); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6); display: flex; align-items: center; gap: var(--space-5); transition: box-shadow var(--transition), transform var(--transition-spring); margin-bottom: var(--space-3); }
+    .app-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .app-card__logo { width: 48px; height: 48px; border-radius: var(--radius); background: linear-gradient(135deg, var(--color-primary-100), var(--color-primary-50)); display: flex; align-items: center; justify-content: center; font-size: var(--fs-sm); font-weight: var(--fw-bold); color: var(--color-primary); flex-shrink: 0; }
+    .app-card__info { flex: 1; min-width: 0; }
+    .app-card__title { font-family: var(--font-heading); font-size: var(--fs-base); font-weight: var(--fw-semibold); margin-bottom: var(--space-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .app-card__company { font-size: var(--fs-sm); color: var(--color-text-muted); margin: 0; }
+    .app-card__meta { display: flex; align-items: center; gap: var(--space-4); flex-shrink: 0; }
+    .app-card__date { font-size: var(--fs-xs); color: var(--color-text-muted); }
+    .status-badge { padding: var(--space-1) var(--space-3); border-radius: var(--radius-full); font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
+    .status-badge--pending { background: #FEF3C7; color: #92400E; }
+    .status-badge--reviewed { background: #DBEAFE; color: #1E40AF; }
+    .status-badge--shortlisted { background: var(--color-primary-50); color: var(--color-primary); }
+    .status-badge--interview { background: #F3E8FF; color: #7C3AED; }
+    .status-badge--accepted { background: var(--color-accent-50); color: var(--color-accent-dark); }
+    .status-badge--rejected { background: #FEE2E2; color: #991B1B; }
+    .app-card__actions { flex-shrink: 0; }
+    @media (max-width: 768px) { .app-card { flex-wrap: wrap; } .app-card__meta { width: 100%; justify-content: space-between; } }
+  </style>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Ir al contenido principal</a>
+
+  <nav class="navbar" id="navbar">
+    <div class="navbar__inner">
+      <a href="../index.html" class="navbar__brand"><span class="navbar__brand-icon">LW</span> LocalWork</a>
+      <div class="navbar__links">
+        <a href="home.html" class="navbar__link">Empleos</a>
+        <a href="my-applications.html" class="navbar__link active">Mis Postulaciones</a>
+        <a href="profile.html" class="navbar__link">Perfil</a>
+      </div>
+      <div class="navbar__actions">
+        <button class="navbar__notification" onclick="App.goTo('notifications')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
+        </button>
+        <div class="navbar__avatar" id="userAvatar" onclick="App.toggleUserMenu()" tabindex="0">??</div>
+        <button class="navbar__hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <div class="navbar__mobile-menu" id="mobileMenu">
+      <a href="home.html" class="navbar__link">Empleos</a>
+      <a href="my-applications.html" class="navbar__link active">Mis Postulaciones</a>
+      <a href="profile.html" class="navbar__link">Perfil</a>
+    </div>
+  </nav>
+
+  <main id="main-content" class="page-wrapper">
+    <div class="container apps-page" style="max-width:900px;">
+
+      <div class="apps-header">
+        <h1>Mis Postulaciones</h1>
+        <p>Revisa el estado de tus postulaciones a ofertas de empleo</p>
+      </div>
+
+      <div class="apps-filters">
+        <button class="chip active" data-status="all">Todas</button>
+        <button class="chip" data-status="pending">⏳ Pendientes</button>
+        <button class="chip" data-status="reviewed">👁 Revisadas</button>
+        <button class="chip" data-status="shortlisted">⭐ Preseleccionado</button>
+        <button class="chip" data-status="interview">📞 Entrevista</button>
+        <button class="chip" data-status="accepted">✅ Aceptadas</button>
+        <button class="chip" data-status="rejected">❌ Rechazadas</button>
+      </div>
+
+      <div id="appsList">
+        <div class="skeleton" style="height:80px;margin-bottom:var(--space-3);"></div>
+        <div class="skeleton" style="height:80px;margin-bottom:var(--space-3);"></div>
+        <div class="skeleton" style="height:80px;"></div>
+      </div>
+
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+        </svg>
+        <h3 class="empty-state__title">Aún no te has postulado</h3>
+        <p class="empty-state__desc">Cuando te postules a una oferta, aparecerá aquí.</p>
+        <a href="home.html" class="btn btn--primary" style="margin-top:var(--space-4);">Explorar empleos</a>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom" style="border-top:none;padding-top:0;">
+        <p class="footer__copy">&copy; 2026 LocalWork. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/config/api.js"></script>
+  <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/services/applications.service.js"></script>
+  <script src="../assets/js/utils/helpers.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    if (!AuthService.requireAuth()) { /* redirects */ }
+
+    let currentPage = 1;
+    let activeStatus = null;
+
+    const STATUS_LABELS = {
+      pending: 'Pendiente', reviewed: 'Revisada', shortlisted: 'Preseleccionado',
+      interview: 'Entrevista', accepted: 'Aceptada', rejected: 'Rechazada'
+    };
+
+    // Init avatar
+    const user = AuthService.getUser();
+    if (user && user.full_name) {
+      document.getElementById('userAvatar').textContent = user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+
+    loadApplications();
+
+    async function loadApplications() {
+      const list = document.getElementById('appsList');
+      const empty = document.getElementById('emptyState');
+
+      list.innerHTML = Array(3).fill('<div class="skeleton" style="height:80px;margin-bottom:var(--space-3);"></div>').join('');
+      empty.style.display = 'none';
+      list.style.display = '';
+
+      try {
+        const result = await ApplicationsService.getMyApplications({
+          page: currentPage,
+          perPage: 10,
+          status: activeStatus,
+        });
+
+        const apps = result.data || [];
+        if (apps.length === 0) {
+          list.style.display = 'none';
+          empty.style.display = 'flex';
+          document.getElementById('pagination').innerHTML = '';
+          return;
+        }
+
+        list.innerHTML = apps.map(app => {
+          const job = app.job || {};
+          const company = job.company || {};
+          const companyName = company.name || 'Empresa';
+          const initials = companyName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+
+          return `
+            <div class="app-card">
+              <div class="app-card__logo">${initials}</div>
+              <div class="app-card__info">
+                <h3 class="app-card__title">${escapeHtml(job.title || 'Empleo')}</h3>
+                <p class="app-card__company">${escapeHtml(companyName)}</p>
+              </div>
+              <div class="app-card__meta">
+                <span class="status-badge status-badge--${app.status}">${STATUS_LABELS[app.status] || app.status}</span>
+                <span class="app-card__date">${timeAgo(app.created_at)}</span>
+              </div>
+              <div class="app-card__actions">
+                <button class="btn btn--ghost btn--sm" onclick="withdrawApp('${app.id}')">Retirar</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Simple pagination
+        const totalPages = result.total_pages || 1;
+        const pag = document.getElementById('pagination');
+        if (totalPages <= 1) { pag.innerHTML = ''; return; }
+        let html = '';
+        for (let i = 1; i <= totalPages; i++) {
+          html += `<button class="pagination__btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+        pag.innerHTML = html;
+
+      } catch (err) {
+        list.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:var(--space-8);">Error al cargar postulaciones</p>';
+        console.error(err);
+      }
+    }
+
+    async function withdrawApp(appId) {
+      if (!confirm('¿Seguro que deseas retirar esta postulación?')) return;
+      try {
+        await ApplicationsService.withdraw(appId);
+        showToast('Postulación retirada', 'success');
+        loadApplications();
+      } catch (err) {
+        showToast(err.message || 'Error', 'error');
+      }
+    }
+
+    function goToPage(p) {
+      currentPage = p;
+      loadApplications();
+    }
+
+    // Filter chips
+    document.querySelector('.apps-filters').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      document.querySelectorAll('.apps-filters .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeStatus = chip.dataset.status === 'all' ? null : chip.dataset.status;
+      currentPage = 1;
+      loadApplications();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tus notificaciones en LocalWork">
+  <title>Notificaciones — LocalWork</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <style>
+    .notif-page { padding-top: var(--space-8); padding-bottom: var(--space-16); }
+    .notif-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6); flex-wrap: wrap; gap: var(--space-3); }
+    .notif-header h1 { font-size: var(--fs-2xl); }
+    .notif-list { display: flex; flex-direction: column; gap: var(--space-2); }
+    .notif-item { display: flex; align-items: flex-start; gap: var(--space-4); padding: var(--space-4) var(--space-5); background: var(--color-surface); border: 1px solid var(--color-border-light); border-radius: var(--radius-lg); transition: all var(--transition-fast); cursor: pointer; }
+    .notif-item:hover { box-shadow: var(--shadow); border-color: var(--color-primary-200); }
+    .notif-item--unread { background: var(--color-primary-50); border-color: var(--color-primary-200); }
+    .notif-item--unread .notif-item__dot { display: block; }
+    .notif-item__icon { width: 40px; height: 40px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: var(--fs-md); flex-shrink: 0; }
+    .notif-item__icon--app { background: #DBEAFE; color: #2563EB; }
+    .notif-item__icon--status { background: #F3E8FF; color: #7C3AED; }
+    .notif-item__icon--match { background: var(--color-accent-50); color: var(--color-accent-dark); }
+    .notif-item__icon--system { background: var(--color-bg); color: var(--color-text-muted); }
+    .notif-item__content { flex: 1; min-width: 0; }
+    .notif-item__title { font-size: var(--fs-sm); font-weight: var(--fw-semibold); margin-bottom: var(--space-1); }
+    .notif-item__message { font-size: var(--fs-sm); color: var(--color-text-secondary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notif-item__time { font-size: var(--fs-xs); color: var(--color-text-muted); flex-shrink: 0; white-space: nowrap; }
+    .notif-item__dot { display: none; width: 8px; height: 8px; background: var(--color-primary); border-radius: var(--radius-full); flex-shrink: 0; margin-top: var(--space-2); }
+  </style>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Ir al contenido principal</a>
+
+  <nav class="navbar" id="navbar">
+    <div class="navbar__inner">
+      <a href="../index.html" class="navbar__brand"><span class="navbar__brand-icon">LW</span> LocalWork</a>
+      <div class="navbar__links">
+        <a href="home.html" class="navbar__link">Empleos</a>
+        <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
+        <a href="profile.html" class="navbar__link">Perfil</a>
+      </div>
+      <div class="navbar__actions">
+        <div class="navbar__avatar" id="userAvatar" onclick="App.toggleUserMenu()" tabindex="0">??</div>
+        <button class="navbar__hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <div class="navbar__mobile-menu" id="mobileMenu">
+      <a href="home.html" class="navbar__link">Empleos</a>
+      <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
+      <a href="profile.html" class="navbar__link">Perfil</a>
+    </div>
+  </nav>
+
+  <main id="main-content" class="page-wrapper">
+    <div class="container notif-page" style="max-width:800px;">
+
+      <div class="notif-header">
+        <h1>Notificaciones</h1>
+        <button class="btn btn--ghost btn--sm" id="markAllBtn" onclick="markAllRead()">
+          Marcar todas como leídas
+        </button>
+      </div>
+
+      <div class="notif-list" id="notifList">
+        <div class="skeleton" style="height:72px;"></div>
+        <div class="skeleton" style="height:72px;"></div>
+        <div class="skeleton" style="height:72px;"></div>
+      </div>
+
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/>
+        </svg>
+        <h3 class="empty-state__title">Sin notificaciones</h3>
+        <p class="empty-state__desc">Cuando haya actividad en tus postulaciones o nuevas ofertas, te avisaremos aquí.</p>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom" style="border-top:none;padding-top:0;">
+        <p class="footer__copy">&copy; 2026 LocalWork. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/config/api.js"></script>
+  <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/services/notifications.service.js"></script>
+  <script src="../assets/js/utils/helpers.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    if (!AuthService.requireAuth()) { /* redirects */ }
+
+    const ICON_MAP = {
+      application_received: { icon: '📩', cls: 'notif-item__icon--app' },
+      application_status_changed: { icon: '🔔', cls: 'notif-item__icon--status' },
+      new_job_match: { icon: '⭐', cls: 'notif-item__icon--match' },
+      profile_viewed: { icon: '👁', cls: 'notif-item__icon--status' },
+      system: { icon: '⚙️', cls: 'notif-item__icon--system' },
+    };
+
+    const user = AuthService.getUser();
+    if (user && user.full_name) {
+      document.getElementById('userAvatar').textContent = user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+
+    let currentPage = 1;
+    loadNotifications();
+
+    async function loadNotifications() {
+      const list = document.getElementById('notifList');
+      const empty = document.getElementById('emptyState');
+      list.style.display = '';
+      empty.style.display = 'none';
+
+      try {
+        const result = await NotificationsService.list({ page: currentPage, perPage: 20 });
+        const notifs = result.data || [];
+
+        if (notifs.length === 0) {
+          list.style.display = 'none';
+          empty.style.display = 'flex';
+          return;
+        }
+
+        list.innerHTML = notifs.map(n => {
+          const { icon, cls } = ICON_MAP[n.type] || ICON_MAP.system;
+          return `
+            <div class="notif-item ${n.read ? '' : 'notif-item--unread'}" onclick="markRead('${n.id}', this)">
+              <div class="notif-item__icon ${cls}">${icon}</div>
+              <div class="notif-item__content">
+                <p class="notif-item__title">${escapeHtml(n.title)}</p>
+                <p class="notif-item__message">${escapeHtml(n.message)}</p>
+              </div>
+              <span class="notif-item__time">${timeAgo(n.created_at)}</span>
+              <span class="notif-item__dot"></span>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        list.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:var(--space-8);">Error al cargar notificaciones</p>';
+      }
+    }
+
+    async function markRead(id, el) {
+      try {
+        await NotificationsService.markAsRead(id);
+        el.classList.remove('notif-item--unread');
+      } catch (e) { /* silent */ }
+    }
+
+    async function markAllRead() {
+      try {
+        await NotificationsService.markAllAsRead();
+        document.querySelectorAll('.notif-item--unread').forEach(el => el.classList.remove('notif-item--unread'));
+        showToast('Todas marcadas como leídas', 'success');
+      } catch (err) {
+        showToast('Error', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

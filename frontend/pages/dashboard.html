@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Panel del empleador — Gestiona tus ofertas de empleo en LocalWork">
+  <title>Dashboard Empleador — LocalWork</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <style>
+    .dash-page { padding-top: var(--space-8); padding-bottom: var(--space-16); }
+    .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-8); flex-wrap: wrap; gap: var(--space-4); }
+    .dash-header h1 { font-size: var(--fs-2xl); }
+    .dash-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); margin-bottom: var(--space-8); }
+    @media (min-width: 768px) { .dash-stats { grid-template-columns: repeat(4, 1fr); } }
+    .dash-stat { background: var(--color-surface); border: 1px solid var(--color-border-light); border-radius: var(--radius-lg); padding: var(--space-5); text-align: center; transition: transform var(--transition-spring), box-shadow var(--transition); }
+    .dash-stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .dash-stat__value { font-family: var(--font-heading); font-size: var(--fs-xl); font-weight: var(--fw-bold); color: var(--color-primary); }
+    .dash-stat__label { font-size: var(--fs-xs); color: var(--color-text-muted); }
+    .job-row { background: var(--color-surface); border: 1px solid var(--color-border-light); border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6); display: flex; align-items: center; gap: var(--space-5); margin-bottom: var(--space-3); transition: box-shadow var(--transition-fast); }
+    .job-row:hover { box-shadow: var(--shadow); }
+    .job-row__info { flex: 1; min-width: 0; }
+    .job-row__title { font-family: var(--font-heading); font-size: var(--fs-base); font-weight: var(--fw-semibold); margin-bottom: var(--space-1); }
+    .job-row__meta { font-size: var(--fs-sm); color: var(--color-text-muted); margin: 0; display: flex; gap: var(--space-4); flex-wrap: wrap; }
+    .job-row__actions { display: flex; gap: var(--space-2); flex-shrink: 0; }
+    .create-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: var(--z-modal); align-items: flex-start; justify-content: center; padding: var(--space-8) var(--space-4); overflow-y: auto; }
+    .create-modal-overlay.open { display: flex; }
+    .create-modal { background: var(--color-surface); border-radius: var(--radius-xl); padding: var(--space-8); width: 100%; max-width: 640px; box-shadow: var(--shadow-xl); animation: scaleIn var(--transition) forwards; }
+    .create-modal__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-6); }
+    .create-modal__title { font-size: var(--fs-xl); }
+    .create-form { display: flex; flex-direction: column; gap: var(--space-5); }
+    .create-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    @media (max-width: 640px) { .create-form__row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Ir al contenido principal</a>
+
+  <nav class="navbar" id="navbar">
+    <div class="navbar__inner">
+      <a href="../index.html" class="navbar__brand"><span class="navbar__brand-icon">LW</span> LocalWork</a>
+      <div class="navbar__links">
+        <a href="dashboard.html" class="navbar__link active">Dashboard</a>
+        <a href="notifications.html" class="navbar__link">Notificaciones</a>
+        <a href="profile.html" class="navbar__link">Perfil</a>
+      </div>
+      <div class="navbar__actions">
+        <div class="navbar__avatar" id="userAvatar" onclick="App.toggleUserMenu()" tabindex="0">??</div>
+        <button class="navbar__hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <div class="navbar__mobile-menu" id="mobileMenu">
+      <a href="dashboard.html" class="navbar__link active">Dashboard</a>
+      <a href="notifications.html" class="navbar__link">Notificaciones</a>
+      <a href="profile.html" class="navbar__link">Perfil</a>
+    </div>
+  </nav>
+
+  <main id="main-content" class="page-wrapper">
+    <div class="container dash-page">
+
+      <div class="dash-header">
+        <div>
+          <h1>Panel de Empleador</h1>
+          <p style="color:var(--color-text-secondary);margin:0;">Gestiona tus ofertas y postulantes</p>
+        </div>
+        <button class="btn btn--primary btn--lg" onclick="openCreateModal()">
+          + Nueva Oferta
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="dash-stats" id="dashStats">
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="statActive">—</div>
+          <div class="dash-stat__label">Ofertas activas</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="statTotal">—</div>
+          <div class="dash-stat__label">Total publicadas</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="statApps">—</div>
+          <div class="dash-stat__label">Postulaciones</div>
+        </div>
+        <div class="dash-stat">
+          <div class="dash-stat__value" id="statViews">—</div>
+          <div class="dash-stat__label">Guardados</div>
+        </div>
+      </div>
+
+      <!-- Job list -->
+      <h2 style="font-size:var(--fs-lg);margin-bottom:var(--space-4);">Mis ofertas publicadas</h2>
+      <div id="jobsList">
+        <div class="skeleton" style="height:80px;margin-bottom:var(--space-3);"></div>
+        <div class="skeleton" style="height:80px;margin-bottom:var(--space-3);"></div>
+      </div>
+
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <h3 class="empty-state__title">No tienes ofertas publicadas</h3>
+        <p class="empty-state__desc">Crea tu primera oferta de empleo para empezar a recibir postulantes.</p>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </main>
+
+  <!-- Create Job Modal -->
+  <div class="create-modal-overlay" id="createModal">
+    <div class="create-modal">
+      <div class="create-modal__header">
+        <h2 class="create-modal__title">Nueva oferta de empleo</h2>
+        <button class="modal__close" onclick="closeCreateModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <form class="create-form" id="createJobForm">
+        <div class="form-group">
+          <label class="form-label form-label--required">Título del cargo</label>
+          <input type="text" class="form-input" id="jobTitle" required placeholder="Ej: Coordinador de Ventas">
+        </div>
+        <div class="create-form__row">
+          <div class="form-group">
+            <label class="form-label form-label--required">Categoría</label>
+            <select class="form-select" id="jobCategory" required>
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Modalidad</label>
+            <select class="form-select" id="jobModality">
+              <option value="Presencial">Presencial</option>
+              <option value="Remoto">Remoto</option>
+              <option value="Híbrido">Híbrido</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label form-label--required">Descripción</label>
+          <textarea class="form-textarea" id="jobDescription" rows="4" required placeholder="Describe el cargo, responsabilidades y el perfil ideal..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Requisitos</label>
+          <textarea class="form-textarea" id="jobRequirements" rows="3" placeholder="Experiencia, estudios, habilidades..."></textarea>
+        </div>
+        <div class="create-form__row">
+          <div class="form-group">
+            <label class="form-label">Salario mínimo</label>
+            <input type="number" class="form-input" id="jobSalaryMin" placeholder="1300000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Salario máximo</label>
+            <input type="number" class="form-input" id="jobSalaryMax" placeholder="2000000">
+          </div>
+        </div>
+        <div class="create-form__row">
+          <div class="form-group">
+            <label class="form-label">Ubicación / Zona</label>
+            <input type="text" class="form-input" id="jobLocation" placeholder="Ej: Centro, Norte">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vacantes</label>
+            <input type="number" class="form-input" id="jobVacancies" value="1" min="1">
+          </div>
+        </div>
+        <button type="submit" class="btn btn--primary btn--lg btn--block" id="createBtn">
+          Publicar oferta
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom" style="border-top:none;padding-top:0;">
+        <p class="footer__copy">&copy; 2026 LocalWork. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/config/api.js"></script>
+  <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/services/jobs.service.js"></script>
+  <script src="../assets/js/utils/helpers.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    if (!AuthService.requireAuth()) { /* redirects */ }
+
+    const user = AuthService.getUser();
+    if (user && user.full_name) {
+      document.getElementById('userAvatar').textContent = user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+
+    let currentPage = 1;
+    let categories = [];
+
+    (async function init() {
+      // Load categories for the form
+      try {
+        const catResult = await JobsService.getCategories();
+        categories = catResult.data || [];
+        const select = document.getElementById('jobCategory');
+        categories.forEach(c => {
+          select.innerHTML += `<option value="${c.id}">${c.icon} ${c.name}</option>`;
+        });
+      } catch (e) { console.warn('Categories error:', e); }
+
+      loadJobs();
+    })();
+
+    async function loadJobs() {
+      const list = document.getElementById('jobsList');
+      const empty = document.getElementById('emptyState');
+      list.style.display = '';
+      empty.style.display = 'none';
+
+      try {
+        const result = await JobsService.getMyJobs({ page: currentPage, perPage: 10 });
+        const jobs = result.data || [];
+
+        // Update stats
+        let totalApps = 0;
+        let totalSaves = 0;
+        let activeCount = 0;
+        jobs.forEach(j => {
+          if (j.status === 'active') activeCount++;
+        });
+        document.getElementById('statActive').textContent = activeCount;
+        document.getElementById('statTotal').textContent = result.total || 0;
+
+        if (jobs.length === 0) {
+          list.style.display = 'none';
+          empty.style.display = 'flex';
+          return;
+        }
+
+        const statusLabels = { active: 'Activa', paused: 'Pausada', closed: 'Cerrada', draft: 'Borrador' };
+        const statusColors = { active: 'badge--accent', paused: 'badge--warning', closed: 'badge--danger', draft: 'badge--neutral' };
+
+        list.innerHTML = jobs.map(job => `
+          <div class="job-row">
+            <div class="job-row__info">
+              <h3 class="job-row__title">${escapeHtml(job.title)}</h3>
+              <p class="job-row__meta">
+                <span>${job.modality}</span>
+                <span>${job.vacancies} vacante${job.vacancies > 1 ? 's' : ''}</span>
+                <span>${timeAgo(job.created_at)}</span>
+              </p>
+            </div>
+            <span class="badge ${statusColors[job.status] || 'badge--neutral'}">${statusLabels[job.status] || job.status}</span>
+            <div class="job-row__actions">
+              <button class="btn btn--ghost btn--sm" onclick="toggleStatus('${job.id}', '${job.status}')">
+                ${job.status === 'active' ? '⏸ Pausar' : '▶ Activar'}
+              </button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteJob('${job.id}')">
+                🗑
+              </button>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        if (err.message && err.message.includes('empresa')) {
+          list.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:var(--space-8);">No tienes una empresa registrada. Regístrate como empleador para crear ofertas.</p>';
+        } else {
+          list.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:var(--space-8);">Error al cargar ofertas</p>';
+        }
+      }
+    }
+
+    async function toggleStatus(jobId, currentStatus) {
+      const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+      try {
+        await JobsService.update(jobId, { status: newStatus });
+        showToast(`Oferta ${newStatus === 'active' ? 'activada' : 'pausada'}`, 'success');
+        loadJobs();
+      } catch (err) {
+        showToast(err.message || 'Error', 'error');
+      }
+    }
+
+    async function deleteJob(jobId) {
+      if (!confirm('¿Seguro que deseas eliminar esta oferta?')) return;
+      try {
+        await JobsService.delete(jobId);
+        showToast('Oferta eliminada', 'success');
+        loadJobs();
+      } catch (err) {
+        showToast(err.message || 'Error', 'error');
+      }
+    }
+
+    // Create modal
+    function openCreateModal() { document.getElementById('createModal').classList.add('open'); }
+    function closeCreateModal() { document.getElementById('createModal').classList.remove('open'); }
+
+    document.getElementById('createModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeCreateModal();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCreateModal(); });
+
+    document.getElementById('createJobForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('createBtn');
+      btn.classList.add('btn--loading');
+      btn.disabled = true;
+
+      try {
+        const salaryMin = parseInt(document.getElementById('jobSalaryMin').value) || null;
+        const salaryMax = parseInt(document.getElementById('jobSalaryMax').value) || null;
+        const salaryText = salaryMin ? `$${salaryMin.toLocaleString('es-CO')}${salaryMax ? ' – $' + salaryMax.toLocaleString('es-CO') : ''}` : null;
+
+        await JobsService.create({
+          title: document.getElementById('jobTitle').value.trim(),
+          category_id: document.getElementById('jobCategory').value,
+          modality: document.getElementById('jobModality').value,
+          description: document.getElementById('jobDescription').value.trim(),
+          requirements: document.getElementById('jobRequirements').value.trim() || null,
+          location: document.getElementById('jobLocation').value.trim() || null,
+          salary_min: salaryMin,
+          salary_max: salaryMax,
+          salary_text: salaryText,
+          vacancies: parseInt(document.getElementById('jobVacancies').value) || 1,
+        });
+
+        closeCreateModal();
+        document.getElementById('createJobForm').reset();
+        showToast('¡Oferta publicada exitosamente!', 'success');
+        loadJobs();
+      } catch (err) {
+        showToast(err.message || 'Error al publicar', 'error');
+      } finally {
+        btn.classList.remove('btn--loading');
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -26,8 +26,8 @@
 
       <div class="navbar__links" id="navLinks">
         <a href="home.html" class="navbar__link active">Empleos</a>
-        <a href="#" class="navbar__link">Mis Postulaciones</a>
-        <a href="#" class="navbar__link">Perfil</a>
+        <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
+        <a href="profile.html" class="navbar__link">Perfil</a>
       </div>
 
       <div class="navbar__actions">
@@ -57,8 +57,8 @@
     <!-- Mobile Menu -->
     <div class="navbar__mobile-menu" id="mobileMenu" role="navigation" aria-label="Menú móvil">
       <a href="home.html" class="navbar__link active">Empleos</a>
-      <a href="#" class="navbar__link">Mis Postulaciones</a>
-      <a href="#" class="navbar__link">Perfil</a>
+      <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
+      <a href="profile.html" class="navbar__link">Perfil</a>
     </div>
   </nav>
 
@@ -272,7 +272,7 @@
         || (job.salary_min ? formatCurrency(job.salary_min) + (job.salary_max ? ' – ' + formatCurrency(job.salary_max) : '') : 'A convenir');
 
       return `
-        <article class="job-card" tabindex="0" role="link" aria-label="Ver oferta: ${escapeHtml(job.title)}">
+        <article class="job-card" tabindex="0" role="link" aria-label="Ver oferta: ${escapeHtml(job.title)}" onclick="window.location.href='job-detail.html?id=${job.id}'">
           <div class="job-card__header">
             <div class="job-card__company-logo" aria-hidden="true">${companyInitial}</div>
             <div class="job-card__title-group">

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tu perfil en LocalWork — Plataforma de empleo local en Aguachica">
+  <title>Mi Perfil — LocalWork</title>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <link rel="stylesheet" href="../assets/css/pages/auth.css">
+  <style>
+    .profile-page { padding-top: var(--space-8); padding-bottom: var(--space-16); }
+    .profile-header { display: flex; align-items: center; gap: var(--space-6); margin-bottom: var(--space-8); flex-wrap: wrap; }
+    .profile-avatar { width: 96px; height: 96px; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--color-primary-100), var(--color-primary-50)); display: flex; align-items: center; justify-content: center; font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--color-primary); flex-shrink: 0; position: relative; }
+    .profile-avatar__edit { position: absolute; bottom: 0; right: 0; width: 32px; height: 32px; background: var(--color-primary); color: #fff; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid var(--color-surface); transition: background var(--transition-fast); }
+    .profile-avatar__edit:hover { background: var(--color-primary-dark); }
+    .profile-header__info h1 { font-size: var(--fs-2xl); margin-bottom: var(--space-1); }
+    .profile-header__info p { color: var(--color-text-secondary); margin: 0; }
+    .profile-card { background: var(--color-surface); border: 1px solid var(--color-border-light); border-radius: var(--radius-xl); padding: var(--space-8); margin-bottom: var(--space-6); }
+    .profile-card__title { font-size: var(--fs-lg); margin-bottom: var(--space-6); display: flex; align-items: center; justify-content: space-between; }
+    .profile-form { display: flex; flex-direction: column; gap: var(--space-5); }
+    .profile-form__row { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
+    @media (min-width: 768px) { .profile-form__row { grid-template-columns: 1fr 1fr; } }
+    .profile-badge { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3); background: var(--color-primary-50); color: var(--color-primary); border-radius: var(--radius-full); font-size: var(--fs-xs); font-weight: var(--fw-semibold); text-transform: capitalize; }
+  </style>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Ir al contenido principal</a>
+
+  <nav class="navbar" id="navbar">
+    <div class="navbar__inner">
+      <a href="../index.html" class="navbar__brand"><span class="navbar__brand-icon">LW</span> LocalWork</a>
+      <div class="navbar__links">
+        <a href="home.html" class="navbar__link">Empleos</a>
+        <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
+        <a href="profile.html" class="navbar__link active">Perfil</a>
+      </div>
+      <div class="navbar__actions">
+        <button class="navbar__notification" onclick="App.goTo('notifications')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
+        </button>
+        <div class="navbar__avatar" id="userAvatar" onclick="App.toggleUserMenu()" tabindex="0">??</div>
+        <button class="navbar__hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <div class="navbar__mobile-menu" id="mobileMenu">
+      <a href="home.html" class="navbar__link">Empleos</a>
+      <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
+      <a href="profile.html" class="navbar__link active">Perfil</a>
+    </div>
+  </nav>
+
+  <main id="main-content" class="page-wrapper">
+    <div class="container profile-page" style="max-width:800px;">
+
+      <!-- Header -->
+      <div class="profile-header" id="profileHeader">
+        <div class="profile-avatar" id="profileAvatar">
+          ??
+          <button class="profile-avatar__edit" title="Cambiar foto">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+        </div>
+        <div class="profile-header__info">
+          <h1 id="profileName">Cargando...</h1>
+          <p id="profileEmail">—</p>
+        </div>
+      </div>
+
+      <!-- Personal Info -->
+      <div class="profile-card">
+        <div class="profile-card__title">
+          Información personal
+          <span class="profile-badge" id="profileRole">seeker</span>
+        </div>
+        <form class="profile-form" id="profileForm">
+          <div class="profile-form__row">
+            <div class="form-group">
+              <label class="form-label">Nombre completo</label>
+              <input type="text" class="form-input" id="fullName" placeholder="Tu nombre">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Teléfono</label>
+              <input type="tel" class="form-input" id="phone" placeholder="300 123 4567">
+            </div>
+          </div>
+          <div class="profile-form__row">
+            <div class="form-group">
+              <label class="form-label">Ubicación / Zona</label>
+              <input type="text" class="form-input" id="location" placeholder="Ej: Centro, Norte...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Bio / Acerca de mí</label>
+            <textarea class="form-textarea" id="bio" rows="4" placeholder="Cuéntanos sobre ti, tu experiencia y lo que buscas..."></textarea>
+          </div>
+          <button type="submit" class="btn btn--primary btn--lg" id="saveBtn" style="align-self:flex-start;">
+            Guardar cambios
+          </button>
+        </form>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="profile-card" style="border-color:var(--color-danger);">
+        <div class="profile-card__title" style="color:var(--color-danger);">Zona de peligro</div>
+        <p style="font-size:var(--fs-sm);color:var(--color-text-secondary);margin-bottom:var(--space-4);">
+          Al cerrar sesión se eliminará tu token local. Podrás volver a iniciar sesión en cualquier momento.
+        </p>
+        <button class="btn btn--danger btn--sm" onclick="AuthService.logout()">Cerrar sesión</button>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom" style="border-top:none;padding-top:0;">
+        <p class="footer__copy">&copy; 2026 LocalWork. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/config/api.js"></script>
+  <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/utils/helpers.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    if (!AuthService.requireAuth()) { /* redirects */ }
+
+    (async function init() {
+      const user = AuthService.getUser();
+      if (!user) return;
+
+      // Populate header
+      const initials = user.full_name ? user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';
+      document.getElementById('profileAvatar').childNodes[0].textContent = initials;
+      document.getElementById('userAvatar').textContent = initials;
+      document.getElementById('profileName').textContent = user.full_name || 'Sin nombre';
+      document.getElementById('profileEmail').textContent = user.email || '';
+      document.getElementById('profileRole').textContent = user.role === 'employer' ? '👔 Empleador' : '🔍 Buscador';
+
+      // Populate form
+      document.getElementById('fullName').value = user.full_name || '';
+      document.getElementById('phone').value = user.phone || '';
+      document.getElementById('location').value = user.location || '';
+      document.getElementById('bio').value = user.bio || '';
+    })();
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('saveBtn');
+      btn.classList.add('btn--loading');
+      btn.disabled = true;
+
+      try {
+        const updates = {
+          full_name: document.getElementById('fullName').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          location: document.getElementById('location').value.trim(),
+          bio: document.getElementById('bio').value.trim(),
+        };
+        await AuthService.updateProfile(updates);
+        showToast('Perfil actualizado correctamente', 'success');
+
+        // Update local display
+        document.getElementById('profileName').textContent = updates.full_name;
+        const initials = updates.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('profileAvatar').childNodes[0].textContent = initials;
+        document.getElementById('userAvatar').textContent = initials;
+      } catch (err) {
+        showToast(err.message || 'Error al guardar', 'error');
+      } finally {
+        btn.classList.remove('btn--loading');
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
