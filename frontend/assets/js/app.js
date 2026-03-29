@@ -89,11 +89,11 @@ const App = {
   // ── Navegación ──
   goTo(page) {
     const routes = {
-      home:          '/frontend/pages/home.html',
-      login:         '/frontend/pages/login.html',
-      register:      '/frontend/pages/register.html',
-      notifications: '/frontend/pages/notifications.html',
-      profile:       '/frontend/pages/profile.html',
+      home:          'home.html',
+      login:         'login.html',
+      register:      'register.html',
+      notifications: 'notifications.html',
+      profile:       'profile.html',
     };
     window.location.href = routes[page] || page;
   },
