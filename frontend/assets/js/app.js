@@ -70,6 +70,10 @@ const App = {
         ? `<a href="${p}dashboard.html" class="user-dropdown__item">📊 Dashboard</a>`
         : `<a href="${p}my-applications.html" class="user-dropdown__item">📋 Mis Postulaciones</a>`;
 
+      const avatarContent = user.avatar_url
+        ? `<img src="${user.avatar_url}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-full);">`
+        : initials;
+
       const avatarHtml = `
         <button class="navbar__notification" aria-label="Notificaciones" onclick="App.goTo('notifications')">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -79,7 +83,7 @@ const App = {
           <span class="navbar__notification-badge" id="notifBadge" style="display:none;"></span>
         </button>
         <div style="position:relative;">
-          <div class="navbar__avatar" onclick="App.toggleUserMenu(event)" tabindex="0">${initials}</div>
+          <div class="navbar__avatar" onclick="App.toggleUserMenu(event)" tabindex="0">${avatarContent}</div>
           <div class="user-dropdown" id="userDropdown">
             <div class="user-dropdown__header">
               <strong>${user.full_name || 'Usuario'}</strong>
@@ -114,7 +118,7 @@ const App = {
         }
       } else if (!existingDropdown) {
         // Avatar exists but no dropdown — wrap it (inner pages)
-        existingAvatar.textContent = initials;
+        existingAvatar.innerHTML = avatarContent;
         existingAvatar.setAttribute('onclick', 'App.toggleUserMenu(event)');
 
         const wrapper = document.createElement('div');
