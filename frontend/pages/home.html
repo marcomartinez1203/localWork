@@ -197,11 +197,14 @@
   </footer>
 
   <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="../assets/js/config/api.js"></script>
   <script src="../assets/js/services/auth.service.js"></script>
   <script src="../assets/js/services/jobs.service.js"></script>
+  <script src="../assets/js/services/notifications.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
   <script src="../assets/js/app.js"></script>
+  <script src="../assets/js/services/realtime.service.js"></script>
   <script>
     // ── Auth check ──
     if (!AuthService.requireAuth()) { /* redirects */ }
@@ -245,6 +248,9 @@
 
       // Load jobs
       await render();
+
+      // Start realtime listeners
+      RealtimeService.init();
     })();
 
 
