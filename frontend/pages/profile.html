@@ -58,7 +58,8 @@
       <div class="profile-header" id="profileHeader">
         <div class="profile-avatar" id="profileAvatar">
           ??
-          <button class="profile-avatar__edit" title="Cambiar foto">
+          <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+          <button class="profile-avatar__edit" title="Cambiar foto" onclick="document.getElementById('avatarInput').click()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </button>
         </div>
@@ -134,11 +135,17 @@
 
       // Populate header
       const initials = user.full_name ? user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';
-      document.getElementById('profileAvatar').childNodes[0].textContent = initials;
       document.getElementById('userAvatar').textContent = initials;
       document.getElementById('profileName').textContent = user.full_name || 'Sin nombre';
       document.getElementById('profileEmail').textContent = user.email || '';
       document.getElementById('profileRole').textContent = user.role === 'employer' ? '👔 Empleador' : '🔍 Buscador';
+
+      // Show avatar image or initials
+      if (user.avatar_url) {
+        setAvatarImage(user.avatar_url);
+      } else {
+        document.getElementById('profileAvatar').childNodes[0].textContent = initials;
+      }
 
       // Populate form
       document.getElementById('fullName').value = user.full_name || '';
@@ -147,6 +154,7 @@
       document.getElementById('bio').value = user.bio || '';
     })();
 
+    // Profile form save
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('saveBtn');
@@ -163,10 +171,8 @@
         await AuthService.updateProfile(updates);
         showToast('Perfil actualizado correctamente', 'success');
 
-        // Update local display
         document.getElementById('profileName').textContent = updates.full_name;
         const initials = updates.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        document.getElementById('profileAvatar').childNodes[0].textContent = initials;
         document.getElementById('userAvatar').textContent = initials;
       } catch (err) {
         showToast(err.message || 'Error al guardar', 'error');
@@ -175,6 +181,58 @@
         btn.disabled = false;
       }
     });
+
+    function setAvatarImage(url) {
+      const avatar = document.getElementById('profileAvatar');
+      avatar.innerHTML = `
+        <img src="${url}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-full);">
+        <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
+        <button class="profile-avatar__edit" title="Cambiar foto" onclick="document.getElementById('avatarInput').click()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
+      `;
+      document.getElementById('avatarInput').addEventListener('change', handleAvatarUpload);
+    }
+
+    async function handleAvatarUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('La imagen no puede superar 5MB', 'error');
+        return;
+      }
+
+      const avatar = document.getElementById('profileAvatar');
+      avatar.style.opacity = '0.5';
+
+      try {
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        const result = await api.upload('/upload/avatar', formData);
+
+        if (result.url) {
+          setAvatarImage(result.url);
+
+          // Update local storage so it persists on refresh
+          const user = AuthService.getUser();
+          if (user) {
+            user.avatar_url = result.url;
+            localStorage.setItem('lw_user', JSON.stringify(user));
+          }
+
+          showToast('Foto actualizada', 'success');
+        }
+      } catch (err) {
+        showToast(err.message || 'Error al subir foto', 'error');
+      } finally {
+        avatar.style.opacity = '1';
+      }
+    }
+
+    // Attach initial listener
+    document.getElementById('avatarInput').addEventListener('change', handleAvatarUpload);
   </script>
 </body>
 </html>

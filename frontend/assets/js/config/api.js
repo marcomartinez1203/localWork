@@ -35,7 +35,8 @@ async function apiFetch(endpoint, options = {}) {
   if (response.status === 401) {
     localStorage.removeItem('lw_token');
     localStorage.removeItem('lw_user');
-    window.location.href = 'login.html';
+    const prefix = (typeof App !== 'undefined') ? App._pagePrefix() : '';
+    window.location.href = prefix + 'login.html';
     return;
   }
 

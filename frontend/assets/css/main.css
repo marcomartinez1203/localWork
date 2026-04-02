@@ -118,6 +118,99 @@
 }
 
 
+/* ══════════════════════════════════════════════
+   DARK MODE
+   ══════════════════════════════════════════════ */
+[data-theme="dark"] {
+  /* Neutrals — inverted */
+  --color-bg:            #0B1120;
+  --color-surface:       #131C2E;
+  --color-text:          #E2E8F0;
+  --color-text-secondary:#94A3B8;
+  --color-text-muted:    #64748B;
+  --color-border:        #1E293B;
+  --color-border-light:  #1A2332;
+
+  /* Brand stays, subtly adjusted */
+  --color-primary-50:    rgba(0,114,0,0.12);
+  --color-primary-100:   rgba(0,114,0,0.18);
+  --color-primary-200:   rgba(0,114,0,0.25);
+
+  /* Accent */
+  --color-accent-50:     rgba(112,224,0,0.10);
+
+  /* Shadows — dark & tinted */
+  --shadow-xs:   0 1px 2px rgba(0,0,0,0.20);
+  --shadow-sm:   0 2px 4px rgba(0,0,0,0.24), 0 1px 2px rgba(0,114,0,0.06);
+  --shadow:      0 2px 8px rgba(0,0,0,0.28), 0 2px 4px rgba(0,114,0,0.08);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.32), 0 4px 8px rgba(0,114,0,0.10);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,0.36), 0 8px 16px rgba(0,114,0,0.10);
+  --shadow-xl:   0 20px 60px rgba(0,0,0,0.40), 0 12px 24px rgba(0,114,0,0.10);
+  --shadow-glow: 0 0 20px rgba(0,114,0,0.25), 0 0 60px rgba(0,114,0,0.10);
+
+  /* Glass */
+  --glass-bg:    rgba(19,28,46,0.80);
+  --glass-border:rgba(255,255,255,0.06);
+
+  color-scheme: dark;
+}
+
+/* Dark mode form overrides */
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .form-textarea {
+  background: #1A2332;
+  border-color: #2D3A4E;
+}
+
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] .form-select:focus,
+[data-theme="dark"] .form-textarea:focus {
+  background: #1E293B;
+  box-shadow: 0 0 0 3px rgba(0,114,0,0.25);
+}
+
+/* Dark mode search bar */
+[data-theme="dark"] .search-bar__input {
+  background: #1A2332;
+  border-color: #2D3A4E;
+}
+
+[data-theme="dark"] .search-bar__input:focus {
+  background: #1E293B;
+  box-shadow: 0 0 0 4px rgba(0,114,0,0.20), var(--shadow);
+}
+
+/* Dark chips */
+[data-theme="dark"] .chip {
+  background: #1A2332;
+  border-color: #2D3A4E;
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .chip.active,
+[data-theme="dark"] .chip:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* Dark selection */
+[data-theme="dark"] ::selection {
+  background: rgba(0,114,0,0.40);
+  color: #fff;
+}
+
+/* Dark scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #0B1120;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #2D3A4E;
+}
+
+
 /* ── CSS Reset ── */
 *,
 *::before,

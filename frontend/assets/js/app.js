@@ -6,8 +6,10 @@ const App = {
 
   // ── Inicializar la app en cada página ──
   init() {
+    this.initTheme();
     this.setupNavbar();
     this.updateAuthUI();
+    this._injectFAB();
   },
 
   // ── Navbar: scroll effect + hamburger ──
@@ -62,10 +64,11 @@ const App = {
         ? user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
         : 'U';
 
+      const p = this._pagePrefix();
       const isEmployer = user.role === 'employer';
       const dashLink = isEmployer
-        ? '<a href="dashboard.html" class="user-dropdown__item">📊 Dashboard</a>'
-        : '<a href="my-applications.html" class="user-dropdown__item">📋 Mis Postulaciones</a>';
+        ? `<a href="${p}dashboard.html" class="user-dropdown__item">📊 Dashboard</a>`
+        : `<a href="${p}my-applications.html" class="user-dropdown__item">📋 Mis Postulaciones</a>`;
 
       const avatarHtml = `
         <button class="navbar__notification" aria-label="Notificaciones" onclick="App.goTo('notifications')">
@@ -83,10 +86,10 @@ const App = {
               <span>${user.email || ''}</span>
             </div>
             <div class="user-dropdown__divider"></div>
-            <a href="home.html" class="user-dropdown__item">🔍 Explorar empleos</a>
+            <a href="${p}home.html" class="user-dropdown__item">🔍 Explorar empleos</a>
             ${dashLink}
-            <a href="notifications.html" class="user-dropdown__item">🔔 Notificaciones</a>
-            <a href="profile.html" class="user-dropdown__item">👤 Mi Perfil</a>
+            <a href="${p}notifications.html" class="user-dropdown__item">🔔 Notificaciones</a>
+            <a href="${p}profile.html" class="user-dropdown__item">👤 Mi Perfil</a>
             <div class="user-dropdown__divider"></div>
             <button class="user-dropdown__item user-dropdown__item--danger" onclick="AuthService.logout()">🚪 Cerrar sesión</button>
           </div>
@@ -98,14 +101,47 @@ const App = {
       if (loginBtn) loginBtn.remove();
       if (registerBtn) registerBtn.remove();
 
-      if (!authButtons.querySelector('.navbar__avatar')) {
+      const existingAvatar = authButtons.querySelector('.navbar__avatar');
+      const existingDropdown = document.getElementById('userDropdown');
+
+      if (!existingAvatar) {
+        // No avatar at all — inject everything (landing page)
         const hamburger = authButtons.querySelector('.navbar__hamburger');
         if (hamburger) {
           hamburger.insertAdjacentHTML('beforebegin', avatarHtml);
         } else {
           authButtons.insertAdjacentHTML('beforeend', avatarHtml);
         }
+      } else if (!existingDropdown) {
+        // Avatar exists but no dropdown — wrap it (inner pages)
+        existingAvatar.textContent = initials;
+        existingAvatar.setAttribute('onclick', 'App.toggleUserMenu(event)');
+
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        existingAvatar.parentNode.insertBefore(wrapper, existingAvatar);
+        wrapper.appendChild(existingAvatar);
+
+        const dropdownHtml = `
+          <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown__header">
+              <strong>${user.full_name || 'Usuario'}</strong>
+              <span>${user.email || ''}</span>
+            </div>
+            <div class="user-dropdown__divider"></div>
+            <a href="${p}home.html" class="user-dropdown__item">🔍 Explorar empleos</a>
+            ${dashLink}
+            <a href="${p}notifications.html" class="user-dropdown__item">🔔 Notificaciones</a>
+            <a href="${p}profile.html" class="user-dropdown__item">👤 Mi Perfil</a>
+            <div class="user-dropdown__divider"></div>
+            <button class="user-dropdown__item user-dropdown__item--danger" onclick="AuthService.logout()">🚪 Cerrar sesión</button>
+          </div>
+        `;
+        wrapper.insertAdjacentHTML('beforeend', dropdownHtml);
       }
+
+      // Inject theme toggle above the logout divider in the dropdown
+      this._injectThemeToggle();
 
       // Check unread notifications
       this.checkNotifications();
@@ -125,16 +161,22 @@ const App = {
     } catch (e) { /* silent */ }
   },
 
+  // ── Path helper: detect if we are inside /pages/ or not ──
+  _pagePrefix() {
+    return window.location.pathname.includes('/pages/') ? '' : 'pages/';
+  },
+
   // ── Navegación ──
   goTo(page) {
+    const prefix = this._pagePrefix();
     const routes = {
-      home:          'home.html',
-      login:         'login.html',
-      register:      'register.html',
-      notifications: 'notifications.html',
-      profile:       'profile.html',
-      dashboard:     'dashboard.html',
-      applications:  'my-applications.html',
+      home:          prefix + 'home.html',
+      login:         prefix + 'login.html',
+      register:      prefix + 'register.html',
+      notifications: prefix + 'notifications.html',
+      profile:       prefix + 'profile.html',
+      dashboard:     prefix + 'dashboard.html',
+      applications:  prefix + 'my-applications.html',
     };
     window.location.href = routes[page] || page;
   },
@@ -146,7 +188,78 @@ const App = {
       dropdown.classList.toggle('open');
     }
   },
+
+  // ── Dark Mode ──
+  initTheme() {
+    const saved = localStorage.getItem('lw_theme');
+    if (saved) {
+      document.documentElement.setAttribute('data-theme', saved);
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  },
+
+  toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('lw_theme', next);
+
+    // Update toggle icon
+    const icon = document.getElementById('themeToggleIcon');
+    if (icon) icon.textContent = next === 'dark' ? '☀️' : '🌙';
+
+    // Update FAB title
+    const fab = document.getElementById('themeFab');
+    if (fab) fab.title = next === 'dark' ? 'Modo claro' : 'Modo oscuro';
+
+    // Update dropdown button text
+    const btn = document.getElementById('themeToggleBtn');
+    if (btn) {
+      const iconSpan = btn.querySelector('#themeToggleIcon');
+      if (iconSpan) iconSpan.textContent = next === 'dark' ? '☀️' : '🌙';
+      btn.lastChild.textContent = ` ${next === 'dark' ? 'Modo claro' : 'Modo oscuro'}`;
+    }
+  },
+
+  _injectThemeToggle() {
+    const dropdown = document.getElementById('userDropdown');
+    if (!dropdown || dropdown.querySelector('#themeToggleBtn')) return;
+
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const lastDivider = dropdown.querySelectorAll('.user-dropdown__divider');
+    const target = lastDivider[lastDivider.length - 1];
+
+    if (target) {
+      target.insertAdjacentHTML('beforebegin',
+        `<button class="user-dropdown__item" id="themeToggleBtn" onclick="App.toggleTheme()">
+          <span id="themeToggleIcon">${isDark ? '☀️' : '🌙'}</span> ${isDark ? 'Modo claro' : 'Modo oscuro'}
+        </button>`
+      );
+    }
+  },
+
+  // Show floating toggle when no dropdown exists (landing/auth pages)
+  _injectFAB() {
+    if (document.getElementById('userDropdown') || document.getElementById('themeFab')) return;
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.body.insertAdjacentHTML('beforeend',
+      `<button class="theme-toggle-fab" id="themeFab" onclick="App.toggleTheme()" aria-label="Cambiar tema" title="${isDark ? 'Modo claro' : 'Modo oscuro'}">
+        <span id="themeToggleIcon">${isDark ? '☀️' : '🌙'}</span>
+      </button>`
+    );
+  },
 };
+
+// Apply theme immediately (before DOMContentLoaded to prevent flash)
+(function() {
+  const saved = localStorage.getItem('lw_theme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
 
 // Auto-init cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => App.init());

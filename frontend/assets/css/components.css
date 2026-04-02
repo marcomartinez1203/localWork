@@ -1496,3 +1496,115 @@
   color: var(--color-text);
 }
 
+
+/* ══════════════════════════════════════════════
+   DARK MODE — Component Overrides
+   ══════════════════════════════════════════════ */
+
+/* Navbar */
+[data-theme="dark"] .navbar {
+  background: rgba(11,17,32,0.85);
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+
+[data-theme="dark"] .navbar.scrolled {
+  background: rgba(11,17,32,0.95);
+}
+
+[data-theme="dark"] .navbar__mobile-menu {
+  background: #0B1120;
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+
+[data-theme="dark"] .navbar__link {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .navbar__link:hover,
+[data-theme="dark"] .navbar__link.active {
+  color: var(--color-accent-light);
+}
+
+/* Job cards */
+[data-theme="dark"] .job-card {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .job-card:hover {
+  border-color: var(--color-primary);
+}
+
+[data-theme="dark"] .job-card__company-logo {
+  background: linear-gradient(135deg, rgba(0,114,0,0.20), rgba(0,114,0,0.10));
+}
+
+/* Buttons — outline */
+[data-theme="dark"] .btn--outline {
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .btn--outline:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(0,114,0,0.10);
+}
+
+/* Filters select */
+[data-theme="dark"] .filters__select {
+  background-color: #1A2332;
+  border-color: #2D3A4E;
+  color: var(--color-text);
+}
+
+/* Quick stats */
+[data-theme="dark"] .quick-stat {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+/* Badge neutral */
+[data-theme="dark"] .badge--neutral {
+  background: #1A2332;
+  color: var(--color-text-secondary);
+}
+
+/* Dropdown */
+[data-theme="dark"] .user-dropdown {
+  background: #131C2E;
+  border-color: #1E293B;
+}
+
+[data-theme="dark"] .user-dropdown__header {
+  background: #0B1120;
+}
+
+[data-theme="dark"] .user-dropdown__item:hover {
+  background: #1A2332;
+}
+
+/* Theme toggle standalone (for landing/auth pages) */
+.theme-toggle-fab {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-lg);
+  cursor: pointer;
+  z-index: var(--z-sticky);
+  transition: transform var(--transition-spring), box-shadow var(--transition);
+}
+
+.theme-toggle-fab:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
+}

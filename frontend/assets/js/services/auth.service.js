@@ -38,7 +38,8 @@ const AuthService = {
     await api.post('/auth/logout');
     localStorage.removeItem('lw_token');
     localStorage.removeItem('lw_user');
-    window.location.href = 'login.html';
+    const prefix = (typeof App !== 'undefined') ? App._pagePrefix() : '';
+    window.location.href = prefix + 'login.html';
   },
 
   async getProfile() {
@@ -72,17 +73,19 @@ const AuthService = {
     return !!this.getToken();
   },
 
-  requireAuth(redirectTo = 'login.html') {
+  requireAuth(redirectTo) {
     if (!this.isAuthenticated()) {
-      window.location.href = redirectTo;
+      const prefix = (typeof App !== 'undefined') ? App._pagePrefix() : '';
+      window.location.href = redirectTo || (prefix + 'login.html');
       return false;
     }
     return true;
   },
 
-  redirectIfAuthenticated(redirectTo = 'home.html') {
+  redirectIfAuthenticated(redirectTo) {
     if (this.isAuthenticated()) {
-      window.location.href = redirectTo;
+      const prefix = (typeof App !== 'undefined') ? App._pagePrefix() : '';
+      window.location.href = redirectTo || (prefix + 'home.html');
       return true;
     }
     return false;
