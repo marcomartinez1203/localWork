@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Historial de tus postulaciones en LocalWork">
   <title>Mis Postulaciones — LocalWork</title>
+  <script src="../assets/js/theme-init.js"></script>
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/components.css">
   <style>
@@ -41,19 +42,25 @@
       <a href="../index.html" class="navbar__brand"><span class="navbar__brand-icon">LW</span> LocalWork</a>
       <div class="navbar__links">
         <a href="home.html" class="navbar__link">Empleos</a>
+        <a href="workers.html" class="navbar__link">Trabajadores</a>
         <a href="my-applications.html" class="navbar__link active">Mis Postulaciones</a>
         <a href="profile.html" class="navbar__link">Perfil</a>
       </div>
       <div class="navbar__actions">
-        <button class="navbar__notification" onclick="App.goTo('notifications')">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
-        </button>
+        <div style="position:relative;">
+          <button class="navbar__notification" aria-label="Notificaciones" onclick="App.toggleNotifPreview(event)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
+            <span class="navbar__notification-badge" id="notifBadge" style="display:none;"></span>
+          </button>
+          <div class="notif-preview" id="notifPreview"></div>
+        </div>
         <div class="navbar__avatar" id="userAvatar" onclick="App.toggleUserMenu()" tabindex="0">??</div>
         <button class="navbar__hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
       </div>
     </div>
     <div class="navbar__mobile-menu" id="mobileMenu">
       <a href="home.html" class="navbar__link">Empleos</a>
+      <a href="workers.html" class="navbar__link">Trabajadores</a>
       <a href="my-applications.html" class="navbar__link active">Mis Postulaciones</a>
       <a href="profile.html" class="navbar__link">Perfil</a>
     </div>

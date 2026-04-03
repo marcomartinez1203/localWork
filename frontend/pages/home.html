@@ -6,6 +6,7 @@
   <meta name="description" content="Explora ofertas de empleo en Aguachica, Cesar. Filtra por categoría, modalidad y zona.">
   <title>Empleos — LocalWork</title>
 
+  <script src="../assets/js/theme-init.js"></script>
   <!-- CSS -->
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/components.css">
@@ -26,19 +27,23 @@
 
       <div class="navbar__links" id="navLinks">
         <a href="home.html" class="navbar__link active">Empleos</a>
+        <a href="workers.html" class="navbar__link">Trabajadores</a>
         <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
         <a href="profile.html" class="navbar__link">Perfil</a>
       </div>
 
       <div class="navbar__actions">
         <!-- Notification bell -->
-        <button class="navbar__notification" aria-label="Notificaciones (3 sin leer)">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
-            <path d="M10.3 21a1.94 1.94 0 003.4 0"/>
-          </svg>
-          <span class="navbar__notification-badge" aria-hidden="true"></span>
-        </button>
+        <div style="position:relative;">
+          <button class="navbar__notification" aria-label="Notificaciones" onclick="App.toggleNotifPreview(event)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
+              <path d="M10.3 21a1.94 1.94 0 003.4 0"/>
+            </svg>
+            <span class="navbar__notification-badge" id="notifBadge" style="display:none;" aria-hidden="true"></span>
+          </button>
+          <div class="notif-preview" id="notifPreview"></div>
+        </div>
 
         <!-- User avatar -->
         <div class="navbar__avatar" aria-label="Menú de usuario" role="button" tabindex="0">
@@ -57,6 +62,7 @@
     <!-- Mobile Menu -->
     <div class="navbar__mobile-menu" id="mobileMenu" role="navigation" aria-label="Menú móvil">
       <a href="home.html" class="navbar__link active">Empleos</a>
+      <a href="workers.html" class="navbar__link">Trabajadores</a>
       <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
       <a href="profile.html" class="navbar__link">Perfil</a>
     </div>

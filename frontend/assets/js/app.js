@@ -10,6 +10,7 @@ const App = {
     this.setupNavbar();
     this.updateAuthUI();
     this._injectFAB();
+    this._interceptLinks();
   },
 
   // ── Navbar: scroll effect + hamburger ──
@@ -42,11 +43,15 @@ const App = {
       });
     }
 
-    // Close dropdown on outside click
+    // Close dropdowns on outside click
     document.addEventListener('click', (e) => {
       const dropdown = document.getElementById('userDropdown');
       if (dropdown && !dropdown.contains(e.target) && !e.target.closest('.navbar__avatar')) {
         dropdown.classList.remove('open');
+      }
+      const notifPreview = document.getElementById('notifPreview');
+      if (notifPreview && !notifPreview.contains(e.target) && !e.target.closest('.navbar__notification')) {
+        notifPreview.classList.remove('open');
       }
     });
   },
@@ -75,13 +80,16 @@ const App = {
         : initials;
 
       const avatarHtml = `
-        <button class="navbar__notification" aria-label="Notificaciones" onclick="App.goTo('notifications')">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
-            <path d="M10.3 21a1.94 1.94 0 003.4 0"/>
-          </svg>
-          <span class="navbar__notification-badge" id="notifBadge" style="display:none;"></span>
-        </button>
+        <div style="position:relative;">
+          <button class="navbar__notification" aria-label="Notificaciones" onclick="App.toggleNotifPreview(event)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
+              <path d="M10.3 21a1.94 1.94 0 003.4 0"/>
+            </svg>
+            <span class="navbar__notification-badge" id="notifBadge" style="display:none;"></span>
+          </button>
+          <div class="notif-preview" id="notifPreview"></div>
+        </div>
         <div style="position:relative;">
           <div class="navbar__avatar" onclick="App.toggleUserMenu(event)" tabindex="0">${avatarContent}</div>
           <div class="user-dropdown" id="userDropdown">
@@ -120,6 +128,17 @@ const App = {
         // Avatar exists but no dropdown — wrap it (inner pages)
         existingAvatar.innerHTML = avatarContent;
         existingAvatar.setAttribute('onclick', 'App.toggleUserMenu(event)');
+
+        // Ensure existing notification button uses preview and badge is correct
+        const existingNotifBtn = authButtons.querySelector('.navbar__notification');
+        if (existingNotifBtn) {
+          existingNotifBtn.setAttribute('onclick', 'App.toggleNotifPreview(event)');
+        }
+        const existingBadge = authButtons.querySelector('.navbar__notification-badge');
+        if (existingBadge && !existingBadge.id) {
+          existingBadge.id = 'notifBadge';
+          existingBadge.style.display = 'none';
+        }
 
         const wrapper = document.createElement('div');
         wrapper.style.position = 'relative';
@@ -181,8 +200,27 @@ const App = {
       profile:       prefix + 'profile.html',
       dashboard:     prefix + 'dashboard.html',
       applications:  prefix + 'my-applications.html',
+      workers:       prefix + 'workers.html',
     };
-    window.location.href = routes[page] || page;
+    this._navigateTo(routes[page] || page);
+  },
+
+  _navigateTo(url) {
+    document.body.style.transition = 'opacity 100ms ease';
+    document.body.style.opacity = '0';
+    setTimeout(() => { window.location.href = url; }, 100);
+  },
+
+  _interceptLinks() {
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href]');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      // Only intercept same-origin internal .html links, skip anchors and external
+      if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto')) return;
+      e.preventDefault();
+      this._navigateTo(href);
+    });
   },
 
   toggleUserMenu(e) {
@@ -191,6 +229,83 @@ const App = {
     if (dropdown) {
       dropdown.classList.toggle('open');
     }
+  },
+
+  toggleNotifPreview(e) {
+    if (e) e.stopPropagation();
+    const preview = document.getElementById('notifPreview');
+    if (!preview) return;
+    const isOpen = preview.classList.toggle('open');
+    if (isOpen && !preview._loaded) {
+      this._renderNotifPreview(preview);
+    }
+  },
+
+  async _renderNotifPreview(container) {
+    const ICON_MAP = {
+      application_received:       { icon: '📩', cls: 'notif-preview__icon--app' },
+      application_status_changed: { icon: '🔔', cls: 'notif-preview__icon--status' },
+      new_job_match:              { icon: '⭐', cls: 'notif-preview__icon--match' },
+      profile_viewed:             { icon: '👁',  cls: 'notif-preview__icon--status' },
+      system:                     { icon: '⚙️', cls: 'notif-preview__icon--system' },
+    };
+
+    container.innerHTML = `
+      <div class="notif-preview__header">
+        <span>Notificaciones</span>
+        <button class="notif-preview__mark-all" onclick="App._markAllFromPreview()">Marcar leídas</button>
+      </div>
+      <div class="notif-preview__list"><div class="notif-preview__empty">Cargando…</div></div>
+      <div class="notif-preview__footer">
+        <button class="notif-preview__see-all" onclick="App._navigateTo(App._pagePrefix()+'notifications.html')">Ver todas las notificaciones</button>
+      </div>`;
+
+    try {
+      const result = await NotificationsService.list({ page: 1, perPage: 5 });
+      const notifs = result.data || [];
+      const list = container.querySelector('.notif-preview__list');
+
+      if (notifs.length === 0) {
+        list.innerHTML = `<div class="notif-preview__empty">Sin notificaciones nuevas</div>`;
+      } else {
+        list.innerHTML = notifs.map(n => {
+          const { icon, cls } = ICON_MAP[n.type] || ICON_MAP.system;
+          const title = n.title ? n.title.replace(/</g,'&lt;') : '';
+          const msg   = n.message ? n.message.replace(/</g,'&lt;') : '';
+          return `
+            <div class="notif-preview__item ${n.read ? '' : 'notif-preview__item--unread'}"
+                 onclick="App._markFromPreview('${n.id}', this)">
+              <div class="notif-preview__icon ${cls}">${icon}</div>
+              <div class="notif-preview__body">
+                <p class="notif-preview__title">${title}</p>
+                <p class="notif-preview__msg">${msg}</p>
+              </div>
+              <span class="notif-preview__time">${typeof timeAgo === 'function' ? timeAgo(n.created_at) : ''}</span>
+            </div>`;
+        }).join('');
+      }
+      container._loaded = true;
+    } catch (e) {
+      container.querySelector('.notif-preview__list').innerHTML =
+        `<div class="notif-preview__empty">Error al cargar</div>`;
+    }
+  },
+
+  async _markFromPreview(id, el) {
+    el.classList.remove('notif-preview__item--unread');
+    try { await NotificationsService.markAsRead(id); } catch (e) { /* silent */ }
+    // Update badge
+    const list = document.querySelectorAll('.notif-preview__item--unread');
+    const badge = document.getElementById('notifBadge');
+    if (badge && list.length === 0) badge.style.display = 'none';
+  },
+
+  async _markAllFromPreview() {
+    document.querySelectorAll('.notif-preview__item--unread')
+      .forEach(el => el.classList.remove('notif-preview__item--unread'));
+    const badge = document.getElementById('notifBadge');
+    if (badge) badge.style.display = 'none';
+    try { await NotificationsService.markAllAsRead(); } catch (e) { /* silent */ }
   },
 
   // ── Dark Mode ──
@@ -254,16 +369,6 @@ const App = {
     );
   },
 };
-
-// Apply theme immediately (before DOMContentLoaded to prevent flash)
-(function() {
-  const saved = localStorage.getItem('lw_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  }
-})();
 
 // Auto-init cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => App.init());

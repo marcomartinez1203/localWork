@@ -7,6 +7,7 @@ import jobsRoutes from './jobs.routes';
 import applicationsRoutes from './applications.routes';
 import notificationsRoutes from './notifications.routes';
 import uploadRoutes from './upload.routes';
+import workersRoutes from './workers.routes';
 
 const router = Router();
 
@@ -15,6 +16,7 @@ router.use('/jobs',          jobsRoutes);
 router.use('/applications',  applicationsRoutes);
 router.use('/notifications', notificationsRoutes);
 router.use('/upload',        uploadRoutes);
+router.use('/workers',       workersRoutes);
 
 // Health check
 router.get('/health', (_req, res) => {

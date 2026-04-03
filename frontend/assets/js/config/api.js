@@ -8,7 +8,7 @@ const API_BASE_URL = 'http://localhost:3000/api';
  * Fetch wrapper con autenticación automática
  */
 async function apiFetch(endpoint, options = {}) {
-  const token = localStorage.getItem('lw_token');
+  const token = sessionStorage.getItem('lw_token');
 
   const config = {
     headers: {
@@ -33,8 +33,8 @@ async function apiFetch(endpoint, options = {}) {
 
   // Si el token expiró, redirigir al login
   if (response.status === 401) {
-    localStorage.removeItem('lw_token');
-    localStorage.removeItem('lw_user');
+    sessionStorage.removeItem('lw_token');
+    sessionStorage.removeItem('lw_user');
     const prefix = (typeof App !== 'undefined') ? App._pagePrefix() : '';
     window.location.href = prefix + 'login.html';
     return;

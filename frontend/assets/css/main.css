@@ -507,6 +507,16 @@ strong {
   min-height: 100vh;
 }
 
+/* ── Page transitions ── */
+body {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+body.page-loaded {
+  opacity: 1;
+}
+
 /* ── Animations ── */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }

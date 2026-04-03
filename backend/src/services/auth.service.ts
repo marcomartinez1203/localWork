@@ -116,7 +116,7 @@ export class AuthService {
 
   static async updateProfile(userId: string, updates: Partial<Profile>): Promise<Profile> {
     // Campos permitidos
-    const allowed: (keyof Profile)[] = ['full_name', 'phone', 'bio', 'location'];
+    const allowed: (keyof Profile)[] = ['full_name', 'phone', 'bio', 'location', 'education', 'experience', 'skills', 'work_type', 'availability', 'hourly_rate'];
     const cleanUpdates: Record<string, unknown> = {};
     for (const key of allowed) {
       if (key in updates) {

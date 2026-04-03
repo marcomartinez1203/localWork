@@ -38,7 +38,7 @@ app.use('/api/', limiter);
 // Rate limit más estricto para auth
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 50,
   message: { message: 'Demasiados intentos, espera 15 minutos' },
 });
 app.use('/api/auth/login', authLimiter);

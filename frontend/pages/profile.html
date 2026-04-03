@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Tu perfil en LocalWork — Plataforma de empleo local en Aguachica">
   <title>Mi Perfil — LocalWork</title>
+  <script src="../assets/js/theme-init.js"></script>
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/components.css">
   <link rel="stylesheet" href="../assets/css/pages/auth.css">
@@ -22,6 +23,17 @@
     .profile-form__row { display: grid; grid-template-columns: 1fr; gap: var(--space-5); }
     @media (min-width: 768px) { .profile-form__row { grid-template-columns: 1fr 1fr; } }
     .profile-badge { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3); background: var(--color-primary-50); color: var(--color-primary); border-radius: var(--radius-full); font-size: var(--fs-xs); font-weight: var(--fw-semibold); text-transform: capitalize; }
+    .skill-tag { display: inline-flex; align-items: center; gap: var(--space-1); padding: var(--space-1) var(--space-3); background: var(--color-primary-50); color: var(--color-primary-dark); border-radius: var(--radius-full); font-size: var(--fs-xs); font-weight: var(--fw-medium); }
+    .skill-tag__remove { background: none; border: none; cursor: pointer; color: var(--color-primary); line-height: 1; padding: 0; font-size: var(--fs-sm); }
+    .skill-tag__remove:hover { color: var(--color-danger); }
+    .skills-input-row { display: flex; gap: var(--space-2); }
+    .skills-list { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); min-height: 32px; }
+    .work-type-options { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    .work-type-option { flex: 1; min-width: 120px; }
+    .work-type-option input[type=radio] { display: none; }
+    .work-type-option label { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); border: 2px solid var(--color-border); border-radius: var(--radius-lg); cursor: pointer; font-size: var(--fs-sm); text-align: center; transition: all var(--transition-fast); }
+    .work-type-option label:hover { border-color: var(--color-primary-200); background: var(--color-primary-50); }
+    .work-type-option input:checked + label { border-color: var(--color-primary); background: var(--color-primary-50); color: var(--color-primary-dark); font-weight: var(--fw-semibold); }
   </style>
 </head>
 <body>
@@ -33,19 +45,25 @@
       <a href="../index.html" class="navbar__brand"><span class="navbar__brand-icon">LW</span> LocalWork</a>
       <div class="navbar__links">
         <a href="home.html" class="navbar__link">Empleos</a>
+        <a href="workers.html" class="navbar__link">Trabajadores</a>
         <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
         <a href="profile.html" class="navbar__link active">Perfil</a>
       </div>
       <div class="navbar__actions">
-        <button class="navbar__notification" onclick="App.goTo('notifications')">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
-        </button>
+        <div style="position:relative;">
+          <button class="navbar__notification" aria-label="Notificaciones" onclick="App.toggleNotifPreview(event)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
+            <span class="navbar__notification-badge" id="notifBadge" style="display:none;"></span>
+          </button>
+          <div class="notif-preview" id="notifPreview"></div>
+        </div>
         <div class="navbar__avatar" id="userAvatar" onclick="App.toggleUserMenu()" tabindex="0">??</div>
         <button class="navbar__hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
       </div>
     </div>
     <div class="navbar__mobile-menu" id="mobileMenu">
       <a href="home.html" class="navbar__link">Empleos</a>
+      <a href="workers.html" class="navbar__link">Trabajadores</a>
       <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
       <a href="profile.html" class="navbar__link active">Perfil</a>
     </div>
@@ -53,6 +71,12 @@
 
   <main id="main-content" class="page-wrapper">
     <div class="container profile-page" style="max-width:800px;">
+
+      <!-- Banner bienvenida freelance -->
+      <div id="welcomeBanner" style="display:none;background:linear-gradient(135deg,var(--color-primary-50),var(--color-accent-50));border:1px solid var(--color-primary-200);border-radius:var(--radius-xl);padding:var(--space-5) var(--space-6);margin-bottom:var(--space-6);display:none;">
+        <p style="font-size:var(--fs-base);font-weight:var(--fw-semibold);margin:0 0 var(--space-1);">🎉 ¡Bienvenido a LocalWork!</p>
+        <p style="font-size:var(--fs-sm);color:var(--color-text-secondary);margin:0;">Completa tu perfil para que las personas puedan encontrarte. Agrega tus habilidades, disponibilidad y una foto.</p>
+      </div>
 
       <!-- Header -->
       <div class="profile-header" id="profileHeader">
@@ -102,6 +126,95 @@
         </form>
       </div>
 
+      <!-- Tipo de trabajo y habilidades -->
+      <div class="profile-card">
+        <div class="profile-card__title">🛠️ Habilidades y disponibilidad</div>
+
+        <div class="form-group" style="margin-bottom:var(--space-6);">
+          <label class="form-label" style="margin-bottom:var(--space-3);">¿Cómo quieres trabajar?</label>
+          <div class="work-type-options">
+            <div class="work-type-option">
+              <input type="radio" name="work_type" id="wt_employee" value="employee">
+              <label for="wt_employee">🏢<span>Busco empleo<br><small style="font-weight:400;color:var(--color-text-muted);">en una empresa</small></span></label>
+            </div>
+            <div class="work-type-option">
+              <input type="radio" name="work_type" id="wt_freelance" value="freelance">
+              <label for="wt_freelance">🔧<span>Ofrezco servicios<br><small style="font-weight:400;color:var(--color-text-muted);">de forma independiente</small></span></label>
+            </div>
+            <div class="work-type-option">
+              <input type="radio" name="work_type" id="wt_both" value="both">
+              <label for="wt_both">💼<span>Ambas opciones<br><small style="font-weight:400;color:var(--color-text-muted);">empleo y servicios</small></span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-form__row" style="margin-bottom:var(--space-5);">
+          <div class="form-group">
+            <label class="form-label">Disponibilidad</label>
+            <select class="form-input" id="availability">
+              <option value="">Seleccionar...</option>
+              <option value="Tiempo completo">Tiempo completo</option>
+              <option value="Medio tiempo">Medio tiempo</option>
+              <option value="Fines de semana">Fines de semana</option>
+              <option value="Por horas">Por horas</option>
+              <option value="Por proyectos">Por proyectos</option>
+            </select>
+          </div>
+          <div class="form-group" id="hourlyRateGroup">
+            <label class="form-label">Tarifa aproximada <small style="color:var(--color-text-muted);">(opcional)</small></label>
+            <input class="form-input" id="hourlyRate" placeholder="Ej: $50.000/hora, $300.000/día">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Habilidades y oficios</label>
+          <p style="font-size:var(--fs-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);">
+            Agrega lo que sabes hacer: albañilería, plomería, electricidad, cocina, etc.
+          </p>
+          <div class="skills-input-row">
+            <input class="form-input" id="skillInput" placeholder="Ej: Albañilería, Plomería..." style="flex:1;">
+            <button type="button" class="btn btn--primary btn--sm" onclick="addSkill()">Agregar</button>
+          </div>
+          <div class="skills-list" id="skillsList"></div>
+          <div style="margin-top:var(--space-3);">
+            <p style="font-size:var(--fs-xs);color:var(--color-text-muted);margin-bottom:var(--space-2);">Sugerencias:</p>
+            <div style="display:flex;flex-wrap:wrap;gap:var(--space-2);">
+              ${['Albañilería','Plomería','Electricidad','Carpintería','Pintura','Soldadura','Cocina','Jardinería','Mecánica','Vigilancia','Costura','Peluquería','Limpieza','Transporte','Contabilidad'].map(s =>
+                `<button type="button" onclick="addSkillByName('${s}')" style="background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-full);padding:2px 10px;font-size:var(--fs-xs);cursor:pointer;transition:all var(--transition-fast);" onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--color-border)'">${s}</button>`
+              ).join('')}
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn--primary btn--lg" onclick="saveSkillsSection()" style="margin-top:var(--space-4);">
+          Guardar habilidades
+        </button>
+      </div>
+
+      <!-- Educación -->
+      <div class="profile-card" id="educationCard">
+        <div class="profile-card__title">
+          🎓 Educación
+          <button class="btn btn--ghost btn--sm" onclick="addEducation()">+ Agregar</button>
+        </div>
+        <div id="educationList" style="display:flex;flex-direction:column;gap:var(--space-4);"></div>
+        <p id="educationEmpty" style="font-size:var(--fs-sm);color:var(--color-text-muted);">
+          Aún no has agregado estudios. Haz clic en "+ Agregar" para comenzar.
+        </p>
+      </div>
+
+      <!-- Experiencia laboral -->
+      <div class="profile-card" id="experienceCard">
+        <div class="profile-card__title">
+          💼 Experiencia laboral
+          <button class="btn btn--ghost btn--sm" onclick="addExperience()">+ Agregar</button>
+        </div>
+        <div id="experienceList" style="display:flex;flex-direction:column;gap:var(--space-4);"></div>
+        <p id="experienceEmpty" style="font-size:var(--fs-sm);color:var(--color-text-muted);">
+          Aún no has agregado experiencia laboral. Haz clic en "+ Agregar" para comenzar.
+        </p>
+      </div>
+
       <!-- Danger Zone -->
       <div class="profile-card" style="border-color:var(--color-danger);">
         <div class="profile-card__title" style="color:var(--color-danger);">Zona de peligro</div>
@@ -128,6 +241,11 @@
   <script src="../assets/js/app.js"></script>
   <script>
     if (!AuthService.requireAuth()) { /* redirects */ }
+
+    // Mostrar banner si viene del registro como freelancer
+    if (new URLSearchParams(window.location.search).get('welcome') === 'freelance') {
+      document.getElementById('welcomeBanner').style.display = 'block';
+    }
 
     (async function init() {
       const user = AuthService.getUser();
@@ -233,6 +351,217 @@
 
     // Attach initial listener
     document.getElementById('avatarInput').addEventListener('change', handleAvatarUpload);
+
+    // ── Habilidades y tipo de trabajo ──
+    let skills = [];
+
+    function renderSkills() {
+      const list = document.getElementById('skillsList');
+      list.innerHTML = skills.map((s, i) => `
+        <span class="skill-tag">
+          ${escapeHtml(s)}
+          <button class="skill-tag__remove" onclick="removeSkill(${i})" title="Eliminar">×</button>
+        </span>`).join('');
+    }
+
+    function addSkill() {
+      const input = document.getElementById('skillInput');
+      const val = input.value.trim();
+      if (val && !skills.includes(val)) {
+        skills.push(val);
+        renderSkills();
+      }
+      input.value = '';
+      input.focus();
+    }
+
+    function addSkillByName(name) {
+      if (!skills.includes(name)) {
+        skills.push(name);
+        renderSkills();
+      }
+    }
+
+    function removeSkill(i) {
+      skills.splice(i, 1);
+      renderSkills();
+    }
+
+    document.getElementById('skillInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addSkill(); }
+    });
+
+    async function saveSkillsSection() {
+      const workType = document.querySelector('input[name="work_type"]:checked')?.value || 'employee';
+      const availability = document.getElementById('availability').value;
+      const hourlyRate = document.getElementById('hourlyRate').value.trim();
+      const btn = event.target;
+      btn.classList.add('btn--loading');
+      btn.disabled = true;
+      try {
+        await AuthService.updateProfile({ skills, work_type: workType, availability, hourly_rate: hourlyRate });
+        showToast('Habilidades guardadas', 'success');
+      } catch (err) {
+        showToast(err.message || 'Error al guardar', 'error');
+      } finally {
+        btn.classList.remove('btn--loading');
+        btn.disabled = false;
+      }
+    }
+
+    (function loadSkillsSection() {
+      const user = AuthService.getUser();
+      if (!user) return;
+      skills = Array.isArray(user.skills) ? [...user.skills] : [];
+      renderSkills();
+      if (user.work_type) {
+        const radio = document.querySelector(`input[name="work_type"][value="${user.work_type}"]`);
+        if (radio) radio.checked = true;
+      } else {
+        document.getElementById('wt_employee').checked = true;
+      }
+      if (user.availability) document.getElementById('availability').value = user.availability;
+      if (user.hourly_rate) document.getElementById('hourlyRate').value = user.hourly_rate;
+    })();
+
+    // ── Educación y Experiencia ──
+    let education = [];
+    let experience = [];
+
+    function renderEducation() {
+      const list = document.getElementById('educationList');
+      const empty = document.getElementById('educationEmpty');
+      empty.style.display = education.length ? 'none' : '';
+      list.innerHTML = education.map((e, i) => `
+        <div style="border:1px solid var(--color-border-light);border-radius:var(--radius-lg);padding:var(--space-5);background:var(--color-bg);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-4);">
+            <strong style="font-size:var(--fs-sm);">Estudio ${i + 1}</strong>
+            <button onclick="removeEducation(${i})" style="background:none;border:none;color:var(--color-danger);cursor:pointer;font-size:var(--fs-sm);">Eliminar</button>
+          </div>
+          <div class="profile-form__row" style="margin-bottom:var(--space-3);">
+            <div class="form-group">
+              <label class="form-label">Institución</label>
+              <input class="form-input" placeholder="Universidad / Colegio..." value="${escapeAttr(e.institution)}"
+                onchange="education[${i}].institution=this.value">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Título / Nivel</label>
+              <input class="form-input" placeholder="Ej: Bachiller, Técnico, Profesional..." value="${escapeAttr(e.degree)}"
+                onchange="education[${i}].degree=this.value">
+            </div>
+          </div>
+          <div class="profile-form__row">
+            <div class="form-group">
+              <label class="form-label">Año inicio</label>
+              <input class="form-input" type="number" min="1950" max="2099" placeholder="2018" value="${escapeAttr(e.year_start)}"
+                onchange="education[${i}].year_start=this.value">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Año fin</label>
+              <input class="form-input" type="number" min="1950" max="2099" placeholder="2022" value="${escapeAttr(e.year_end)}"
+                onchange="education[${i}].year_end=this.value">
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderExperience() {
+      const list = document.getElementById('experienceList');
+      const empty = document.getElementById('experienceEmpty');
+      empty.style.display = experience.length ? 'none' : '';
+      list.innerHTML = experience.map((e, i) => `
+        <div style="border:1px solid var(--color-border-light);border-radius:var(--radius-lg);padding:var(--space-5);background:var(--color-bg);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-4);">
+            <strong style="font-size:var(--fs-sm);">Experiencia ${i + 1}</strong>
+            <button onclick="removeExperience(${i})" style="background:none;border:none;color:var(--color-danger);cursor:pointer;font-size:var(--fs-sm);">Eliminar</button>
+          </div>
+          <div class="profile-form__row" style="margin-bottom:var(--space-3);">
+            <div class="form-group">
+              <label class="form-label">Empresa</label>
+              <input class="form-input" placeholder="Nombre de la empresa..." value="${escapeAttr(e.company)}"
+                onchange="experience[${i}].company=this.value">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cargo</label>
+              <input class="form-input" placeholder="Ej: Vendedor, Operario..." value="${escapeAttr(e.position)}"
+                onchange="experience[${i}].position=this.value">
+            </div>
+          </div>
+          <div class="profile-form__row" style="margin-bottom:var(--space-3);">
+            <div class="form-group">
+              <label class="form-label">Año inicio</label>
+              <input class="form-input" type="number" min="1950" max="2099" placeholder="2020" value="${escapeAttr(e.year_start)}"
+                onchange="experience[${i}].year_start=this.value">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Año fin</label>
+              <input class="form-input" type="number" min="1950" max="2099" placeholder="2023"
+                value="${escapeAttr(e.year_end)}" ${e.current ? 'disabled' : ''}
+                onchange="experience[${i}].year_end=this.value">
+            </div>
+          </div>
+          <label style="display:flex;align-items:center;gap:var(--space-2);font-size:var(--fs-sm);margin-bottom:var(--space-3);">
+            <input type="checkbox" ${e.current ? 'checked' : ''}
+              onchange="experience[${i}].current=this.checked;renderExperience()">
+            Trabajo aquí actualmente
+          </label>
+          <div class="form-group">
+            <label class="form-label">Descripción (opcional)</label>
+            <textarea class="form-textarea" rows="2" placeholder="Breve descripción de tus funciones..."
+              onchange="experience[${i}].description=this.value">${escapeAttr(e.description || '')}</textarea>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function escapeAttr(str) {
+      return (str || '').toString().replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
+
+    function addEducation() {
+      education.push({ institution: '', degree: '', year_start: '', year_end: '' });
+      renderEducation();
+    }
+
+    function removeEducation(i) {
+      education.splice(i, 1);
+      renderEducation();
+    }
+
+    function addExperience() {
+      experience.push({ company: '', position: '', year_start: '', year_end: '', current: false, description: '' });
+      renderExperience();
+    }
+
+    function removeExperience(i) {
+      experience.splice(i, 1);
+      renderExperience();
+    }
+
+    // Guardar educación y experiencia junto con el perfil
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      // El listener existente ya guarda, aquí solo extendemos los datos
+    }, true); // capture phase para ejecutarse primero no, mejor override
+
+    // Override: reemplazar el submit handler para incluir education y experience
+    const originalForm = document.getElementById('profileForm');
+    const origHandler = originalForm.onsubmit;
+    originalForm.addEventListener('submit', async () => {
+      try {
+        await AuthService.updateProfile({ education, experience });
+      } catch (e) { /* silent — el handler principal ya muestra el error */ }
+    });
+
+    // Cargar datos guardados al inicializar
+    (function loadExtendedProfile() {
+      const user = AuthService.getUser();
+      if (!user) return;
+      education = Array.isArray(user.education) ? user.education : [];
+      experience = Array.isArray(user.experience) ? user.experience : [];
+      renderEducation();
+      renderExperience();
+    })();
   </script>
 </body>
 </html>

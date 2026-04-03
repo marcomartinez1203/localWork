@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Directorio de trabajadores y personas que ofrecen servicios en Aguachica, Cesar — LocalWork">
+  <title>Trabajadores — LocalWork</title>
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/components.css">
+  <style>
+    .workers-page { padding-top: var(--space-8); padding-bottom: var(--space-16); }
+    .workers-header { margin-bottom: var(--space-8); }
+    .workers-header h1 { font-size: var(--fs-2xl); margin-bottom: var(--space-2); }
+    .workers-header p { color: var(--color-text-secondary); margin: 0; }
+
+    .workers-filters { display: flex; gap: var(--space-3); margin-bottom: var(--space-6); flex-wrap: wrap; }
+    .workers-filters input, .workers-filters select { flex: 1; min-width: 160px; }
+
+    .workers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
+
+    .worker-card { background: var(--color-surface); border: 1px solid var(--color-border-light); border-radius: var(--radius-xl); padding: var(--space-6); display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-3); transition: box-shadow var(--transition), transform var(--transition-spring); cursor: pointer; }
+    .worker-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); border-color: var(--color-primary-200); }
+
+    .worker-avatar { width: 72px; height: 72px; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--color-primary-100), var(--color-primary-50)); display: flex; align-items: center; justify-content: center; font-size: var(--fs-xl); font-weight: var(--fw-bold); color: var(--color-primary); overflow: hidden; flex-shrink: 0; }
+    .worker-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .worker-name { font-size: var(--fs-base); font-weight: var(--fw-semibold); margin: 0; }
+    .worker-location { font-size: var(--fs-xs); color: var(--color-text-muted); margin: 0; }
+    .worker-bio { font-size: var(--fs-xs); color: var(--color-text-secondary); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    .worker-skills { display: flex; flex-wrap: wrap; gap: var(--space-1); justify-content: center; }
+    .worker-skill { padding: 2px 8px; background: var(--color-primary-50); color: var(--color-primary-dark); border-radius: var(--radius-full); font-size: 11px; font-weight: var(--fw-medium); }
+
+    .worker-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: var(--radius-full); font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
+    .worker-badge--freelance { background: #F3E8FF; color: #7C3AED; }
+    .worker-badge--both { background: var(--color-accent-50); color: var(--color-accent-dark); }
+
+    .worker-rate { font-size: var(--fs-xs); color: var(--color-text-muted); }
+  </style>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link">Ir al contenido principal</a>
+
+  <nav class="navbar" id="navbar">
+    <div class="navbar__inner">
+      <a href="../index.html" class="navbar__brand"><span class="navbar__brand-icon">LW</span> LocalWork</a>
+      <div class="navbar__links" id="navLinks">
+        <a href="home.html" class="navbar__link">Empleos</a>
+        <a href="workers.html" class="navbar__link active">Trabajadores</a>
+        <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
+        <a href="profile.html" class="navbar__link">Perfil</a>
+      </div>
+      <div class="navbar__actions">
+        <div style="position:relative;">
+          <button class="navbar__notification" aria-label="Notificaciones" onclick="App.toggleNotifPreview(event)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
+            <span class="navbar__notification-badge" id="notifBadge" style="display:none;"></span>
+          </button>
+          <div class="notif-preview" id="notifPreview"></div>
+        </div>
+        <div class="navbar__avatar" id="userAvatar" onclick="App.toggleUserMenu()" tabindex="0">??</div>
+        <button class="navbar__hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <div class="navbar__mobile-menu" id="mobileMenu">
+      <a href="home.html" class="navbar__link">Empleos</a>
+      <a href="workers.html" class="navbar__link active">Trabajadores</a>
+      <a href="my-applications.html" class="navbar__link">Mis Postulaciones</a>
+      <a href="profile.html" class="navbar__link">Perfil</a>
+    </div>
+  </nav>
+
+  <main id="main-content" class="page-wrapper">
+    <div class="container workers-page">
+
+      <div class="workers-header">
+        <h1>Directorio de trabajadores</h1>
+        <p>Encuentra personas con las habilidades que necesitas — desde albañiles y electricistas hasta profesionales independientes.</p>
+      </div>
+
+      <div class="workers-filters">
+        <input class="form-input" id="searchInput" placeholder="Buscar por nombre..." oninput="debouncedSearch()">
+        <input class="form-input" id="skillInput" placeholder="Habilidad (ej: Plomería)" oninput="debouncedSearch()">
+        <select class="form-input" id="typeFilter" onchange="loadWorkers()">
+          <option value="">Todos</option>
+          <option value="freelance">Solo servicios independientes</option>
+          <option value="both">Empleo y servicios</option>
+        </select>
+      </div>
+
+      <div class="workers-grid" id="workersGrid">
+        <div class="skeleton" style="height:280px;border-radius:var(--radius-xl);"></div>
+        <div class="skeleton" style="height:280px;border-radius:var(--radius-xl);"></div>
+        <div class="skeleton" style="height:280px;border-radius:var(--radius-xl);"></div>
+        <div class="skeleton" style="height:280px;border-radius:var(--radius-xl);"></div>
+      </div>
+
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+        </svg>
+        <h3 class="empty-state__title">No se encontraron trabajadores</h3>
+        <p class="empty-state__desc">Intenta con otra habilidad o ajusta los filtros.</p>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__bottom" style="border-top:none;padding-top:0;">
+        <p class="footer__copy">&copy; 2026 LocalWork. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/js/config/api.js"></script>
+  <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/services/notifications.service.js"></script>
+  <script src="../assets/js/services/workers.service.js"></script>
+  <script src="../assets/js/utils/helpers.js"></script>
+  <script src="../assets/js/app.js"></script>
+  <script>
+    if (!AuthService.requireAuth()) { /* redirects */ }
+
+    const WORK_TYPE_LABEL = {
+      freelance: { label: 'Servicios independientes', cls: 'worker-badge--freelance' },
+      both:      { label: 'Empleo y servicios',       cls: 'worker-badge--both' },
+    };
+
+    let currentPage = 1;
+
+    async function loadWorkers() {
+      const grid    = document.getElementById('workersGrid');
+      const empty   = document.getElementById('emptyState');
+      const search  = document.getElementById('searchInput').value.trim();
+      const skill   = document.getElementById('skillInput').value.trim();
+      const type    = document.getElementById('typeFilter').value;
+
+      grid.innerHTML = Array(4).fill('<div class="skeleton" style="height:280px;border-radius:var(--radius-xl);"></div>').join('');
+      empty.style.display = 'none';
+
+      try {
+        const result = await WorkersService.list({
+          page: currentPage, perPage: 12,
+          search: search || undefined,
+          skill: skill || undefined,
+          workType: type || undefined,
+        });
+
+        const workers = result.data || [];
+
+        if (!workers.length) {
+          grid.innerHTML = '';
+          empty.style.display = 'flex';
+          return;
+        }
+
+        grid.innerHTML = workers.map(w => {
+          const initials = w.full_name
+            ? w.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+            : '??';
+          const avatarHtml = w.avatar_url
+            ? `<img src="${w.avatar_url}" alt="${escapeHtml(w.full_name)}">`
+            : initials;
+          const badgeInfo = WORK_TYPE_LABEL[w.work_type];
+          const skills = (w.skills || []).slice(0, 4);
+
+          return `
+            <div class="worker-card" onclick="App.goTo('workers/${w.id}')">
+              <div class="worker-avatar">${avatarHtml}</div>
+              <div>
+                <p class="worker-name">${escapeHtml(w.full_name || 'Sin nombre')}</p>
+                ${w.location ? `<p class="worker-location">📍 ${escapeHtml(w.location)}</p>` : ''}
+              </div>
+              ${badgeInfo ? `<span class="worker-badge ${badgeInfo.cls}">🔧 ${badgeInfo.label}</span>` : ''}
+              ${w.bio ? `<p class="worker-bio">${escapeHtml(w.bio)}</p>` : ''}
+              ${skills.length ? `
+                <div class="worker-skills">
+                  ${skills.map(s => `<span class="worker-skill">${escapeHtml(s)}</span>`).join('')}
+                  ${w.skills.length > 4 ? `<span class="worker-skill">+${w.skills.length - 4}</span>` : ''}
+                </div>` : ''}
+              ${w.availability ? `<span class="worker-rate">⏰ ${escapeHtml(w.availability)}</span>` : ''}
+              ${w.hourly_rate ? `<span class="worker-rate">💰 ${escapeHtml(w.hourly_rate)}</span>` : ''}
+            </div>`;
+        }).join('');
+
+        renderPagination(result.meta);
+      } catch (err) {
+        grid.innerHTML = `<p style="color:var(--color-text-muted);grid-column:1/-1;text-align:center;padding:var(--space-8);">${err.message || 'Error al cargar trabajadores'}</p>`;
+      }
+    }
+
+    function renderPagination(meta) {
+      const el = document.getElementById('pagination');
+      if (!meta || meta.total_pages <= 1) { el.innerHTML = ''; return; }
+      let html = '';
+      if (meta.page > 1) html += `<button class="btn btn--ghost btn--sm" onclick="changePage(${meta.page - 1})">← Anterior</button>`;
+      html += `<span style="font-size:var(--fs-sm);color:var(--color-text-muted);">Página ${meta.page} de ${meta.total_pages}</span>`;
+      if (meta.page < meta.total_pages) html += `<button class="btn btn--ghost btn--sm" onclick="changePage(${meta.page + 1})">Siguiente →</button>`;
+      el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:var(--space-4);margin-top:var(--space-8);">${html}</div>`;
+    }
+
+    function changePage(p) { currentPage = p; loadWorkers(); window.scrollTo(0, 0); }
+
+    const debouncedSearch = debounce(() => { currentPage = 1; loadWorkers(); }, 400);
+
+    loadWorkers();
+  </script>
+</body>
+</html>

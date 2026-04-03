@@ -6,6 +6,7 @@
   <meta name="description" content="Crea tu cuenta en LocalWork — Regístrate como buscador de empleo o como empleador en Aguachica, Cesar.">
   <title>Registrarse — LocalWork</title>
 
+  <script src="../assets/js/theme-init.js"></script>
   <!-- CSS -->
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/components.css">
@@ -17,10 +18,10 @@
     <!-- Left panel (desktop only) -->
     <div class="auth-page__side">
       <div class="auth-page__side-content">
-        <h2 class="auth-page__side-title">Empieza a conectar<br>con oportunidades</h2>
+        <h2 class="auth-page__side-title">Tu trabajo tiene<br>valor aquí</h2>
         <p class="auth-page__side-desc">
-          Crea tu cuenta en menos de 2 minutos, es totalmente gratis. 
-          Ya seas buscador o empleador, hay un espacio para ti.
+          Seas electricista, albañil, cocinero o profesional — hay un espacio para ti.
+          Crea tu perfil gratis y empieza a conectar en Aguachica.
         </p>
       </div>
     </div>
@@ -51,18 +52,25 @@
               <label class="form-label form-label--required">¿Qué tipo de cuenta deseas?</label>
               <div class="role-selector" id="roleSelector">
 
-                <div class="role-option" data-role="seeker" id="roleSeekerOption" tabindex="0" 
-                     role="radio" aria-checked="false" aria-label="Busco empleo">
+                <div class="role-option" data-role="seeker" data-work-type="employee" id="roleSeekerOption" tabindex="0"
+                     role="radio" aria-checked="false" aria-label="Busco empleo en empresa">
                   <div class="role-option__icon">🔍</div>
-                  <span class="role-option__title">Busco Empleo</span>
-                  <p class="role-option__desc">Encuentra ofertas y postúlate</p>
+                  <span class="role-option__title">Busco Empleo o Servicios</span>
+                  <p class="role-option__desc">Encuentra trabajo o contrata a alguien</p>
                 </div>
 
-                <div class="role-option" data-role="employer" id="roleEmployerOption" tabindex="0"
+                <div class="role-option" data-role="seeker" data-work-type="freelance" id="roleFreelanceOption" tabindex="0"
+                     role="radio" aria-checked="false" aria-label="Ofrezco servicios independientes">
+                  <div class="role-option__icon">🔧</div>
+                  <span class="role-option__title">Ofrezco Servicios</span>
+                  <p class="role-option__desc">Albañilería, plomería, electricidad y más</p>
+                </div>
+
+                <div class="role-option" data-role="employer" data-work-type="employee" id="roleEmployerOption" tabindex="0"
                      role="radio" aria-checked="false" aria-label="Ofrezco empleo">
                   <div class="role-option__icon">💼</div>
-                  <span class="role-option__title">Ofrezco Empleo</span>
-                  <p class="role-option__desc">Publica ofertas y contrata</p>
+                  <span class="role-option__title">Soy Empleador</span>
+                  <p class="role-option__desc">Publica ofertas y contrata personal</p>
                 </div>
               </div>
               <span class="form-error" id="roleError" role="alert" style="display: none;">
@@ -224,25 +232,27 @@
     AuthService.redirectIfAuthenticated();
 
     let selectedRole = null;
+    let selectedWorkType = null;
 
     const roleOptions = document.querySelectorAll('.role-option');
     const roleError = document.getElementById('roleError');
     const employerFields = document.getElementById('employerFields');
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('role') === 'employer') selectRole('employer');
+    if (urlParams.get('role') === 'employer') selectOption('employer', 'employee');
 
     roleOptions.forEach(option => {
-      option.addEventListener('click', () => selectRole(option.dataset.role));
+      option.addEventListener('click', () => selectOption(option.dataset.role, option.dataset.workType));
       option.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectRole(option.dataset.role); }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOption(option.dataset.role, option.dataset.workType); }
       });
     });
 
-    function selectRole(role) {
+    function selectOption(role, workType) {
       selectedRole = role;
+      selectedWorkType = workType;
       roleError.style.display = 'none';
       roleOptions.forEach(opt => {
-        const isActive = opt.dataset.role === role;
+        const isActive = opt.dataset.role === role && opt.dataset.workType === workType;
         opt.classList.toggle('active', isActive);
         opt.setAttribute('aria-checked', isActive);
       });
@@ -273,6 +283,7 @@
       step1Indicator.classList.add('completed'); step1Indicator.classList.remove('active');
       step2Indicator.classList.add('active');
       employerFields.style.display = selectedRole === 'employer' ? 'block' : 'none';
+      if (!valid) { roleError.style.display = 'flex'; }
     });
 
     document.getElementById('prevStepBtn').addEventListener('click', () => {
@@ -320,7 +331,13 @@
             companyName: selectedRole === 'employer' ? document.getElementById('companyName').value.trim() : undefined,
             companyNit: selectedRole === 'employer' ? document.getElementById('companyNit').value.trim() : undefined,
           });
-          window.location.href = 'home.html';
+          // Si es freelancer, guardar work_type y redirigir al perfil para completarlo
+          if (selectedWorkType === 'freelance') {
+            try { await AuthService.updateProfile({ work_type: 'freelance' }); } catch (e) { /* silent */ }
+            window.location.href = 'profile.html?welcome=freelance';
+          } else {
+            window.location.href = 'home.html';
+          }
         } catch (err) {
           btn.classList.remove('btn--loading'); btn.disabled = false;
           showToast(err.message || 'Error al crear la cuenta', 'error');

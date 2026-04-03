@@ -16,8 +16,8 @@ const AuthService = {
     });
 
     if (data.token) {
-      localStorage.setItem('lw_token', data.token);
-      localStorage.setItem('lw_user', JSON.stringify(data.user));
+      sessionStorage.setItem('lw_token', data.token);
+      sessionStorage.setItem('lw_user', JSON.stringify(data.user));
     }
 
     return data;
@@ -27,17 +27,18 @@ const AuthService = {
     const data = await api.post('/auth/login', { email, password });
 
     if (data.token) {
-      localStorage.setItem('lw_token', data.token);
-      localStorage.setItem('lw_user', JSON.stringify(data.user));
+      sessionStorage.setItem('lw_token', data.token);
+      sessionStorage.setItem('lw_user', JSON.stringify(data.user));
     }
 
     return data;
   },
 
   async logout() {
-    await api.post('/auth/logout');
-    localStorage.removeItem('lw_token');
-    localStorage.removeItem('lw_user');
+    // Limpiar sesión primero — siempre, independiente de si el API responde
+    sessionStorage.removeItem('lw_token');
+    sessionStorage.removeItem('lw_user');
+    try { await api.post('/auth/logout'); } catch (e) { /* silent */ }
     const prefix = (typeof App !== 'undefined') ? App._pagePrefix() : '';
     window.location.href = prefix + 'login.html';
   },
@@ -49,7 +50,7 @@ const AuthService = {
   async updateProfile(updates) {
     const data = await api.put('/auth/profile', updates);
     if (data.user) {
-      localStorage.setItem('lw_user', JSON.stringify(data.user));
+      sessionStorage.setItem('lw_user', JSON.stringify(data.user));
     }
     return data;
   },
@@ -61,12 +62,12 @@ const AuthService = {
   // ── Helpers locales ──
 
   getUser() {
-    const stored = localStorage.getItem('lw_user');
+    const stored = sessionStorage.getItem('lw_user');
     return stored ? JSON.parse(stored) : null;
   },
 
   getToken() {
-    return localStorage.getItem('lw_token');
+    return sessionStorage.getItem('lw_token');
   },
 
   isAuthenticated() {

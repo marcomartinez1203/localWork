@@ -49,6 +49,8 @@ CREATE TABLE profiles (
   bio          TEXT,
   location     TEXT,         -- zona: Centro, Norte, Sur, etc.
   resume_url   TEXT,         -- URL del CV en Supabase Storage
+  education    JSONB         DEFAULT '[]'::jsonb,  -- historial educativo
+  experience   JSONB         DEFAULT '[]'::jsonb,  -- experiencia laboral
   created_at   TIMESTAMPTZ   NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ   NOT NULL DEFAULT now()
 );

@@ -32,8 +32,30 @@ export interface Profile {
   bio: string | null;
   location: string | null;
   resume_url: string | null;
+  education: EducationEntry[] | null;
+  experience: ExperienceEntry[] | null;
+  skills: string[] | null;
+  work_type: 'employee' | 'freelance' | 'both' | null;
+  availability: string | null;
+  hourly_rate: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface EducationEntry {
+  institution: string;
+  degree: string;
+  year_start: string;
+  year_end: string;
+}
+
+export interface ExperienceEntry {
+  company: string;
+  position: string;
+  year_start: string;
+  year_end: string;
+  current: boolean;
+  description?: string;
 }
 
 export interface Company {
