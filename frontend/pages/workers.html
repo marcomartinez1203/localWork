@@ -9,34 +9,13 @@
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/components.css">
   <style>
-    .workers-page { padding-top: var(--space-8); padding-bottom: var(--space-16); }
-    .workers-header { margin-bottom: var(--space-8); }
+    .workers-page    { padding-top: var(--space-8); padding-bottom: var(--space-16); }
+    .workers-header  { margin-bottom: var(--space-8); }
     .workers-header h1 { font-size: var(--fs-2xl); margin-bottom: var(--space-2); }
-    .workers-header p { color: var(--color-text-secondary); margin: 0; }
-
+    .workers-header p  { color: var(--color-text-secondary); margin: 0; }
     .workers-filters { display: flex; gap: var(--space-3); margin-bottom: var(--space-6); flex-wrap: wrap; }
     .workers-filters input, .workers-filters select { flex: 1; min-width: 160px; }
-
-    .workers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
-
-    .worker-card { background: var(--color-surface); border: 1px solid var(--color-border-light); border-radius: var(--radius-xl); padding: var(--space-6); display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--space-3); transition: box-shadow var(--transition), transform var(--transition-spring); cursor: pointer; }
-    .worker-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); border-color: var(--color-primary-200); }
-
-    .worker-avatar { width: 72px; height: 72px; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--color-primary-100), var(--color-primary-50)); display: flex; align-items: center; justify-content: center; font-size: var(--fs-xl); font-weight: var(--fw-bold); color: var(--color-primary); overflow: hidden; flex-shrink: 0; }
-    .worker-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-    .worker-name { font-size: var(--fs-base); font-weight: var(--fw-semibold); margin: 0; }
-    .worker-location { font-size: var(--fs-xs); color: var(--color-text-muted); margin: 0; }
-    .worker-bio { font-size: var(--fs-xs); color: var(--color-text-secondary); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-    .worker-skills { display: flex; flex-wrap: wrap; gap: var(--space-1); justify-content: center; }
-    .worker-skill { padding: 2px 8px; background: var(--color-primary-50); color: var(--color-primary-dark); border-radius: var(--radius-full); font-size: 11px; font-weight: var(--fw-medium); }
-
-    .worker-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: var(--radius-full); font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
-    .worker-badge--freelance { background: #F3E8FF; color: #7C3AED; }
-    .worker-badge--both { background: var(--color-accent-50); color: var(--color-accent-dark); }
-
-    .worker-rate { font-size: var(--fs-xs); color: var(--color-text-muted); }
+    .workers-grid    { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-5); }
   </style>
 </head>
 <body>
@@ -91,10 +70,10 @@
       </div>
 
       <div class="workers-grid" id="workersGrid">
-        <div class="skeleton" style="height:280px;border-radius:var(--radius-xl);"></div>
-        <div class="skeleton" style="height:280px;border-radius:var(--radius-xl);"></div>
-        <div class="skeleton" style="height:280px;border-radius:var(--radius-xl);"></div>
-        <div class="skeleton" style="height:280px;border-radius:var(--radius-xl);"></div>
+        <div class="skeleton" style="height:280px;border-radius:var(--radius);"></div>
+        <div class="skeleton" style="height:280px;border-radius:var(--radius);"></div>
+        <div class="skeleton" style="height:280px;border-radius:var(--radius);"></div>
+        <div class="skeleton" style="height:280px;border-radius:var(--radius);"></div>
       </div>
 
       <div class="empty-state" id="emptyState" style="display:none;">
@@ -140,7 +119,7 @@
       const skill   = document.getElementById('skillInput').value.trim();
       const type    = document.getElementById('typeFilter').value;
 
-      grid.innerHTML = Array(4).fill('<div class="skeleton" style="height:280px;border-radius:var(--radius-xl);"></div>').join('');
+      grid.innerHTML = Array(4).fill('<div class="skeleton" style="height:280px;border-radius:var(--radius);"></div>').join('');
       empty.style.display = 'none';
 
       try {
@@ -169,22 +148,40 @@
           const badgeInfo = WORK_TYPE_LABEL[w.work_type];
           const skills = (w.skills || []).slice(0, 4);
 
+          const bioSection = w.bio
+            ? `<div class="worker-card__section">
+                 <p class="worker-card__bio">${escapeHtml(w.bio)}</p>
+               </div>`
+            : '';
+
+          const skillsSection = skills.length
+            ? `<div class="worker-card__section worker-card__skills">
+                 ${skills.map(s => `<span class="worker-card__skill">${escapeHtml(s)}</span>`).join('')}
+                 ${w.skills.length > 4 ? `<span class="worker-card__skill">+${w.skills.length - 4}</span>` : ''}
+               </div>`
+            : '';
+
+          const hasMeta = w.availability || w.hourly_rate;
+          const footerSection = hasMeta
+            ? `<div class="worker-card__footer">
+                 ${w.availability ? `<span class="worker-card__meta">⏰ ${escapeHtml(w.availability)}</span>` : ''}
+                 ${w.hourly_rate  ? `<span class="worker-card__meta">💰 ${escapeHtml(w.hourly_rate)}</span>`  : ''}
+               </div>`
+            : '';
+
           return `
             <div class="worker-card" onclick="App.goTo('workers/${w.id}')">
-              <div class="worker-avatar">${avatarHtml}</div>
-              <div>
-                <p class="worker-name">${escapeHtml(w.full_name || 'Sin nombre')}</p>
-                ${w.location ? `<p class="worker-location">📍 ${escapeHtml(w.location)}</p>` : ''}
+              <div class="worker-card__header">
+                <div class="worker-card__avatar">${avatarHtml}</div>
+                <div class="worker-card__info">
+                  <p class="worker-card__name">${escapeHtml(w.full_name || 'Sin nombre')}</p>
+                  ${w.location ? `<p class="worker-card__location">📍 ${escapeHtml(w.location)}</p>` : ''}
+                  ${badgeInfo ? `<span class="worker-badge ${badgeInfo.cls}">${badgeInfo.label}</span>` : ''}
+                </div>
               </div>
-              ${badgeInfo ? `<span class="worker-badge ${badgeInfo.cls}">🔧 ${badgeInfo.label}</span>` : ''}
-              ${w.bio ? `<p class="worker-bio">${escapeHtml(w.bio)}</p>` : ''}
-              ${skills.length ? `
-                <div class="worker-skills">
-                  ${skills.map(s => `<span class="worker-skill">${escapeHtml(s)}</span>`).join('')}
-                  ${w.skills.length > 4 ? `<span class="worker-skill">+${w.skills.length - 4}</span>` : ''}
-                </div>` : ''}
-              ${w.availability ? `<span class="worker-rate">⏰ ${escapeHtml(w.availability)}</span>` : ''}
-              ${w.hourly_rate ? `<span class="worker-rate">💰 ${escapeHtml(w.hourly_rate)}</span>` : ''}
+              ${bioSection}
+              ${skillsSection}
+              ${footerSection}
             </div>`;
         }).join('');
 
