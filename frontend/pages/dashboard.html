@@ -32,6 +32,23 @@
     .create-form { display: flex; flex-direction: column; gap: var(--space-5); }
     .create-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
     @media (max-width: 640px) { .create-form__row { grid-template-columns: 1fr; } }
+
+    @media (max-width: 767px) {
+      .dash-page { padding-top: var(--space-5); padding-bottom: var(--space-10); }
+      .dash-header { margin-bottom: var(--space-5); }
+      .dash-header h1 { font-size: var(--fs-xl); }
+      .dash-stats { gap: var(--space-3); margin-bottom: var(--space-5); }
+      .job-row { flex-wrap: wrap; padding: var(--space-4); gap: var(--space-3); }
+      .job-row__actions { width: 100%; justify-content: flex-end; }
+      .create-modal-overlay { align-items: flex-end; padding: 0; }
+      .create-modal { border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: var(--space-6) var(--space-5); max-height: 92dvh; overflow-y: auto; }
+      .create-modal__title { font-size: var(--fs-lg); }
+    }
+    @media (max-width: 479px) {
+      .dash-stats { grid-template-columns: 1fr 1fr; }
+      .dash-stat { padding: var(--space-3); }
+      .dash-stat__value { font-size: var(--fs-lg); }
+    }
   </style>
 </head>
 <body>

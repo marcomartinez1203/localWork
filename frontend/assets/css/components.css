@@ -117,6 +117,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  position: relative;
 }
 
 /* Notification bell */
@@ -179,8 +180,8 @@
 .user-dropdown {
   display: none;
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  top: calc(var(--navbar-height) - 8px);
+  right: var(--space-4);
   width: 260px;
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
@@ -211,6 +212,8 @@
 .user-dropdown__header span {
   font-size: var(--fs-xs);
   color: var(--color-text-muted);
+  word-break: break-all;
+  display: block;
 }
 
 .user-dropdown__divider {
@@ -249,17 +252,19 @@
 }
 
 
-/* Notification Preview Dropdown */
+/* Notification Preview Dropdown — Glassmorphism */
 .notif-preview {
   display: none;
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
   width: 340px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-light);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
   z-index: var(--z-dropdown);
   animation: slideDown var(--transition-fast) forwards;
   overflow: hidden;
@@ -517,6 +522,7 @@
 .btn--primary {
   background: var(--color-primary);
   color: #fff;
+  animation: glowPulse 2.8s ease-in-out infinite;
 }
 
 .btn--primary:hover:not(:disabled) {
@@ -652,8 +658,7 @@
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
 }
 
 .card--flat {
@@ -672,22 +677,43 @@
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
-  transition: box-shadow var(--transition), transform var(--transition-spring), border-color var(--transition);
+  transition: box-shadow var(--transition), border-color var(--transition);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  overflow: hidden;
+}
+
+/* Acento izquierdo asimétrico: línea primaria que "florece" en el hover */
+.job-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12%;
+  bottom: 12%;
+  width: 3px;
+  background: var(--color-primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  opacity: 0;
+  transform: scaleY(0.3);
+  transform-origin: center;
+  transition: opacity var(--transition), transform var(--transition-spring);
+  pointer-events: none;
 }
 
 .job-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-4px);
+  box-shadow: var(--shadow-glow);
   border-color: var(--color-primary-200);
 }
 
+.job-card:hover::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
 .job-card:active {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .job-card__header {
@@ -710,6 +736,13 @@
   font-weight: var(--fw-bold);
   color: var(--color-primary);
   letter-spacing: 0.02em;
+  overflow: hidden;
+  transition: transform var(--transition-spring);
+}
+
+/* Zoom sutil del logo al hover de la tarjeta */
+.job-card:hover .job-card__company-logo {
+  transform: scale(1.1);
 }
 
 .job-card__title-group {
@@ -721,11 +754,17 @@
   font-family: var(--font-heading);
   font-size: var(--fs-md);
   font-weight: var(--fw-semibold);
+  letter-spacing: -0.025em;
   color: var(--color-text);
   margin-bottom: var(--space-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.job-card:hover .job-card__title {
+  color: var(--color-primary);
 }
 
 .job-card__company {
@@ -797,6 +836,7 @@
    WORKER CARD — Minimalismo Editorial
    ══════════════════════════════════════════════ */
 .worker-card {
+  position: relative;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
@@ -805,12 +845,34 @@
   flex-direction: column;
   gap: 0;
   cursor: pointer;
+  overflow: hidden;
   transition: box-shadow var(--transition), border-color var(--transition);
+}
+
+/* Acento inferior asimétrico: línea que emerge desde el centro */
+.worker-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: var(--color-primary);
+  opacity: 0;
+  transform: scaleX(0.2);
+  transform-origin: center;
+  transition: opacity var(--transition), transform var(--transition-spring);
+  pointer-events: none;
 }
 
 .worker-card:hover {
   box-shadow: var(--shadow-glow);
   border-color: var(--color-primary-200);
+}
+
+.worker-card:hover::before {
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 /* Header: avatar + info en fila horizontal */
@@ -835,6 +897,12 @@
   color: var(--color-primary);
   overflow: hidden;
   flex-shrink: 0;
+  transition: transform var(--transition-spring);
+}
+
+/* Zoom sutil del avatar al hover */
+.worker-card:hover .worker-card__avatar {
+  transform: scale(1.08);
 }
 
 .worker-card__avatar img {
@@ -849,16 +917,22 @@
   padding-top: var(--space-1);
 }
 
-/* Título del oficio en Sora */
+/* Título del oficio en Sora con kerning editorial */
 .worker-card__name {
   font-family: var(--font-heading);
   font-size: var(--fs-base);
   font-weight: var(--fw-semibold);
+  letter-spacing: -0.025em;
   color: var(--color-text);
   margin: 0 0 var(--space-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.worker-card:hover .worker-card__name {
+  color: var(--color-primary);
 }
 
 .worker-card__location {
@@ -1850,12 +1924,8 @@
   border-color: var(--color-border);
 }
 
-[data-theme="dark"] .job-card:hover {
-  border-color: var(--color-primary);
-}
-
 [data-theme="dark"] .job-card__company-logo {
-  background: linear-gradient(135deg, rgba(0,114,0,0.20), rgba(0,114,0,0.10));
+  background: linear-gradient(135deg, var(--color-primary-100), var(--color-primary-50));
 }
 
 /* Buttons — outline */
@@ -1889,18 +1959,19 @@
   color: var(--color-text-secondary);
 }
 
-/* Dropdown */
+/* Dropdown dark mode */
 [data-theme="dark"] .user-dropdown {
-  background: #131C2E;
-  border-color: #1E293B;
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-xl);
 }
 
 [data-theme="dark"] .user-dropdown__header {
-  background: #0B1120;
+  background: var(--color-bg);
 }
 
 [data-theme="dark"] .user-dropdown__item:hover {
-  background: #1A2332;
+  background: var(--color-bg);
 }
 
 /* Theme toggle standalone (for landing/auth pages) */
@@ -1926,4 +1997,148 @@
 .theme-toggle-fab:hover {
   transform: scale(1.1);
   box-shadow: var(--shadow-lg);
+}
+
+
+/* ══════════════════════════════════════════════
+   RESPONSIVE — MOBILE
+   ══════════════════════════════════════════════ */
+
+/* ── Móvil general (< 768px) ── */
+@media (max-width: 767px) {
+
+  /* Dropdowns: panel fijo que cae desde la navbar */
+  .user-dropdown {
+    position: fixed;
+    top: var(--navbar-height);
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .notif-preview {
+    position: fixed;
+    top: var(--navbar-height);
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+
+  /* Cards: padding reducido */
+  .card,
+  .job-card,
+  .worker-card {
+    padding: var(--space-4);
+  }
+
+  /* Job card: título en dos líneas en móvil */
+  .job-card__title {
+    white-space: normal;
+    font-size: var(--fs-base);
+  }
+
+  /* Job card footer: apilar en columna */
+  .job-card__footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  /* Modales: bottom sheet (sube desde abajo) */
+  .modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modal {
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: var(--space-6) var(--space-5);
+    max-width: 100%;
+    width: 100%;
+    max-height: 92dvh;
+    overflow-y: auto;
+  }
+
+  /* Toasts: ancho completo */
+  .toast {
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+  }
+
+  /* Toast container si existe */
+  .toast-container {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
+  }
+
+  /* Paginación: botones más compactos */
+  .pagination__btn {
+    width: 36px;
+    height: 36px;
+    font-size: var(--fs-xs);
+  }
+
+  /* Stat cards en home/dashboard: compactos */
+  .stat-card {
+    padding: var(--space-4);
+  }
+
+  /* Formularios: inputs full width */
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: var(--fs-base); /* evita zoom en iOS */
+  }
+
+}
+
+/* ── Teléfonos pequeños (< 480px) ── */
+@media (max-width: 479px) {
+
+  .container {
+    padding-inline: var(--space-3);
+  }
+
+  /* Marca: solo icono + texto reducido */
+  .navbar__brand {
+    font-size: var(--fs-base);
+  }
+
+  /* Chips más compactos */
+  .chip {
+    font-size: var(--fs-xs);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  /* Badges más compactos */
+  .badge {
+    font-size: 11px;
+    padding: 2px var(--space-2);
+  }
+
+  /* Worker card: avatar más pequeño */
+  .worker-card__avatar {
+    width: 44px;
+    height: 44px;
+    font-size: var(--fs-base);
+  }
+
+  /* Job card: logo más pequeño */
+  .job-card__company-logo {
+    width: 40px;
+    height: 40px;
+  }
+
 }

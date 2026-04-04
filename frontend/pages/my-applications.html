@@ -30,7 +30,18 @@
     .status-badge--accepted { background: var(--color-accent-50); color: var(--color-accent-dark); }
     .status-badge--rejected { background: #FEE2E2; color: #991B1B; }
     .app-card__actions { flex-shrink: 0; }
-    @media (max-width: 768px) { .app-card { flex-wrap: wrap; } .app-card__meta { width: 100%; justify-content: space-between; } }
+    @media (max-width: 768px) {
+      .app-card { flex-wrap: wrap; padding: var(--space-4); gap: var(--space-3); }
+      .app-card__meta { width: 100%; justify-content: space-between; }
+      .app-card__actions { width: 100%; }
+      .app-card__actions .btn { width: 100%; }
+      .apps-page { padding-top: var(--space-5); }
+      .apps-header h1 { font-size: var(--fs-xl); }
+    }
+    @media (max-width: 479px) {
+      .app-card__logo { width: 40px; height: 40px; font-size: var(--fs-xs); }
+      .app-card__title { font-size: var(--fs-sm); }
+    }
   </style>
 </head>
 <body>

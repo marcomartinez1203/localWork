@@ -236,3 +236,80 @@
   font-size: var(--fs-xs);
   color: var(--color-text-muted);
 }
+
+
+/* ── Mobile ── */
+@media (max-width: 767px) {
+
+  .home-page {
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-12);
+  }
+
+  .home-header {
+    margin-bottom: var(--space-5);
+  }
+
+  .home-header__title {
+    font-size: var(--fs-xl);
+    margin-bottom: var(--space-4);
+  }
+
+  /* Filtros: selects apilados y full width */
+  .filters__selects {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .filters__select {
+    width: 100%;
+  }
+
+  .results-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+
+  /* Banner destacado: sin padding excesivo */
+  .featured-banner {
+    padding: var(--space-5);
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+
+  .featured-banner__title {
+    font-size: var(--fs-lg);
+  }
+
+  /* Quick stats: 2 columnas en móvil (ya está por defecto, solo compactar) */
+  .quick-stat {
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .quick-stat__icon {
+    width: 36px;
+    height: 36px;
+    font-size: var(--fs-base);
+  }
+
+  .quick-stat__value {
+    font-size: var(--fs-lg);
+  }
+
+}
+
+@media (max-width: 479px) {
+
+  /* En pantallas muy pequeñas, stats en 1 columna */
+  .quick-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .home-header__title {
+    font-size: var(--fs-lg);
+  }
+
+}

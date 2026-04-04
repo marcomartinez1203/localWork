@@ -90,7 +90,7 @@ const App = {
           </button>
           <div class="notif-preview" id="notifPreview"></div>
         </div>
-        <div style="position:relative;">
+        <div>
           <div class="navbar__avatar" onclick="App.toggleUserMenu(event)" tabindex="0">${avatarContent}</div>
           <div class="user-dropdown" id="userDropdown">
             <div class="user-dropdown__header">
@@ -141,7 +141,6 @@ const App = {
         }
 
         const wrapper = document.createElement('div');
-        wrapper.style.position = 'relative';
         existingAvatar.parentNode.insertBefore(wrapper, existingAvatar);
         wrapper.appendChild(existingAvatar);
 
