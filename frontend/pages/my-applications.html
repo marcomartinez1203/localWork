@@ -124,11 +124,18 @@
 
   <script src="../assets/js/config/api.js"></script>
   <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/services/notifications.service.js"></script>
   <script src="../assets/js/services/applications.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
   <script src="../assets/js/app.js"></script>
   <script>
     if (!AuthService.requireAuth()) { /* redirects */ }
+
+    // Role protection — only seekers
+    const user = AuthService.getUser();
+    if (user && user.role === 'employer') {
+      window.location.href = 'dashboard.html';
+    }
 
     let currentPage = 1;
     let activeStatus = null;
@@ -137,12 +144,6 @@
       pending: 'Pendiente', reviewed: 'Revisada', shortlisted: 'Preseleccionado',
       interview: 'Entrevista', accepted: 'Aceptada', rejected: 'Rechazada'
     };
-
-    // Init avatar
-    const user = AuthService.getUser();
-    if (user && user.full_name) {
-      document.getElementById('userAvatar').textContent = user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    }
 
     loadApplications();
 
@@ -176,7 +177,7 @@
           const initials = companyName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
 
           return `
-            <div class="app-card">
+            <div class="app-card" style="cursor:pointer;" onclick="App.goTo('job-detail.html?id=${app.job_id}')">
               <div class="app-card__logo">${initials}</div>
               <div class="app-card__info">
                 <h3 class="app-card__title">${escapeHtml(job.title || 'Empleo')}</h3>
@@ -187,7 +188,7 @@
                 <span class="app-card__date">${timeAgo(app.created_at)}</span>
               </div>
               <div class="app-card__actions">
-                <button class="btn btn--ghost btn--sm" onclick="withdrawApp('${app.id}')">Retirar</button>
+                <button class="btn btn--ghost btn--sm" onclick="event.stopPropagation(); withdrawApp('${app.id}')">Retirar</button>
               </div>
             </div>
           `;

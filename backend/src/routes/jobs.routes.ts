@@ -8,8 +8,9 @@ import { authenticate, requireRole } from '../middleware/auth.middleware';
 const router = Router();
 
 // Públicas
-router.get('/categories', JobsController.getCategories);
-router.get('/stats',      JobsController.getStats);
+router.get('/categories',      JobsController.getCategories);
+router.get('/employer-stats',  authenticate, requireRole('employer'), JobsController.getEmployerStats);
+router.get('/stats',           JobsController.getStats);
 router.get('/',           JobsController.list);
 router.get('/saved',      authenticate, JobsController.getSavedJobs);
 router.get('/mine',       authenticate, requireRole('employer'), JobsController.getMyJobs);

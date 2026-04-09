@@ -189,6 +189,35 @@
     </div>
   </div>
 
+  <!-- Applicants Panel Modal -->
+  <div class="create-modal-overlay" id="applicantsModal">
+    <div class="create-modal" style="max-width:720px;">
+      <div class="create-modal__header">
+        <h2 class="create-modal__title" id="applicantsTitle">Postulantes</h2>
+        <button class="modal__close" onclick="closeApplicantsModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div id="applicantsList" style="display:flex;flex-direction:column;gap:var(--space-3);max-height:60vh;overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <style>
+    .applicant-row { display:flex; align-items:center; gap:var(--space-4); padding:var(--space-4); background:var(--color-bg); border:1px solid var(--color-border-light); border-radius:var(--radius-lg); }
+    .applicant-row__avatar { width:44px; height:44px; border-radius:var(--radius-full); background:linear-gradient(135deg,var(--color-primary-100),var(--color-primary-50)); display:flex; align-items:center; justify-content:center; font-weight:var(--fw-bold); color:var(--color-primary); flex-shrink:0; font-size:var(--fs-sm); overflow:hidden; }
+    .applicant-row__avatar img { width:100%; height:100%; object-fit:cover; }
+    .applicant-row__info { flex:1; min-width:0; }
+    .applicant-row__name { font-weight:var(--fw-semibold); font-size:var(--fs-sm); }
+    .applicant-row__email { font-size:var(--fs-xs); color:var(--color-text-muted); margin:0; }
+    .applicant-row__cover { font-size:var(--fs-xs); color:var(--color-text-secondary); margin-top:var(--space-1); font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .applicant-row__actions { display:flex; gap:var(--space-2); flex-shrink:0; flex-wrap:wrap; }
+    .applicant-row__actions select { font-size:var(--fs-xs); padding:var(--space-1) var(--space-2); border-radius:var(--radius); border:1px solid var(--color-border); background:var(--color-surface); cursor:pointer; }
+    @media (max-width:640px) {
+      .applicant-row { flex-wrap:wrap; }
+      .applicant-row__actions { width:100%; }
+      .applicant-row__actions select { flex:1; }
+    }
+  </style>
   <footer class="footer">
     <div class="container">
       <div class="footer__bottom" style="border-top:none;padding-top:0;">
@@ -199,21 +228,42 @@
 
   <script src="../assets/js/config/api.js"></script>
   <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/services/notifications.service.js"></script>
   <script src="../assets/js/services/jobs.service.js"></script>
+  <script src="../assets/js/services/applications.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
   <script src="../assets/js/app.js"></script>
   <script>
     if (!AuthService.requireAuth()) { /* redirects */ }
 
+    // Role protection — only employers
     const user = AuthService.getUser();
-    if (user && user.full_name) {
-      document.getElementById('userAvatar').textContent = user.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    if (user && user.role !== 'employer') {
+      window.location.href = 'home.html';
     }
 
     let currentPage = 1;
     let categories = [];
 
+    const STATUS_LABELS = {
+      pending: 'Pendiente', reviewed: 'Revisada', shortlisted: 'Preseleccionado',
+      interview: 'Entrevista', accepted: 'Aceptada', rejected: 'Rechazada'
+    };
+    const STATUS_COLORS = {
+      pending: '#92400E', reviewed: '#1E40AF', shortlisted: 'var(--color-primary)',
+      interview: '#7C3AED', accepted: 'var(--color-accent-dark)', rejected: '#991B1B'
+    };
+
     (async function init() {
+      // Load employer stats
+      try {
+        const stats = await api.get('/jobs/employer-stats');
+        document.getElementById('statActive').textContent = stats.active_jobs || 0;
+        document.getElementById('statTotal').textContent = stats.total_jobs || 0;
+        document.getElementById('statApps').textContent = stats.total_applications || 0;
+        document.getElementById('statViews').textContent = stats.total_saves || 0;
+      } catch (e) { console.warn('Stats error:', e); }
+
       // Load categories for the form
       try {
         const catResult = await JobsService.getCategories();
@@ -237,16 +287,6 @@
         const result = await JobsService.getMyJobs({ page: currentPage, perPage: 10 });
         const jobs = result.data || [];
 
-        // Update stats
-        let totalApps = 0;
-        let totalSaves = 0;
-        let activeCount = 0;
-        jobs.forEach(j => {
-          if (j.status === 'active') activeCount++;
-        });
-        document.getElementById('statActive').textContent = activeCount;
-        document.getElementById('statTotal').textContent = result.total || 0;
-
         if (jobs.length === 0) {
           list.style.display = 'none';
           empty.style.display = 'flex';
@@ -268,6 +308,9 @@
             </div>
             <span class="badge ${statusColors[job.status] || 'badge--neutral'}">${statusLabels[job.status] || job.status}</span>
             <div class="job-row__actions">
+              <button class="btn btn--ghost btn--sm" onclick="viewApplicants('${job.id}', '${escapeHtml(job.title).replace(/'/g, "\\'")}')">
+                👥 Postulantes
+              </button>
               <button class="btn btn--ghost btn--sm" onclick="toggleStatus('${job.id}', '${job.status}')">
                 ${job.status === 'active' ? '⏸ Pausar' : '▶ Activar'}
               </button>
@@ -304,19 +347,90 @@
         await JobsService.delete(jobId);
         showToast('Oferta eliminada', 'success');
         loadJobs();
+        // Refresh stats
+        try {
+          const stats = await api.get('/jobs/employer-stats');
+          document.getElementById('statActive').textContent = stats.active_jobs || 0;
+          document.getElementById('statTotal').textContent = stats.total_jobs || 0;
+          document.getElementById('statApps').textContent = stats.total_applications || 0;
+          document.getElementById('statViews').textContent = stats.total_saves || 0;
+        } catch (e) { /* silent */ }
       } catch (err) {
         showToast(err.message || 'Error', 'error');
       }
     }
 
-    // Create modal
+    // ── Applicants Panel ──
+    async function viewApplicants(jobId, jobTitle) {
+      document.getElementById('applicantsTitle').textContent = `Postulantes — ${jobTitle}`;
+      document.getElementById('applicantsModal').classList.add('open');
+      const list = document.getElementById('applicantsList');
+      list.innerHTML = '<div class="skeleton" style="height:60px;"></div><div class="skeleton" style="height:60px;"></div>';
+
+      try {
+        const result = await ApplicationsService.getForJob(jobId);
+        const apps = result.data || [];
+
+        if (apps.length === 0) {
+          list.innerHTML = '<p style="text-align:center;color:var(--color-text-muted);padding:var(--space-8);">Aún nadie se ha postulado a esta oferta.</p>';
+          return;
+        }
+
+        list.innerHTML = apps.map(app => {
+          const seeker = app.seeker || {};
+          const name = seeker.full_name || 'Sin nombre';
+          const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+          const avatarHtml = seeker.avatar_url
+            ? `<img src="${seeker.avatar_url}" alt="${escapeHtml(name)}">`
+            : initials;
+
+          const statusOpts = ['pending','reviewed','shortlisted','interview','accepted','rejected']
+            .map(s => `<option value="${s}" ${app.status === s ? 'selected' : ''}>${STATUS_LABELS[s]}</option>`)
+            .join('');
+
+          return `
+            <div class="applicant-row">
+              <div class="applicant-row__avatar">${avatarHtml}</div>
+              <div class="applicant-row__info">
+                <p class="applicant-row__name">${escapeHtml(name)}</p>
+                <p class="applicant-row__email">${escapeHtml(seeker.email || '')} ${seeker.phone ? '· ' + escapeHtml(seeker.phone) : ''}</p>
+                ${app.cover_letter ? `<p class="applicant-row__cover">"${escapeHtml(app.cover_letter)}"</p>` : ''}
+              </div>
+              <div class="applicant-row__actions">
+                <select onchange="changeAppStatus('${app.id}', this.value, this)">${statusOpts}</select>
+                ${seeker.resume_url ? `<a href="${seeker.resume_url}" target="_blank" class="btn btn--ghost btn--sm" style="font-size:var(--fs-xs);">📄 CV</a>` : ''}
+              </div>
+            </div>`;
+        }).join('');
+      } catch (err) {
+        list.innerHTML = `<p style="text-align:center;color:var(--color-text-muted);padding:var(--space-8);">${err.message || 'Error al cargar postulantes'}</p>`;
+      }
+    }
+
+    async function changeAppStatus(appId, newStatus, selectEl) {
+      try {
+        await ApplicationsService.updateStatus(appId, newStatus);
+        showToast(`Estado actualizado a: ${STATUS_LABELS[newStatus]}`, 'success');
+      } catch (err) {
+        showToast(err.message || 'Error', 'error');
+      }
+    }
+
+    function closeApplicantsModal() { document.getElementById('applicantsModal').classList.remove('open'); }
+
+    // ── Create Job Modal ──
     function openCreateModal() { document.getElementById('createModal').classList.add('open'); }
     function closeCreateModal() { document.getElementById('createModal').classList.remove('open'); }
 
     document.getElementById('createModal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeCreateModal();
     });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCreateModal(); });
+    document.getElementById('applicantsModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeApplicantsModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { closeCreateModal(); closeApplicantsModal(); }
+    });
 
     document.getElementById('createJobForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -346,6 +460,12 @@
         document.getElementById('createJobForm').reset();
         showToast('¡Oferta publicada exitosamente!', 'success');
         loadJobs();
+        // Refresh stats
+        try {
+          const stats = await api.get('/jobs/employer-stats');
+          document.getElementById('statActive').textContent = stats.active_jobs || 0;
+          document.getElementById('statTotal').textContent = stats.total_jobs || 0;
+        } catch (e) { /* silent */ }
       } catch (err) {
         showToast(err.message || 'Error al publicar', 'error');
       } finally {
