@@ -8,6 +8,7 @@
 -- ══════════════════════════════════════════════
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";          -- búsqueda de texto
+CREATE EXTENSION IF NOT EXISTS "unaccent";         -- búsqueda sin acentos
 
 
 -- ══════════════════════════════════════════════
@@ -353,10 +354,36 @@ SELECT
   cat.slug      AS category_slug,
   cat.icon      AS category_icon,
   (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id)        AS total_applications,
-  (SELECT COUNT(*) FROM saved_jobs s WHERE s.job_id = j.id)          AS total_saves
+  (SELECT COUNT(*) FROM saved_jobs s WHERE s.job_id = j.id)          AS total_saves,
+  unaccent(lower(
+    coalesce(j.title, '')       || ' ' ||
+    coalesce(j.description, '') || ' ' ||
+    coalesce(c.name, '')        || ' ' ||
+    coalesce(j.location, '')    || ' ' ||
+    coalesce(cat.name, '')
+  )) AS search_text
 FROM jobs j
 JOIN companies  c   ON c.id   = j.company_id
 JOIN categories cat ON cat.id = j.category_id;
+
+
+-- ── Vista de trabajadores con campo de búsqueda normalizado ──
+CREATE OR REPLACE VIEW workers_directory AS
+SELECT
+  id,
+  full_name,
+  avatar_url,
+  bio,
+  location,
+  skills,
+  work_type,
+  availability,
+  hourly_rate,
+  role,
+  education,
+  experience,
+  unaccent(lower(coalesce(full_name, ''))) AS search_name
+FROM profiles;
 
 
 -- ── Vista de estadísticas generales (para el dashboard) ──

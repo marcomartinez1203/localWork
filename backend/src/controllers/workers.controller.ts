@@ -5,6 +5,11 @@ import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
 
+/** Elimina acentos y normaliza a minúsculas para búsqueda sin diacríticos */
+function removeAccents(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 export class WorkersController {
 
   static async list(req: Request, res: Response, next: NextFunction) {
@@ -19,7 +24,7 @@ export class WorkersController {
       const to   = from + perPage - 1;
 
       let query = supabaseAdmin
-        .from('profiles')
+        .from('workers_directory')
         .select('id, full_name, avatar_url, bio, location, skills, work_type, availability, hourly_rate, role', { count: 'exact' })
         .in('work_type', ['freelance', 'both'])
         .range(from, to);
@@ -33,7 +38,7 @@ export class WorkersController {
       }
 
       if (search) {
-        query = query.ilike('full_name', `%${search}%`);
+        query = query.ilike('search_name', `%${removeAccents(search)}%`);
       }
 
       const { data, error, count } = await query;
