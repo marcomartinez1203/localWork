@@ -39,7 +39,7 @@ export class ApplicationsService {
       if (error.code === '23505') {
         throw new AppError('Ya te postulaste a esta oferta', 409);
       }
-      throw new AppError('Error al crear la postulación', 500);
+      console.error('[ApplicationsService.apply]', error); throw new AppError('Error al crear la postulación', 500);
     }
 
     return data as Application;
@@ -72,7 +72,7 @@ export class ApplicationsService {
     query = query.range(from, to);
 
     const { data, count, error } = await query;
-    if (error) throw new AppError('Error al obtener postulaciones', 500);
+    if (error) { console.error('[ApplicationsService.getMyApplications]', error); throw new AppError('Error al obtener postulaciones', 500); }
 
     return {
       data: (data || []) as (Application & { job: { title: string; company_name: string } })[],
@@ -121,7 +121,7 @@ export class ApplicationsService {
       .order('created_at', { ascending: false })
       .range(from, to);
 
-    if (error) throw new AppError('Error al obtener postulaciones', 500);
+    if (error) { console.error('[ApplicationsService.getForJob]', error); throw new AppError('Error al obtener postulaciones', 500); }
 
     return {
       data: (data || []) as (Application & { seeker: { full_name: string; email: string } })[],
@@ -173,7 +173,7 @@ export class ApplicationsService {
       .select()
       .single();
 
-    if (error) throw new AppError('Error al actualizar el estado', 500);
+    if (error) { console.error('[ApplicationsService.updateStatus]', error); throw new AppError('Error al actualizar el estado', 500); }
     return data as Application;
   }
 
@@ -184,6 +184,6 @@ export class ApplicationsService {
       .eq('id', applicationId)
       .eq('seeker_id', seekerId);
 
-    if (error) throw new AppError('Error al retirar la postulación', 500);
+    if (error) { console.error('[ApplicationsService.withdraw]', error); throw new AppError('Error al retirar la postulación', 500); }
   }
 }

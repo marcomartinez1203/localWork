@@ -58,6 +58,7 @@ export class AuthService {
       });
 
     if (loginErr || !loginData.session) {
+      if (loginErr) console.error('[AuthService.register]', loginErr);
       throw new AppError('Error al crear la sesión', 500);
     }
 
@@ -85,7 +86,7 @@ export class AuthService {
     }
 
     if (!loginData.session) {
-      throw new AppError('Error al crear la sesión', 500);
+      throw new AppError('Error al crear la sesión', 500); // loginData exists, session missing — no extra error to log
     }
 
     const { data: profile } = await supabaseAdmin
@@ -131,13 +132,13 @@ export class AuthService {
       .select()
       .single();
 
-    if (error) throw new AppError('Error al actualizar el perfil', 500);
+    if (error) { console.error('[AuthService.updateProfile]', error); throw new AppError('Error al actualizar el perfil', 500); }
 
     return data as Profile;
   }
 
   static async resetPassword(email: string): Promise<void> {
     const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email);
-    if (error) throw new AppError('Error al enviar el correo de recuperación', 500);
+    if (error) { console.error('[AuthService.resetPassword]', error); throw new AppError('Error al enviar el correo de recuperación', 500); }
   }
 }

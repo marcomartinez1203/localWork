@@ -199,7 +199,7 @@
             </div>`;
         }).join('');
 
-        renderPagination(result.meta);
+        renderPagination(result);
       } catch (err) {
         grid.innerHTML = `<p style="color:var(--color-text-muted);grid-column:1/-1;text-align:center;padding:var(--space-8);">${err.message || 'Error al cargar trabajadores'}</p>`;
       }

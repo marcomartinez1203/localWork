@@ -4,11 +4,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
-
-/** Elimina acentos y normaliza a minúsculas para búsqueda sin diacríticos */
-function removeAccents(str: string): string {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-}
+import { removeAccents } from '../utils/string';
 
 export class WorkersController {
 
@@ -45,11 +41,14 @@ export class WorkersController {
       }
 
       const { data, error, count } = await query;
-      if (error) throw new AppError('Error al obtener trabajadores', 500);
+      if (error) { console.error('[WorkersController.list]', error); throw new AppError('Error al obtener trabajadores', 500); }
 
       res.json({
         data,
-        meta: { total: count ?? 0, page, per_page: perPage, total_pages: Math.ceil((count ?? 0) / perPage) },
+        total: count ?? 0,
+        page,
+        per_page: perPage,
+        total_pages: Math.ceil((count ?? 0) / perPage),
       });
     } catch (err) { next(err); }
   }
@@ -62,7 +61,8 @@ export class WorkersController {
         .eq('id', req.params.id)
         .single();
 
-      if (error || !data) throw new AppError('Trabajador no encontrado', 404);
+      if (error) { console.error('[WorkersController.getOne]', error); throw new AppError('Trabajador no encontrado', 404); }
+      if (!data) throw new AppError('Trabajador no encontrado', 404);
       res.json(data);
     } catch (err) { next(err); }
   }

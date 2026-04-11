@@ -4,11 +4,7 @@
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
 import { Job, JobWithDetails, JobFilters, PaginatedResponse, Category } from '../types';
-
-/** Elimina acentos y normaliza a minúsculas para búsqueda sin diacríticos */
-function removeAccents(str: string): string {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-}
+import { removeAccents } from '../utils/string';
 
 export class JobsService {
 
@@ -62,7 +58,7 @@ export class JobsService {
     query = query.range(from, to);
 
     const { data, count, error } = await query;
-    if (error) throw new AppError('Error al obtener los empleos', 500);
+    if (error) { console.error('[JobsService.list]', error); throw new AppError('Error al obtener los empleos', 500); }
 
     return {
       data: (data || []) as JobWithDetails[],
@@ -105,7 +101,7 @@ export class JobsService {
       .select()
       .single();
 
-    if (error) throw new AppError('Error al crear la oferta', 500);
+    if (error) { console.error('[JobsService.create]', error); throw new AppError('Error al crear la oferta', 500); }
     return data as Job;
   }
 
@@ -133,7 +129,7 @@ export class JobsService {
       .select()
       .single();
 
-    if (error) throw new AppError('Error al actualizar la oferta', 500);
+    if (error) { console.error('[JobsService.update]', error); throw new AppError('Error al actualizar la oferta', 500); }
     return data as Job;
   }
 
@@ -145,7 +141,7 @@ export class JobsService {
       .delete()
       .eq('id', jobId);
 
-    if (error) throw new AppError('Error al eliminar la oferta', 500);
+    if (error) { console.error('[JobsService.delete]', error); throw new AppError('Error al eliminar la oferta', 500); }
   }
 
   static async getByCompanyOwner(userId: string, filters: JobFilters): Promise<PaginatedResponse<Job>> {
@@ -176,7 +172,7 @@ export class JobsService {
     query = query.range(from, to);
 
     const { data, count, error } = await query;
-    if (error) throw new AppError('Error al obtener tus ofertas', 500);
+    if (error) { console.error('[JobsService.getByCompanyOwner]', error); throw new AppError('Error al obtener tus ofertas', 500); }
 
     return {
       data: (data || []) as Job[],
@@ -195,7 +191,7 @@ export class JobsService {
 
     if (error) {
       if (error.code === '23505') throw new AppError('Ya guardaste este empleo', 409);
-      throw new AppError('Error al guardar el empleo', 500);
+      console.error('[JobsService.saveJob]', error); throw new AppError('Error al guardar el empleo', 500);
     }
   }
 
@@ -206,7 +202,7 @@ export class JobsService {
       .eq('user_id', userId)
       .eq('job_id', jobId);
 
-    if (error) throw new AppError('Error al quitar el empleo guardado', 500);
+    if (error) { console.error('[JobsService.unsaveJob]', error); throw new AppError('Error al quitar el empleo guardado', 500); }
   }
 
   static async getSavedJobs(userId: string): Promise<JobWithDetails[]> {
@@ -235,7 +231,7 @@ export class JobsService {
       .select('*')
       .order('sort_order', { ascending: true });
 
-    if (error) throw new AppError('Error al obtener las categorías', 500);
+    if (error) { console.error('[JobsService.getCategories]', error); throw new AppError('Error al obtener las categorías', 500); }
     return (data || []) as Category[];
   }
 
@@ -255,7 +251,7 @@ export class JobsService {
       .select('*')
       .single();
 
-    if (error) throw new AppError('Error al obtener estadísticas', 500);
+    if (error) { console.error('[JobsService.getStats]', error); throw new AppError('Error al obtener estadísticas', 500); }
     return data as Record<string, number>;
   }
 
