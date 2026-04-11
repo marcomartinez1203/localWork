@@ -80,15 +80,19 @@
         <h1 class="home-header__title">Encuentra tu próximo empleo</h1>
 
         <!-- Search Bar -->
-        <div class="search-bar">
+        <div class="search-bar" id="searchBarWrapper">
           <svg class="search-bar__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="8"/>
             <path d="m21 21-4.3-4.3"/>
           </svg>
           <input type="text" class="search-bar__input" id="searchInput"
-                 placeholder="Buscar por cargo, empresa o palabra clave..."
-                 aria-label="Buscar empleos">
+                 placeholder="Ej: vendedor centro, electricista, restaurante..."
+                 aria-label="Buscar empleos" autocomplete="off">
+          <button type="button" class="search-bar__clear" id="searchClear" aria-label="Limpiar búsqueda" style="display:none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
         </div>
+        <p class="search-bar__hint" id="searchHint" style="display:none;"></p>
       </div>
 
       <!-- Quick Stats -->
@@ -462,11 +466,40 @@
     });
 
     // Search with debounce
-    document.getElementById('searchInput').addEventListener('input', debounce((e) => {
+    const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+    const searchHint = document.getElementById('searchHint');
+
+    searchInput.addEventListener('input', debounce((e) => {
       searchQuery = e.target.value.trim();
       currentPage = 1;
+      searchClear.style.display = searchQuery ? '' : 'none';
+
+      // Show hint with parsed words
+      if (searchQuery && searchQuery.includes(' ')) {
+        const words = searchQuery.split(/\s+/).filter(w => w.length >= 2);
+        searchHint.innerHTML = `🔎 Buscando: ${words.map(w => `<strong>${escapeHtml(w)}</strong>`).join(' + ')}`;
+        searchHint.style.display = '';
+      } else {
+        searchHint.style.display = 'none';
+      }
+
       render();
     }, 400));
+
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      searchQuery = '';
+      searchClear.style.display = 'none';
+      searchHint.style.display = 'none';
+      currentPage = 1;
+      render();
+      searchInput.focus();
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { searchClear.click(); }
+    });
 
     // Navbar scroll effect
     window.addEventListener('scroll', () => {

@@ -1771,7 +1771,44 @@
   color: var(--color-primary);
 }
 
+.search-bar__clear {
+  position: absolute;
+  right: var(--space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius);
+  transition: color var(--transition-fast), background var(--transition-fast);
+  display: flex;
+  align-items: center;
+}
 
+.search-bar__clear:hover {
+  color: var(--color-text);
+  background: var(--color-border-light);
+}
+
+.search-bar__hint {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--space-2);
+  padding-left: var(--space-1);
+}
+
+.search-bar__hint strong {
+  color: var(--color-primary);
+  font-weight: var(--fw-semibold);
+}
+
+/* When clear button is visible, add right padding to input */
+.search-bar:has(.search-bar__clear:not([style*="display:none"])) .search-bar__input,
+.search-bar:has(.search-bar__clear:not([style*="display: none"])) .search-bar__input {
+  padding-right: var(--space-10);
+}
 /* ══════════════════════════════════════════════
    PAGINATION
    ══════════════════════════════════════════════ */

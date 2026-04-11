@@ -29,9 +29,27 @@ export class JobsService {
       query = query.eq('location', filters.location);
     }
     if (filters.search) {
-      query = query.or(
-        `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,company_name.ilike.%${filters.search}%`
-      );
+      // Sanitize: remove characters that break PostgREST filter syntax
+      const sanitized = filters.search.replace(/[%_(),.]/g, '').trim();
+      // Split into individual words for multi-term search
+      const words = sanitized.split(/\s+/).filter(w => w.length >= 2);
+
+      if (words.length === 1) {
+        // Single word: search across all relevant fields
+        const w = words[0];
+        query = query.or(
+          `title.ilike.%${w}%,description.ilike.%${w}%,company_name.ilike.%${w}%,location.ilike.%${w}%,category_name.ilike.%${w}%`
+        );
+      } else if (words.length > 1) {
+        // Multi-word: each word must match at least one field (AND logic)
+        // Use the full phrase as OR, plus each individual word as OR for broader match
+        const phrase = words.join(' ');
+        const phraseFilter = `title.ilike.%${phrase}%,company_name.ilike.%${phrase}%`;
+        const wordFilters = words.map(w =>
+          `title.ilike.%${w}%,description.ilike.%${w}%,company_name.ilike.%${w}%,location.ilike.%${w}%,category_name.ilike.%${w}%`
+        ).join(',');
+        query = query.or(`${phraseFilter},${wordFilters}`);
+      }
     }
 
     // Ordenamiento
