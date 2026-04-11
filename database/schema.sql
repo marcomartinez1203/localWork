@@ -111,8 +111,9 @@ CREATE TABLE jobs (
   salary_text  TEXT,         -- texto libre: "$1.800.000 – $2.200.000"
   vacancies    INT           NOT NULL DEFAULT 1,
   status       job_status    NOT NULL DEFAULT 'active',
-  is_featured  BOOLEAN       NOT NULL DEFAULT FALSE,
   expires_at   TIMESTAMPTZ,
+
+  CONSTRAINT chk_salary_range CHECK (salary_min IS NULL OR salary_max IS NULL OR salary_min <= salary_max),
   created_at   TIMESTAMPTZ   NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ   NOT NULL DEFAULT now()
 );
@@ -163,12 +164,21 @@ CREATE TABLE ratings (
   comment      TEXT,
   created_at   TIMESTAMPTZ   NOT NULL DEFAULT now(),
 
-  UNIQUE (rater_id, rated_id, job_id)   -- una calificación por relación laboral
+  -- la unicidad se aplica con dos índices parciales (ver abajo) porque
+  -- UNIQUE(a, b, NULL) no funciona en PostgreSQL (NULLs se tratan como distintos)
 );
 
 COMMENT ON TABLE ratings IS 'Calificaciones mutuas entre empleadores y buscadores';
 
 CREATE INDEX idx_ratings_rated ON ratings(rated_id);
+
+CREATE UNIQUE INDEX ratings_unique_with_job
+  ON ratings (rater_id, rated_id, job_id)
+  WHERE job_id IS NOT NULL;
+
+CREATE UNIQUE INDEX ratings_unique_no_job
+  ON ratings (rater_id, rated_id)
+  WHERE job_id IS NULL;
 
 
 -- ── 2.7  Notificaciones ──
@@ -337,6 +347,24 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER trg_notify_application_status
   AFTER UPDATE ON applications
   FOR EACH ROW EXECUTE FUNCTION notify_application_status_change();
+
+
+-- ── 3.5  Bloquear auto-verificación de empresas ──
+CREATE OR REPLACE FUNCTION prevent_self_verify()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.verified IS DISTINCT FROM OLD.verified THEN
+    IF (SELECT role FROM profiles WHERE id = auth.uid()) <> 'admin' THEN
+      RAISE EXCEPTION 'No tienes permiso para cambiar el estado de verificación';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER trg_prevent_self_verify
+  BEFORE UPDATE ON companies
+  FOR EACH ROW EXECUTE FUNCTION prevent_self_verify();
 
 
 -- ══════════════════════════════════════════════

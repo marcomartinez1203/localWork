@@ -43,6 +43,7 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
 
 // ── Parsing ──
 app.use(express.json({ limit: '10mb' }));

@@ -99,7 +99,6 @@ export interface Job {
   salary_text: string | null;
   vacancies: number;
   status: JobStatus;
-  is_featured: boolean;
   expires_at: string | null;
   created_at: string;
   updated_at: string;

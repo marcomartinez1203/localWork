@@ -38,7 +38,10 @@ export class WorkersController {
       }
 
       if (search) {
-        query = query.ilike('search_name', `%${removeAccents(search)}%`);
+        const sanitized = removeAccents(search.replace(/[%_(),.]/g, '').trim());
+        if (sanitized) {
+          query = query.ilike('search_name', `%${sanitized}%`);
+        }
       }
 
       const { data, error, count } = await query;

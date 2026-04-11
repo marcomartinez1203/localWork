@@ -241,47 +241,11 @@ export class JobsService {
 
   // ── Employer Stats ──
   static async getEmployerStats(userId: string): Promise<Record<string, number>> {
-    // Get company
-    const { data: company } = await supabaseAdmin
-      .from('companies')
-      .select('id')
-      .eq('owner_id', userId)
-      .single();
+    const { data, error } = await supabaseAdmin
+      .rpc('get_employer_stats', { p_user_id: userId });
 
-    if (!company) throw new AppError('No tienes una empresa registrada', 404);
-
-    // Get all job IDs for this company
-    const { data: jobs } = await supabaseAdmin
-      .from('jobs')
-      .select('id, status')
-      .eq('company_id', company.id);
-
-    const jobIds = (jobs || []).map(j => j.id);
-    const activeCount = (jobs || []).filter(j => j.status === 'active').length;
-
-    let totalApplications = 0;
-    let totalSaves = 0;
-
-    if (jobIds.length > 0) {
-      const { count: appCount } = await supabaseAdmin
-        .from('applications')
-        .select('id', { count: 'exact', head: true })
-        .in('job_id', jobIds);
-      totalApplications = appCount || 0;
-
-      const { count: saveCount } = await supabaseAdmin
-        .from('saved_jobs')
-        .select('id', { count: 'exact', head: true })
-        .in('job_id', jobIds);
-      totalSaves = saveCount || 0;
-    }
-
-    return {
-      active_jobs: activeCount,
-      total_jobs: (jobs || []).length,
-      total_applications: totalApplications,
-      total_saves: totalSaves,
-    };
+    if (error || !data) throw new AppError('No tienes una empresa registrada', 404);
+    return data as Record<string, number>;
   }
 
   // ── Stats ──
