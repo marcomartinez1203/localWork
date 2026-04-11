@@ -5,7 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="LocalWork — Plataforma de empleo local para Aguachica, Cesar. Encuentra o publica ofertas de trabajo en tu municipio. Patrocinado por la Alcaldía Municipal.">
   <meta name="theme-color" content="#007200">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="LocalWork — Empleo Local en Aguachica">
+  <meta property="og:description" content="Plataforma de empleo local para Aguachica, Cesar. Conecta buscadores, trabajadores y empleadores.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="assets/img/logo.png">
+  <meta property="og:locale" content="es_CO">
+
   <title>LocalWork — Empleo Local en Aguachica</title>
+
+  <!-- Favicon & Manifest -->
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="apple-touch-icon" href="assets/img/favicon.png">
+  <link rel="manifest" href="manifest.json">
 
   <script src="assets/js/theme-init.js"></script>
   <!-- CSS -->
@@ -324,6 +337,13 @@
         }
       });
     });
+  </script>
+
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
   </script>
 
 </body>

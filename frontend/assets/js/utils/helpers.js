@@ -65,15 +65,19 @@ function escapeHtml(str) {
 function showToast(message, type = 'info', duration = 4000) {
   const toast = document.createElement('div');
   toast.className = `toast toast--${type}`;
+  toast.setAttribute('role', 'alert');
+  toast.setAttribute('aria-live', 'assertive');
+  toast.setAttribute('aria-atomic', 'true');
   toast.innerHTML = `
     <span class="toast__message">${escapeHtml(message)}</span>
-    <button class="toast__close" onclick="this.parentElement.remove()">&times;</button>
+    <button class="toast__close" onclick="this.parentElement.remove()" aria-label="Cerrar notificación">&times;</button>
   `;
 
   let container = document.getElementById('toastContainer');
   if (!container) {
     container = document.createElement('div');
     container.id = 'toastContainer';
+    container.setAttribute('aria-label', 'Notificaciones');
     container.style.cssText = 'position:fixed;top:80px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;';
     document.body.appendChild(container);
   }

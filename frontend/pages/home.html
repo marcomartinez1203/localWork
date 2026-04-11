@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#007200">
+  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
   <meta name="description" content="Explora ofertas de empleo en Aguachica, Cesar. Filtra por categoría, modalidad y zona.">
   <title>Empleos — LocalWork</title>
 
@@ -276,7 +278,7 @@
     // ══════════════════════════════════════════════
     // RENDER
     // ══════════════════════════════════════════════
-    function renderJobCard(job) {
+    function renderJobCard(job, index = 0) {
       const companyInitial = job.company_name
         ? job.company_name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase()
         : '??';
@@ -284,7 +286,7 @@
         || (job.salary_min ? formatCurrency(job.salary_min) + (job.salary_max ? ' – ' + formatCurrency(job.salary_max) : '') : 'A convenir');
 
       return `
-        <article class="job-card" tabindex="0" role="link" aria-label="Ver oferta: ${escapeHtml(job.title)}" onclick="window.location.href='job-detail.html?id=${job.id}'">
+        <article class="job-card card-enter" style="--i:${index}" tabindex="0" role="link" aria-label="Ver oferta: ${escapeHtml(job.title)}" onclick="window.location.href='job-detail.html?id=${job.id}'">
           <div class="job-card__header">
             <div class="job-card__company-logo" aria-hidden="true">${companyInitial}</div>
             <div class="job-card__title-group">
@@ -404,7 +406,7 @@
         } else {
           emptyState.style.display = 'none';
           grid.style.display = '';
-          grid.innerHTML = jobs.map(renderJobCard).join('');
+          grid.innerHTML = jobs.map((job, i) => renderJobCard(job, i)).join('');
           const start = (currentPage - 1) * ITEMS_PER_PAGE;
           resultsCount.innerHTML = `Mostrando <strong>${start + 1}–${Math.min(start + ITEMS_PER_PAGE, total)}</strong> de <strong>${total}</strong> ofertas`;
         }
