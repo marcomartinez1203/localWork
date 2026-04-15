@@ -106,6 +106,7 @@
         <div class="profile-header__info">
           <h1 id="profileName">Cargando...</h1>
           <p id="profileEmail">—</p>
+          <p id="profileCompany" style="display:none;font-size:var(--fs-sm);color:var(--color-primary);font-weight:var(--fw-semibold);margin:var(--space-1) 0 0;"></p>
         </div>
       </div>
 
@@ -258,6 +259,7 @@
 
   <script src="../assets/js/config/api.js"></script>
   <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/services/companies.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
   <script src="../assets/js/app.js"></script>
   <script>
@@ -278,6 +280,17 @@
       document.getElementById('profileName').textContent = user.full_name || 'Sin nombre';
       document.getElementById('profileEmail').textContent = user.email || '';
       document.getElementById('profileRole').textContent = user.role === 'employer' ? '👔 Empleador' : '🔍 Buscador';
+
+      if (user.role === 'employer') {
+        try {
+          const company = await CompaniesService.getMyCompany();
+          if (company?.name) {
+            const el = document.getElementById('profileCompany');
+            el.textContent = `🏢 ${company.name}`;
+            el.style.display = '';
+          }
+        } catch (e) { /* sin empresa */ }
+      }
 
       // Show avatar image or initials
       if (user.avatar_url) {

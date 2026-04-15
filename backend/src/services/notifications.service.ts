@@ -3,7 +3,7 @@
 // ============================================
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
-import { Notification, PaginatedResponse } from '../types';
+import { Notification, NotificationType, PaginatedResponse } from '../types';
 
 export class NotificationsService {
 
@@ -69,5 +69,44 @@ export class NotificationsService {
 
     if (error) { console.error('[NotificationsService.getUnreadCount]', error); throw new AppError('Error al contar notificaciones', 500); }
     return count || 0;
+  }
+
+  static async create(
+    userId: string,
+    type: NotificationType,
+    title: string,
+    message: string,
+    data?: Record<string, unknown>
+  ): Promise<void> {
+    const { error } = await supabaseAdmin
+      .from('notifications')
+      .insert({ user_id: userId, type, title, message, data: data ?? null });
+
+    if (error) { console.error('[NotificationsService.create]', error); throw new AppError('Error al crear notificación', 500); }
+  }
+
+  static async createBulk(
+    notifications: Array<{
+      user_id: string;
+      type: NotificationType;
+      title: string;
+      message: string;
+      data?: Record<string, unknown>;
+    }>
+  ): Promise<void> {
+    if (notifications.length === 0) return;
+
+    const { error } = await supabaseAdmin
+      .from('notifications')
+      .insert(notifications.map(n => ({
+        user_id: n.user_id,
+        type: n.type,
+        title: n.title,
+        message: n.message,
+        data: n.data ?? null,
+      })));
+
+    if (error) { console.error('[NotificationsService.createBulk]', error); }
+    // No lanzar error: las notificaciones son no-críticas
   }
 }

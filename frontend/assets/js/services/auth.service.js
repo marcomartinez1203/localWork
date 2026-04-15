@@ -4,13 +4,14 @@
 
 const AuthService = {
 
-  async register({ fullName, email, phone, password, role, companyName, companyNit }) {
+  async register({ fullName, email, phone, password, role, workType, companyName, companyNit }) {
     const data = await api.post('/auth/register', {
       full_name: fullName,
       email,
       phone,
       password,
       role,
+      work_type: workType,
       company_name: companyName,
       company_nit: companyNit,
     });

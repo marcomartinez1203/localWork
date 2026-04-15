@@ -4,16 +4,39 @@
 import { Response, NextFunction } from 'express';
 import { ApplicationsService } from '../services/applications.service';
 import { AuthenticatedRequest } from '../types';
+import { supabaseAdmin } from '../config/supabase';
 
 export class ApplicationsController {
 
   static async apply(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
+      let resumeUrl: string | undefined = req.body.resume_url;
+
+      if (req.file) {
+        const ext = req.file.originalname.split('.').pop();
+        const path = `resumes/${req.userId}_${Date.now()}.${ext}`;
+
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from('uploads')
+          .upload(path, req.file.buffer, {
+            contentType: req.file.mimetype,
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabaseAdmin.storage
+          .from('uploads')
+          .getPublicUrl(path);
+
+        resumeUrl = urlData.publicUrl;
+      }
+
       const application = await ApplicationsService.apply(
         req.userId!,
         req.body.job_id,
         req.body.cover_letter,
-        req.body.resume_url
+        resumeUrl
       );
       res.status(201).json(application);
     } catch (err) { next(err); }

@@ -1,14 +1,16 @@
 // ============================================
 // LocalWork — Workers Directory Controller
 // ============================================
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
 import { removeAccents } from '../utils/string';
+import { AuthenticatedRequest } from '../types';
+import { NotificationsService } from '../services/notifications.service';
 
 export class WorkersController {
 
-  static async list(req: Request, res: Response, next: NextFunction) {
+  static async list(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const page    = parseInt(req.query.page as string) || 1;
       const perPage = parseInt(req.query.per_page as string) || 12;
@@ -53,7 +55,7 @@ export class WorkersController {
     } catch (err) { next(err); }
   }
 
-  static async getOne(req: Request, res: Response, next: NextFunction) {
+  static async getOne(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const { data, error } = await supabaseAdmin
         .from('profiles')
@@ -63,6 +65,17 @@ export class WorkersController {
 
       if (error) { console.error('[WorkersController.getOne]', error); throw new AppError('Trabajador no encontrado', 404); }
       if (!data) throw new AppError('Trabajador no encontrado', 404);
+
+      // Notificar al trabajador si un empleador autenticado visita su perfil
+      if (req.userId && req.userRole === 'employer' && data.id !== req.userId) {
+        NotificationsService.create(
+          data.id,
+          'profile_viewed',
+          'Alguien vio tu perfil',
+          'Un empleador ha visitado tu perfil.'
+        ).catch(err => console.error('[WorkersController.getOne] profile_viewed error', err));
+      }
+
       res.json(data);
     } catch (err) { next(err); }
   }

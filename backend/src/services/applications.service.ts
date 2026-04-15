@@ -4,6 +4,7 @@
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
 import { Application, ApplicationStatus, PaginatedResponse } from '../types';
+import { NotificationsService } from './notifications.service';
 
 export class ApplicationsService {
 
@@ -16,7 +17,7 @@ export class ApplicationsService {
     // Verificar que el empleo existe y está activo
     const { data: job } = await supabaseAdmin
       .from('jobs')
-      .select('id, status')
+      .select('id, status, title, company_id')
       .eq('id', jobId)
       .single();
 
@@ -41,6 +42,28 @@ export class ApplicationsService {
       }
       console.error('[ApplicationsService.apply]', error); throw new AppError('Error al crear la postulación', 500);
     }
+
+    // Notificar al empleador (fire-and-forget)
+    void (async () => {
+      try {
+        const { data: company } = await supabaseAdmin
+          .from('companies')
+          .select('owner_id')
+          .eq('id', job.company_id)
+          .single();
+        if (company?.owner_id) {
+          await NotificationsService.create(
+            company.owner_id,
+            'application_received',
+            'Nueva postulación recibida',
+            `Alguien se postuló a tu oferta "${job.title}".`,
+            { job_id: jobId, application_id: data.id }
+          );
+        }
+      } catch (err) {
+        console.error('[ApplicationsService.apply] notification error', err);
+      }
+    })();
 
     return data as Application;
   }
@@ -138,10 +161,10 @@ export class ApplicationsService {
     status: ApplicationStatus,
     notes?: string
   ): Promise<Application> {
-    // Verificar propiedad
+    // Verificar propiedad y obtener datos necesarios para la notificación
     const { data: app } = await supabaseAdmin
       .from('applications')
-      .select('job_id')
+      .select('job_id, seeker_id')
       .eq('id', applicationId)
       .single();
 
@@ -149,7 +172,7 @@ export class ApplicationsService {
 
     const { data: job } = await supabaseAdmin
       .from('jobs')
-      .select('company_id')
+      .select('company_id, title')
       .eq('id', app.job_id)
       .single();
 
@@ -174,6 +197,25 @@ export class ApplicationsService {
       .single();
 
     if (error) { console.error('[ApplicationsService.updateStatus]', error); throw new AppError('Error al actualizar el estado', 500); }
+
+    // Notificar al seeker del cambio de estado
+    const STATUS_MESSAGES: Record<ApplicationStatus, string> = {
+      pending:     'Tu postulación está pendiente de revisión.',
+      reviewed:    'Tu postulación fue revisada por el empleador.',
+      shortlisted: '¡Fuiste preseleccionado/a para esta oferta!',
+      interview:   '¡Te han invitado a una entrevista!',
+      accepted:    '¡Felicitaciones! Tu postulación fue aceptada.',
+      rejected:    'Tu postulación no fue seleccionada en esta ocasión.',
+    };
+
+    NotificationsService.create(
+      app.seeker_id,
+      'application_status_changed',
+      'Tu postulación fue actualizada',
+      `${STATUS_MESSAGES[status]} — Oferta: "${job?.title ?? ''}"`,
+      { job_id: app.job_id, application_id: applicationId, status }
+    ).catch(err => console.error('[ApplicationsService.updateStatus] notification error', err));
+
     return data as Application;
   }
 

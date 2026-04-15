@@ -83,7 +83,7 @@
       <div class="dash-header">
         <div>
           <h1>Panel de Empleador</h1>
-          <p style="color:var(--color-text-secondary);margin:0;">Gestiona tus ofertas y postulantes</p>
+          <p style="color:var(--color-text-secondary);margin:0;" id="dashCompanyName">Gestiona tus ofertas y postulantes</p>
         </div>
         <button class="btn btn--primary btn--lg" onclick="openCreateModal()">
           + Nueva Oferta
@@ -164,14 +164,19 @@
           <label class="form-label">Requisitos</label>
           <textarea class="form-textarea" id="jobRequirements" rows="3" placeholder="Experiencia, estudios, habilidades..."></textarea>
         </div>
+        <div class="form-group">
+          <label class="form-label">Salario</label>
+          <input type="text" class="form-input" id="jobSalaryText" placeholder="Ej: $1.500.000, A convenir, Según experiencia">
+          <span class="form-hint">Texto que verá el candidato</span>
+        </div>
         <div class="create-form__row">
           <div class="form-group">
-            <label class="form-label">Salario mínimo</label>
-            <input type="number" class="form-input" id="jobSalaryMin" placeholder="1300000">
+            <label class="form-label">Rango mínimo <span style="color:var(--color-text-muted);font-weight:400;">(opcional, para filtros)</span></label>
+            <input type="number" class="form-input" id="jobSalaryMin" placeholder="1300000" min="0">
           </div>
           <div class="form-group">
-            <label class="form-label">Salario máximo</label>
-            <input type="number" class="form-input" id="jobSalaryMax" placeholder="2000000">
+            <label class="form-label">Rango máximo <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+            <input type="number" class="form-input" id="jobSalaryMax" placeholder="2000000" min="0">
           </div>
         </div>
         <div class="create-form__row">
@@ -233,6 +238,7 @@
   <script src="../assets/js/services/notifications.service.js"></script>
   <script src="../assets/js/services/jobs.service.js"></script>
   <script src="../assets/js/services/applications.service.js"></script>
+  <script src="../assets/js/services/companies.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
   <script src="../assets/js/app.js"></script>
   <script>
@@ -257,6 +263,14 @@
     };
 
     (async function init() {
+      // Nombre de empresa
+      try {
+        const company = await CompaniesService.getMyCompany();
+        if (company?.name) {
+          document.getElementById('dashCompanyName').textContent = `🏢 ${company.name}`;
+        }
+      } catch (e) { /* sin empresa aún */ }
+
       // Load employer stats
       try {
         const stats = await api.get('/jobs/employer-stats');
@@ -400,7 +414,7 @@
               </div>
               <div class="applicant-row__actions">
                 <select onchange="changeAppStatus('${app.id}', this.value, this)">${statusOpts}</select>
-                ${seeker.resume_url ? `<a href="${seeker.resume_url}" target="_blank" class="btn btn--ghost btn--sm" style="font-size:var(--fs-xs);">📄 CV</a>` : ''}
+                ${(app.resume_url || seeker.resume_url) ? `<a href="${app.resume_url || seeker.resume_url}" target="_blank" class="btn btn--ghost btn--sm" style="font-size:var(--fs-xs);">📄 CV</a>` : ''}
               </div>
             </div>`;
         }).join('');
@@ -443,7 +457,14 @@
       try {
         const salaryMin = parseInt(document.getElementById('jobSalaryMin').value) || null;
         const salaryMax = parseInt(document.getElementById('jobSalaryMax').value) || null;
-        const salaryText = salaryMin ? `$${salaryMin.toLocaleString('es-CO')}${salaryMax ? ' – $' + salaryMax.toLocaleString('es-CO') : ''}` : null;
+        const salaryText = document.getElementById('jobSalaryText').value.trim() || null;
+
+        if (salaryMin && salaryMax && salaryMin > salaryMax) {
+          showToast('El rango mínimo no puede ser mayor al máximo', 'error');
+          btn.classList.remove('btn--loading');
+          btn.disabled = false;
+          return;
+        }
 
         await JobsService.create({
           title: document.getElementById('jobTitle').value.trim(),

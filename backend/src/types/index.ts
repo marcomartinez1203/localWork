@@ -163,6 +163,7 @@ export interface RegisterRequest {
   full_name: string;
   phone?: string;
   role: UserRole;
+  work_type?: 'employee' | 'freelance' | 'both';
   company_name?: string;
   company_nit?: string;
 }

@@ -35,6 +35,7 @@ export class AuthService {
       full_name: data.full_name,
       role: data.role || 'seeker',
       phone: data.phone || null,
+      work_type: data.work_type || null,
     });
 
     if (profileError) {

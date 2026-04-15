@@ -1,0 +1,62 @@
+// ============================================
+// LocalWork — Companies Routes
+// ============================================
+import { Router, Response, NextFunction } from 'express';
+import { authenticate, requireRole } from '../middleware/auth.middleware';
+import { supabaseAdmin } from '../config/supabase';
+import { AuthenticatedRequest } from '../types';
+import { AppError } from '../middleware/error.middleware';
+
+const router = Router();
+
+// GET /companies/mine — empresa del empleador autenticado
+router.get(
+  '/mine',
+  authenticate,
+  requireRole('employer'),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('companies')
+        .select('id, name, nit, description, logo_url, website, phone, address, location, verified')
+        .eq('owner_id', req.userId!)
+        .single();
+
+      if (error || !data) {
+        res.status(404).json({ message: 'No tienes una empresa registrada' });
+        return;
+      }
+
+      res.json(data);
+    } catch (err) { next(err); }
+  }
+);
+
+// PUT /companies/:id — actualizar empresa
+router.put(
+  '/:id',
+  authenticate,
+  requireRole('employer'),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const allowed = ['name', 'nit', 'description', 'website', 'phone', 'address', 'location'];
+      const updates: Record<string, unknown> = {};
+      for (const key of allowed) {
+        if (key in req.body) updates[key] = req.body[key];
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from('companies')
+        .update(updates)
+        .eq('id', req.params.id)
+        .eq('owner_id', req.userId!)
+        .select()
+        .single();
+
+      if (error || !data) throw new AppError('No se pudo actualizar la empresa', 400);
+      res.json(data);
+    } catch (err) { next(err); }
+  }
+);
+
+export default router;

@@ -330,12 +330,11 @@
             phone: document.getElementById('regPhone').value.trim() || undefined,
             password: regPassword.value,
             role: selectedRole,
+            workType: selectedWorkType || undefined,
             companyName: selectedRole === 'employer' ? document.getElementById('companyName').value.trim() : undefined,
             companyNit: selectedRole === 'employer' ? document.getElementById('companyNit').value.trim() : undefined,
           });
-          // Si es freelancer, guardar work_type y redirigir al perfil para completarlo
           if (selectedWorkType === 'freelance') {
-            try { await AuthService.updateProfile({ work_type: 'freelance' }); } catch (e) { /* silent */ }
             window.location.href = 'profile.html?welcome=freelance';
           } else {
             window.location.href = 'home.html';

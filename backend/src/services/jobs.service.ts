@@ -5,6 +5,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
 import { Job, JobWithDetails, JobFilters, PaginatedResponse, Category } from '../types';
 import { removeAccents } from '../utils/string';
+import { NotificationsService } from './notifications.service';
 
 export class JobsService {
 
@@ -101,8 +102,46 @@ export class JobsService {
       .select()
       .single();
 
-    if (error) { console.error('[JobsService.create]', error); throw new AppError('Error al crear la oferta', 500); }
+    if (error) {
+      if (error.code === '23514') throw new AppError('El salario mínimo no puede ser mayor al máximo', 400);
+      console.error('[JobsService.create]', error); throw new AppError('Error al crear la oferta', 500);
+    }
+
+    // Notificar a seekers disponibles si la oferta se publica activa
+    if ((jobData.status ?? 'active') === 'active') {
+      this._notifyNewJobMatch(data as Job).catch(err =>
+        console.error('[JobsService.create] new_job_match error', err)
+      );
+    }
+
     return data as Job;
+  }
+
+  private static async _notifyNewJobMatch(job: Job): Promise<void> {
+    const { data: category } = await supabaseAdmin
+      .from('categories')
+      .select('name')
+      .eq('id', job.category_id)
+      .single();
+
+    const { data: seekers } = await supabaseAdmin
+      .from('profiles')
+      .select('id')
+      .eq('role', 'seeker')
+      .not('availability', 'is', null);
+
+    if (!seekers || seekers.length === 0) return;
+
+    const categoryLabel = category?.name ? ` en ${category.name}` : '';
+    await NotificationsService.createBulk(
+      seekers.map(s => ({
+        user_id: s.id,
+        type: 'new_job_match' as const,
+        title: 'Nueva oferta que podría interesarte',
+        message: `Se publicó "${job.title}"${categoryLabel}. ¡Revísala antes de que se llene!`,
+        data: { job_id: job.id },
+      }))
+    );
   }
 
   static async update(jobId: string, userId: string, updates: Partial<Job>): Promise<Job> {
