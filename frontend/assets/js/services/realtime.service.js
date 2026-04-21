@@ -4,12 +4,10 @@
 // Light wrapper for Supabase Realtime — listens for new jobs
 // and notifications without page refresh.
 //
-// Usage: include supabase-js CDN + this script, then call
-//   RealtimeService.init() after user is authenticated.
+// Requires: api.js (provides SUPABASE_URL, SUPABASE_ANON)
+//           supabase-js CDN
+//           auth.service.js
 // ============================================
-
-const SUPABASE_URL  = 'https://bemsnwrwrcllvsmlvksi.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlbXNud3J3cmNsbHZzbWx2a3NpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMjY1MDAsImV4cCI6MjA4OTcwMjUwMH0._ykvyz-2y25rWQEWHu6eOlOc6sNog_G9_9zz2d6eCBE';
 
 const RealtimeService = {
   _client: null,
@@ -21,7 +19,13 @@ const RealtimeService = {
       return;
     }
 
-    const token = localStorage.getItem('lw_token');
+    if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON === 'undefined') {
+      console.warn('[RealtimeService] SUPABASE_URL/SUPABASE_ANON not defined, load api.js first');
+      return;
+    }
+
+    // Use sessionStorage — same source as api.js and auth.service.js
+    const token = sessionStorage.getItem('lw_token');
     if (!token) return;
 
     this._client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {

@@ -4,6 +4,10 @@
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
+// Supabase public config (anon key — safe for frontend, protected by RLS)
+const SUPABASE_URL  = 'https://bemsnwrwrcllvsmlvksi.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlbXNud3J3cmNsbHZzbWx2a3NpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMjY1MDAsImV4cCI6MjA4OTcwMjUwMH0._ykvyz-2y25rWQEWHu6eOlOc6sNog_G9_9zz2d6eCBE';
+
 /**
  * Fetch wrapper con autenticación automática
  */
