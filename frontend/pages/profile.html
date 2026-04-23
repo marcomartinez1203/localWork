@@ -237,6 +237,15 @@
         </p>
       </div>
 
+      <!-- Empleos Guardados (solo seekers) -->
+      <div class="profile-card" id="savedJobsSection" style="display:none;">
+        <div class="profile-card__title">♥ Empleos guardados</div>
+        <div id="savedJobsList" style="display:flex;flex-direction:column;gap:var(--space-3);"></div>
+        <p id="savedJobsEmpty" style="font-size:var(--fs-sm);color:var(--color-text-muted);display:none;">
+          No tienes empleos guardados. Explora ofertas y guarda las que te interesen.
+        </p>
+      </div>
+
       <!-- Danger Zone -->
       <div class="profile-card" style="border-color:var(--color-danger);">
         <div class="profile-card__title" style="color:var(--color-danger);">Zona de peligro</div>
@@ -260,6 +269,7 @@
   <script src="../assets/js/config/api.js"></script>
   <script src="../assets/js/services/auth.service.js"></script>
   <script src="../assets/js/services/companies.service.js"></script>
+  <script src="../assets/js/services/jobs.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
   <script src="../assets/js/app.js"></script>
   <script>
@@ -304,7 +314,47 @@
       document.getElementById('phone').value = user.phone || '';
       document.getElementById('location').value = user.location || '';
       document.getElementById('bio').value = user.bio || '';
+
+      // Load saved jobs for seekers
+      if (user.role === 'seeker') {
+        document.getElementById('savedJobsSection').style.display = '';
+        try {
+          const saved = await JobsService.getSaved();
+          const list = document.getElementById('savedJobsList');
+          const empty = document.getElementById('savedJobsEmpty');
+          if (!saved || saved.length === 0) {
+            empty.style.display = '';
+          } else {
+            list.innerHTML = saved.map(job => `
+              <div class="job-row" style="cursor:pointer;" onclick="window.location.href='job-detail.html?id=${job.id}'">
+                <div class="job-row__info">
+                  <div class="job-row__title">${escapeHtml(job.title)}</div>
+                  <p class="job-row__meta">
+                    <span>${escapeHtml(job.company_name || '')}</span>
+                    <span>${escapeHtml(job.location || '')}</span>
+                    <span>${job.modality}</span>
+                  </p>
+                </div>
+                <button class="btn btn--ghost btn--sm" onclick="event.stopPropagation();unsaveSavedJob('${job.id}', this)" title="Quitar de guardados">✕</button>
+              </div>
+            `).join('');
+          }
+        } catch (e) { console.error('[profile] saved jobs error', e); }
+      }
     })();
+
+    async function unsaveSavedJob(jobId, btn) {
+      try {
+        await JobsService.unsave(jobId);
+        btn.closest('.job-row').remove();
+        showToast('Empleo removido de guardados', 'info');
+        // Check if list is now empty
+        const list = document.getElementById('savedJobsList');
+        if (list.children.length === 0) {
+          document.getElementById('savedJobsEmpty').style.display = '';
+        }
+      } catch (err) { showToast(err.message || 'Error', 'error'); }
+    }
 
     // Profile form save
     document.getElementById('profileForm').addEventListener('submit', async (e) => {

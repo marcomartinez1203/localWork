@@ -30,6 +30,21 @@
     @media (max-width: 479px) {
       .workers-grid { grid-template-columns: 1fr; }
     }
+
+    /* Worker detail modal */
+    .worker-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:var(--z-modal); align-items:flex-start; justify-content:center; padding:var(--space-8) var(--space-4); overflow-y:auto; }
+    .worker-modal-overlay.open { display:flex; }
+    .worker-modal { background:var(--color-surface); border-radius:var(--radius-xl); padding:var(--space-8); width:100%; max-width:560px; box-shadow:var(--shadow-xl); animation:scaleIn var(--transition) forwards; }
+    .worker-modal__header { display:flex; align-items:center; gap:var(--space-4); margin-bottom:var(--space-6); }
+    .worker-modal__avatar { width:64px; height:64px; border-radius:var(--radius-full); background:var(--color-primary-100); color:var(--color-primary); display:flex; align-items:center; justify-content:center; font-weight:var(--fw-bold); font-size:var(--fs-lg); overflow:hidden; flex-shrink:0; }
+    .worker-modal__avatar img { width:100%; height:100%; object-fit:cover; }
+    .worker-modal__close { position:absolute; top:var(--space-4); right:var(--space-4); background:none; border:none; color:var(--color-text-muted); cursor:pointer; }
+    .rating-stars { display:flex; gap:var(--space-1); }
+    .rating-stars button { background:none; border:none; font-size:var(--fs-xl); cursor:pointer; transition:transform 0.15s; color:var(--color-border); }
+    .rating-stars button:hover { transform:scale(1.2); }
+    .rating-stars button.active { color:#f59e0b; }
+    .rating-item { border-bottom:1px solid var(--color-border-light); padding:var(--space-3) 0; }
+    .rating-item:last-child { border-bottom:none; }
   </style>
 </head>
 <body>
@@ -102,6 +117,16 @@
     </div>
   </main>
 
+  <!-- Worker Detail Modal -->
+  <div class="worker-modal-overlay" id="workerModal">
+    <div class="worker-modal" style="position:relative;">
+      <button class="worker-modal__close" onclick="closeWorkerModal()" aria-label="Cerrar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+      <div id="workerModalContent">Cargando...</div>
+    </div>
+  </div>
+
   <footer class="footer">
     <div class="container">
       <div class="footer__bottom" style="border-top:none;padding-top:0;">
@@ -114,6 +139,7 @@
   <script src="../assets/js/services/auth.service.js"></script>
   <script src="../assets/js/services/notifications.service.js"></script>
   <script src="../assets/js/services/workers.service.js"></script>
+  <script src="../assets/js/services/ratings.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
   <script src="../assets/js/app.js"></script>
   <script>
@@ -184,7 +210,7 @@
             : '';
 
           return `
-            <div class="worker-card" onclick="App.goTo('workers/${w.id}')">
+            <div class="worker-card" onclick="openWorkerModal('${w.id}')" style="cursor:pointer;">
               <div class="worker-card__header">
                 <div class="worker-card__avatar">${avatarHtml}</div>
                 <div class="worker-card__info">
@@ -193,6 +219,7 @@
                   ${badgeInfo ? `<span class="worker-badge ${badgeInfo.cls}">${badgeInfo.label}</span>` : ''}
                 </div>
               </div>
+            </div>
               ${bioSection}
               ${skillsSection}
               ${footerSection}
@@ -220,6 +247,109 @@
     const debouncedSearch = debounce(() => { currentPage = 1; loadWorkers(); }, 400);
 
     loadWorkers();
+
+    // ── Worker detail modal ──
+    async function openWorkerModal(workerId) {
+      const modal = document.getElementById('workerModal');
+      const content = document.getElementById('workerModalContent');
+      modal.classList.add('open');
+      content.innerHTML = '<div class="skeleton" style="height:200px;"></div>';
+
+      try {
+        const worker = await WorkersService.getOne(workerId);
+        const ratings = await RatingsService.getForUser(workerId);
+        const user = AuthService.getUser();
+        const isEmployer = user && user.role === 'employer';
+
+        const initials = worker.full_name ? worker.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';
+        const avatarHtml = worker.avatar_url ? `<img src="${worker.avatar_url}" alt="">` : initials;
+        const starsDisplay = ratings.average > 0 ? `${'⭐'.repeat(Math.round(ratings.average))} ${ratings.average}/5 (${ratings.total})` : 'Sin calificaciones';
+
+        let ratingsHtml = '';
+        if (ratings.data && ratings.data.length > 0) {
+          ratingsHtml = ratings.data.map(r => `
+            <div class="rating-item">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <strong style="font-size:var(--fs-sm);">${escapeHtml(r.rater?.full_name || 'Anónimo')}</strong>
+                <span style="color:#f59e0b;">${'★'.repeat(r.score)}${'☆'.repeat(5 - r.score)}</span>
+              </div>
+              ${r.comment ? `<p style="font-size:var(--fs-sm);color:var(--color-text-secondary);margin:var(--space-1) 0 0;">${escapeHtml(r.comment)}</p>` : ''}
+            </div>
+          `).join('');
+        }
+
+        let rateFormHtml = '';
+        if (isEmployer && user.id !== workerId) {
+          rateFormHtml = `
+            <div style="border-top:1px solid var(--color-border-light);padding-top:var(--space-4);margin-top:var(--space-4);">
+              <p style="font-weight:var(--fw-semibold);font-size:var(--fs-sm);margin-bottom:var(--space-2);">Calificar trabajador</p>
+              <div class="rating-stars" id="ratingStars">
+                ${[1,2,3,4,5].map(i => `<button type="button" data-score="${i}" onclick="selectStar(${i})">☆</button>`).join('')}
+              </div>
+              <textarea class="form-textarea" id="ratingComment" rows="2" placeholder="Comentario opcional..." style="margin-top:var(--space-2);font-size:var(--fs-sm);"></textarea>
+              <button class="btn btn--primary btn--sm" style="margin-top:var(--space-2);" onclick="submitRating('${workerId}')">Enviar calificación</button>
+            </div>
+          `;
+        }
+
+        content.innerHTML = `
+          <div class="worker-modal__header">
+            <div class="worker-modal__avatar">${avatarHtml}</div>
+            <div>
+              <h2 style="font-size:var(--fs-xl);margin:0;">${escapeHtml(worker.full_name || 'Sin nombre')}</h2>
+              ${worker.location ? `<p style="font-size:var(--fs-sm);color:var(--color-text-muted);margin:var(--space-1) 0 0;">📍 ${escapeHtml(worker.location)}</p>` : ''}
+              <p style="font-size:var(--fs-sm);margin:var(--space-1) 0 0;">${starsDisplay}</p>
+            </div>
+          </div>
+          ${worker.bio ? `<p style="color:var(--color-text-secondary);margin-bottom:var(--space-4);">${escapeHtml(worker.bio)}</p>` : ''}
+          ${worker.skills && worker.skills.length ? `<div style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-4);">${worker.skills.map(s => `<span class="badge badge--neutral">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
+          ${worker.phone ? `<p style="font-size:var(--fs-sm);">📞 ${escapeHtml(worker.phone)}</p>` : ''}
+          ${worker.hourly_rate ? `<p style="font-size:var(--fs-sm);">💰 ${escapeHtml(worker.hourly_rate)}</p>` : ''}
+          <div style="margin-top:var(--space-4);">
+            <p style="font-weight:var(--fw-semibold);margin-bottom:var(--space-2);">Calificaciones</p>
+            ${ratingsHtml || '<p style="font-size:var(--fs-sm);color:var(--color-text-muted);">Aún no tiene calificaciones.</p>'}
+          </div>
+          ${rateFormHtml}
+        `;
+      } catch (err) {
+        content.innerHTML = `<p style="color:var(--color-danger);">${err.message || 'Error al cargar el perfil'}</p>`;
+      }
+    }
+
+    function closeWorkerModal() {
+      document.getElementById('workerModal').classList.remove('open');
+    }
+
+    document.getElementById('workerModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeWorkerModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeWorkerModal();
+    });
+
+    let selectedScore = 0;
+    function selectStar(score) {
+      selectedScore = score;
+      document.querySelectorAll('#ratingStars button').forEach((btn, i) => {
+        btn.textContent = i < score ? '★' : '☆';
+        btn.classList.toggle('active', i < score);
+      });
+    }
+
+    async function submitRating(workerId) {
+      if (selectedScore === 0) { showToast('Selecciona una calificación', 'error'); return; }
+      try {
+        await RatingsService.create({
+          ratedId: workerId,
+          score: selectedScore,
+          comment: document.getElementById('ratingComment')?.value.trim(),
+        });
+        showToast('¡Calificación enviada!', 'success');
+        openWorkerModal(workerId); // Reload modal
+      } catch (err) {
+        showToast(err.message || 'Error al calificar', 'error');
+      }
+    }
   </script>
 </body>
 </html>

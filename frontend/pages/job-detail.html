@@ -93,6 +93,11 @@
           <label class="form-label">Carta de presentación (opcional)</label>
           <textarea class="form-textarea" id="coverLetter" rows="5" placeholder="Cuéntale al empleador por qué eres ideal para este cargo..."></textarea>
         </div>
+        <div class="form-group" style="margin-bottom:var(--space-5);">
+          <label class="form-label">Hoja de vida / CV (opcional)</label>
+          <input type="file" class="form-input" id="resumeFile" accept=".pdf,.doc,.docx" style="padding:var(--space-3);">
+          <p style="font-size:var(--fs-xs);color:var(--color-text-muted);margin-top:var(--space-1);">PDF o Word, máximo 5 MB</p>
+        </div>
         <button type="submit" class="btn btn--primary btn--lg btn--block" id="applySubmitBtn">
           Enviar postulación
         </button>
@@ -239,8 +244,18 @@
       btn.disabled = true;
 
       try {
+        const resumeInput = document.getElementById('resumeFile');
+        const resumeFile = resumeInput.files.length > 0 ? resumeInput.files[0] : null;
+
+        // Validate file size (5MB)
+        if (resumeFile && resumeFile.size > 5 * 1024 * 1024) {
+          showToast('El archivo no puede pesar más de 5 MB', 'error');
+          return;
+        }
+
         await ApplicationsService.apply(jobId, {
           coverLetter: document.getElementById('coverLetter').value.trim(),
+          resumeFile,
         });
         closeApplyModal();
         showToast('¡Postulación enviada con éxito!', 'success');
