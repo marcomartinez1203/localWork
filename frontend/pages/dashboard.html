@@ -85,9 +85,12 @@
           <h1>Panel de Empleador</h1>
           <p style="color:var(--color-text-secondary);margin:0;" id="dashCompanyName">Gestiona tus ofertas y postulantes</p>
         </div>
-        <button class="btn btn--primary btn--lg" onclick="openCreateModal()">
-          + Nueva Oferta
-        </button>
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
+          <button class="btn btn--outline btn--sm" onclick="openCompanyModal()">🏢 Mi Empresa</button>
+          <button class="btn btn--primary btn--lg" onclick="openCreateModal()">
+            + Nueva Oferta
+          </button>
+        </div>
       </div>
 
       <!-- Stats -->
@@ -130,7 +133,7 @@
   <div class="create-modal-overlay" id="createModal">
     <div class="create-modal">
       <div class="create-modal__header">
-        <h2 class="create-modal__title">Nueva oferta de empleo</h2>
+      <h2 class="create-modal__title" id="createModalTitle">Nueva oferta de empleo</h2>
         <button class="modal__close" onclick="closeCreateModal()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
@@ -189,8 +192,67 @@
             <input type="number" class="form-input" id="jobVacancies" value="1" min="1">
           </div>
         </div>
+        <div class="form-group">
+          <label class="form-label">Fecha de vencimiento <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
+          <input type="date" class="form-input" id="jobExpiresAt">
+          <span class="form-hint">La oferta se ocultará automáticamente después de esta fecha</span>
+        </div>
         <button type="submit" class="btn btn--primary btn--lg btn--block" id="createBtn">
           Publicar oferta
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Company Modal -->
+  <div class="create-modal-overlay" id="companyModal">
+    <div class="create-modal">
+      <div class="create-modal__header">
+        <h2 class="create-modal__title">Datos de mi empresa</h2>
+        <button class="modal__close" onclick="closeCompanyModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <form class="create-form" id="companyForm">
+        <input type="hidden" id="companyId">
+        <div class="form-group">
+          <label class="form-label form-label--required">Nombre de la empresa</label>
+          <input type="text" class="form-input" id="companyName" required placeholder="Ej: Ferretería López">
+        </div>
+        <div class="create-form__row">
+          <div class="form-group">
+            <label class="form-label">NIT</label>
+            <input type="text" class="form-input" id="companyNit" placeholder="900.123.456-7">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input type="text" class="form-input" id="companyPhone" placeholder="3001234567">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-textarea" id="companyDescription" rows="3" placeholder="¿Qué hace tu empresa?"></textarea>
+        </div>
+        <div class="create-form__row">
+          <div class="form-group">
+            <label class="form-label">Ubicación / Dirección</label>
+            <input type="text" class="form-input" id="companyAddress" placeholder="Calle 5 #10-20">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sitio web</label>
+            <input type="url" class="form-input" id="companyWebsite" placeholder="https://...">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Logo de la empresa</label>
+          <div style="display:flex;align-items:center;gap:var(--space-3);">
+            <div id="companyLogoPreview" style="width:48px;height:48px;border-radius:var(--radius);background:var(--color-primary-100);display:flex;align-items:center;justify-content:center;font-weight:var(--fw-bold);color:var(--color-primary);overflow:hidden;flex-shrink:0;">🏢</div>
+            <input type="file" class="form-input" id="companyLogo" accept="image/jpeg,image/png,image/webp" style="padding:var(--space-2);">
+          </div>
+          <p style="font-size:var(--fs-xs);color:var(--color-text-muted);margin-top:var(--space-1);">JPG, PNG o WebP, máximo 5 MB</p>
+        </div>
+        <button type="submit" class="btn btn--primary btn--lg btn--block" id="companySaveBtn">
+          Guardar cambios
         </button>
       </form>
     </div>
@@ -324,15 +386,12 @@
             </div>
             <span class="badge ${statusColors[job.status] || 'badge--neutral'}">${statusLabels[job.status] || job.status}</span>
             <div class="job-row__actions">
-              <button class="btn btn--ghost btn--sm" onclick="viewApplicants('${job.id}', '${escapeHtml(job.title).replace(/'/g, "\\'")}')">
-                👥 Postulantes
-              </button>
+              <button class="btn btn--ghost btn--sm" onclick="viewApplicants('${job.id}', '${escapeHtml(job.title).replace(/'/g, "\\'")}')">👥 Postulantes</button>
+              <button class="btn btn--ghost btn--sm" onclick="editJob('${job.id}')">✏️ Editar</button>
               <button class="btn btn--ghost btn--sm" onclick="toggleStatus('${job.id}', '${job.status}')">
                 ${job.status === 'active' ? '⏸ Pausar' : '▶ Activar'}
               </button>
-              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteJob('${job.id}')">
-                🗑
-              </button>
+              <button class="btn btn--ghost btn--sm" style="color:var(--color-danger);" onclick="deleteJob('${job.id}')">🗑</button>
             </div>
           </div>
         `).join('');
@@ -436,7 +495,16 @@
 
     // ── Create Job Modal ──
     function openCreateModal() { document.getElementById('createModal').classList.add('open'); }
-    function closeCreateModal() { document.getElementById('createModal').classList.remove('open'); }
+    function closeCreateModal() {
+      document.getElementById('createModal').classList.remove('open');
+      // Reset edit state
+      if (editingJobId) {
+        editingJobId = null;
+        document.getElementById('createModalTitle').textContent = 'Nueva oferta de empleo';
+        document.getElementById('createBtn').textContent = 'Publicar oferta';
+        document.getElementById('createJobForm').reset();
+      }
+    }
 
     document.getElementById('createModal').addEventListener('click', (e) => {
       if (e.target === e.currentTarget) closeCreateModal();
@@ -445,8 +513,34 @@
       if (e.target === e.currentTarget) closeApplicantsModal();
     });
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') { closeCreateModal(); closeApplicantsModal(); }
+      if (e.key === 'Escape') { closeCreateModal(); closeApplicantsModal(); closeCompanyModal(); }
     });
+
+    // ── Edit Job ──
+    let editingJobId = null;
+
+    async function editJob(jobId) {
+      try {
+        const job = await JobsService.getById(jobId);
+        editingJobId = jobId;
+        document.getElementById('createModalTitle').textContent = 'Editar oferta de empleo';
+        document.getElementById('createBtn').textContent = 'Guardar cambios';
+        document.getElementById('jobTitle').value = job.title || '';
+        document.getElementById('jobCategory').value = job.category_id || '';
+        document.getElementById('jobModality').value = job.modality || 'Presencial';
+        document.getElementById('jobDescription').value = job.description || '';
+        document.getElementById('jobRequirements').value = job.requirements || '';
+        document.getElementById('jobSalaryText').value = job.salary_text || '';
+        document.getElementById('jobSalaryMin').value = job.salary_min || '';
+        document.getElementById('jobSalaryMax').value = job.salary_max || '';
+        document.getElementById('jobLocation').value = job.location || '';
+        document.getElementById('jobVacancies').value = job.vacancies || 1;
+        document.getElementById('jobExpiresAt').value = job.expires_at ? job.expires_at.substring(0, 10) : '';
+        openCreateModal();
+      } catch (err) {
+        showToast(err.message || 'Error al cargar la oferta', 'error');
+      }
+    }
 
     document.getElementById('createJobForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -466,22 +560,44 @@
           return;
         }
 
-        await JobsService.create({
-          title: document.getElementById('jobTitle').value.trim(),
-          category_id: document.getElementById('jobCategory').value,
-          modality: document.getElementById('jobModality').value,
-          description: document.getElementById('jobDescription').value.trim(),
-          requirements: document.getElementById('jobRequirements').value.trim() || null,
-          location: document.getElementById('jobLocation').value.trim() || null,
-          salary_min: salaryMin,
-          salary_max: salaryMax,
-          salary_text: salaryText,
-          vacancies: parseInt(document.getElementById('jobVacancies').value) || 1,
-        });
+        const expiresAt = document.getElementById('jobExpiresAt').value || null;
 
-        closeCreateModal();
-        document.getElementById('createJobForm').reset();
-        showToast('¡Oferta publicada exitosamente!', 'success');
+        if (editingJobId) {
+          // Update existing job
+          await JobsService.update(editingJobId, {
+            title: document.getElementById('jobTitle').value.trim(),
+            category_id: document.getElementById('jobCategory').value,
+            modality: document.getElementById('jobModality').value,
+            description: document.getElementById('jobDescription').value.trim(),
+            requirements: document.getElementById('jobRequirements').value.trim() || null,
+            location: document.getElementById('jobLocation').value.trim() || null,
+            salary_min: salaryMin,
+            salary_max: salaryMax,
+            salary_text: salaryText,
+            vacancies: parseInt(document.getElementById('jobVacancies').value) || 1,
+            expires_at: expiresAt,
+          });
+          closeCreateModal();
+          showToast('Oferta actualizada exitosamente', 'success');
+        } else {
+          // Create new job
+          await JobsService.create({
+            title: document.getElementById('jobTitle').value.trim(),
+            category_id: document.getElementById('jobCategory').value,
+            modality: document.getElementById('jobModality').value,
+            description: document.getElementById('jobDescription').value.trim(),
+            requirements: document.getElementById('jobRequirements').value.trim() || null,
+            location: document.getElementById('jobLocation').value.trim() || null,
+            salary_min: salaryMin,
+            salary_max: salaryMax,
+            salary_text: salaryText,
+            vacancies: parseInt(document.getElementById('jobVacancies').value) || 1,
+            expires_at: expiresAt,
+          });
+          closeCreateModal();
+          document.getElementById('createJobForm').reset();
+          showToast('¡Oferta publicada exitosamente!', 'success');
+        }
         loadJobs();
         // Refresh stats
         try {
@@ -491,6 +607,81 @@
         } catch (e) { /* silent */ }
       } catch (err) {
         showToast(err.message || 'Error al publicar', 'error');
+      } finally {
+        btn.classList.remove('btn--loading');
+        btn.disabled = false;
+      }
+    });
+
+    // ── Company Modal ──
+    function openCompanyModal() { document.getElementById('companyModal').classList.add('open'); loadCompanyData(); }
+    function closeCompanyModal() { document.getElementById('companyModal').classList.remove('open'); }
+
+    document.getElementById('companyModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeCompanyModal();
+    });
+
+    async function loadCompanyData() {
+      try {
+        const company = await CompaniesService.getMyCompany();
+        if (company) {
+          document.getElementById('companyId').value = company.id || '';
+          document.getElementById('companyName').value = company.name || '';
+          document.getElementById('companyNit').value = company.nit || '';
+          document.getElementById('companyPhone').value = company.phone || '';
+          document.getElementById('companyDescription').value = company.description || '';
+          document.getElementById('companyAddress').value = company.address || '';
+          document.getElementById('companyWebsite').value = company.website || '';
+          // Show logo preview if exists
+          const logoPreview = document.getElementById('companyLogoPreview');
+          if (company.logo_url) {
+            logoPreview.innerHTML = `<img src="${company.logo_url}" alt="Logo" style="width:100%;height:100%;object-fit:cover;">`;
+          } else {
+            logoPreview.textContent = '🏢';
+          }
+        }
+      } catch (e) { /* no company yet */ }
+    }
+
+    document.getElementById('companyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('companySaveBtn');
+      btn.classList.add('btn--loading');
+      btn.disabled = true;
+
+      try {
+        const companyId = document.getElementById('companyId').value;
+        if (!companyId) { showToast('No se encontró la empresa', 'error'); return; }
+
+        await CompaniesService.update(companyId, {
+          name: document.getElementById('companyName').value.trim(),
+          nit: document.getElementById('companyNit').value.trim() || null,
+          phone: document.getElementById('companyPhone').value.trim() || null,
+          description: document.getElementById('companyDescription').value.trim() || null,
+          address: document.getElementById('companyAddress').value.trim() || null,
+          website: document.getElementById('companyWebsite').value.trim() || null,
+        });
+
+        // Upload logo if selected
+        const logoInput = document.getElementById('companyLogo');
+        if (logoInput.files.length > 0) {
+          const logoFile = logoInput.files[0];
+          if (logoFile.size > 5 * 1024 * 1024) {
+            showToast('El logo no puede pesar más de 5 MB', 'error');
+          } else {
+            const formData = new FormData();
+            formData.append('logo', logoFile);
+            await api.upload('/upload/company-logo', formData);
+          }
+        }
+
+        showToast('Empresa actualizada correctamente', 'success');
+        closeCompanyModal();
+        // Update company name in header
+        const newName = document.getElementById('companyName').value.trim();
+        document.getElementById('dashCompanyName').textContent = `🏢 ${newName}`;
+      } catch (err) {
+        showToast(err.message || 'Error al guardar', 'error');
       } finally {
         btn.classList.remove('btn--loading');
         btn.disabled = false;

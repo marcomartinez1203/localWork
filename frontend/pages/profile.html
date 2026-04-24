@@ -319,7 +319,7 @@
       if (user.role === 'seeker') {
         document.getElementById('savedJobsSection').style.display = '';
         try {
-          const saved = await JobsService.getSaved();
+          const saved = await JobsService.getSavedJobs();
           const list = document.getElementById('savedJobsList');
           const empty = document.getElementById('savedJobsEmpty');
           if (!saved || saved.length === 0) {

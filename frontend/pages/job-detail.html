@@ -221,9 +221,14 @@
           <button class="btn btn--primary btn--lg job-detail__apply-btn" onclick="openApplyModal()">
             Postularme ahora
           </button>
-          <button class="btn btn--outline job-detail__save-btn" id="saveBtn" onclick="toggleSave()">
-            ♡ Guardar empleo
-          </button>
+          <div style="display:flex;gap:var(--space-2);">
+            <button class="btn btn--outline job-detail__save-btn" id="saveBtn" onclick="toggleSave()" style="flex:1;">
+              ♡ Guardar empleo
+            </button>
+            <button class="btn btn--ghost" onclick="shareJob()" title="Compartir oferta" style="flex-shrink:0;">
+              📤
+            </button>
+          </div>
           <p class="job-detail__posted">${job.total_applications || 0} personas se han postulado</p>
         </div>
       `;
@@ -288,6 +293,28 @@
         }
       } catch (err) {
         showToast(err.message || 'Error', 'error');
+      }
+    }
+
+    // Share job
+    async function shareJob() {
+      const url = window.location.href;
+      const title = currentJob ? currentJob.title : 'Oferta de empleo';
+      const text = `¡Mira esta oferta en LocalWork! — ${title}`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title, text, url });
+        } catch (e) { /* user cancelled */ }
+      } else {
+        // Fallback: copy to clipboard
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast('Enlace copiado al portapapeles', 'success');
+        } catch (e) {
+          // Last fallback
+          prompt('Copia este enlace:', url);
+        }
       }
     }
 

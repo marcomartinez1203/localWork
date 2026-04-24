@@ -96,5 +96,64 @@ router.post(
     }
   }
 );
+// Upload company logo
+router.post(
+  '/company-logo',
+  authenticate,
+  upload.single('logo'),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.file) {
+        res.status(400).json({ message: 'No se proporcionó un archivo' });
+        return;
+      }
+
+      // Only allow image types for logos
+      const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!imageTypes.includes(req.file.mimetype)) {
+        res.status(400).json({ message: 'Solo se permiten imágenes (JPG, PNG, WebP)' });
+        return;
+      }
+
+      // Get the user's company
+      const { data: company } = await supabaseAdmin
+        .from('companies')
+        .select('id')
+        .eq('owner_id', req.userId!)
+        .single();
+
+      if (!company) {
+        res.status(404).json({ message: 'No tienes una empresa registrada' });
+        return;
+      }
+
+      const ext = req.file.originalname.split('.').pop();
+      const path = `logos/${company.id}.${ext}`;
+
+      const { error } = await supabaseAdmin.storage
+        .from('uploads')
+        .upload(path, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: true,
+        });
+
+      if (error) throw error;
+
+      const { data: urlData } = supabaseAdmin.storage
+        .from('uploads')
+        .getPublicUrl(path);
+
+      // Update company logo_url
+      await supabaseAdmin
+        .from('companies')
+        .update({ logo_url: urlData.publicUrl })
+        .eq('id', company.id);
+
+      res.json({ url: urlData.publicUrl });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 export default router;

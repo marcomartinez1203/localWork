@@ -18,7 +18,8 @@ export class JobsService {
     let query = supabaseAdmin
       .from('jobs_with_details')
       .select('*', { count: 'exact' })
-      .eq('status', 'active');
+      .eq('status', 'active')
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
 
     // Filtros
     if (filters.category) {
@@ -98,6 +99,7 @@ export class JobsService {
         salary_text: jobData.salary_text,
         vacancies: jobData.vacancies || 1,
         status: jobData.status || 'active',
+        expires_at: jobData.expires_at || null,
       })
       .select()
       .single();
@@ -151,7 +153,7 @@ export class JobsService {
     const allowed = [
       'title', 'description', 'requirements', 'benefits',
       'modality', 'location', 'salary_min', 'salary_max',
-      'salary_text', 'vacancies', 'status', 'category_id',
+      'salary_text', 'vacancies', 'status', 'category_id', 'expires_at',
     ] as const;
 
     const cleanUpdates: Record<string, unknown> = {};
