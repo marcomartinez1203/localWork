@@ -2,7 +2,7 @@
 // LocalWork — API Configuration
 // ============================================
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://local-work-two.vercel.app/api';
 
 // Supabase public config (anon key — safe for frontend, protected by RLS)
 const SUPABASE_URL  = 'https://bemsnwrwrcllvsmlvksi.supabase.co';
