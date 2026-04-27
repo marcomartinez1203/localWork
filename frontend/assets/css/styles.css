@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors - Elegant & Professional */
+  --color-brand: #059669;       /* Emerald 600 - Main Green */
+  --color-brand-light: #10b981; /* Emerald 500 */
+  --color-brand-dark: #047857;  /* Emerald 700 */
+  
+  --color-ink: #0f172a;         /* Slate 900 - Deep graphite for text/dark mode */
+  --color-ink-muted: #475569;   /* Slate 600 */
+  --color-ink-light: #94a3b8;   /* Slate 400 */
+  
+  --color-cream: #f8fafc;       /* Slate 50 - Off white for light mode */
+  --color-surface: #ffffff;     /* White cards */
+  --color-surface-dark: #1e293b;/* Slate 800 for dark mode cards */
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Sora', system-ui, sans-serif;
+}
+
+/* Base Styles & Dark Mode Handle */
+@layer base {
+  :root {
+    --bg-color: var(--color-cream);
+    --text-color: var(--color-ink);
+  }
+
+  :root[data-theme="dark"] {
+    --bg-color: var(--color-ink);
+    --text-color: var(--color-cream);
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-sans);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+/* Glassmorphism Utilities */
+@layer utilities {
+  .glass {
+    @apply bg-white/80 backdrop-blur-lg border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+  }
+  
+  :root[data-theme="dark"] .glass {
+    @apply bg-slate-900/80 border-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.4)];
+  }
+
+  .glass-card {
+    @apply bg-white rounded-2xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-slate-100 transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)];
+  }
+  
+  :root[data-theme="dark"] .glass-card {
+    @apply bg-slate-800 border-slate-700 hover:shadow-[0_8px_30px_rgb(0,0,0,0.6)];
+  }
+
+  /* Elegant Input */
+  .input-elegant {
+    @apply w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none transition-all focus:ring-2 focus:ring-brand/20 focus:border-brand;
+  }
+  
+  :root[data-theme="dark"] .input-elegant {
+    @apply bg-slate-900 border-slate-700 text-white focus:ring-brand/40;
+  }
+
+  /* Elegant Button */
+  .btn-elegant {
+    @apply inline-flex items-center justify-center px-6 py-3 bg-brand text-white font-semibold rounded-xl transition-all hover:bg-brand-dark hover:-translate-y-0.5 hover:shadow-lg hover:shadow-brand/30 active:translate-y-0;
+  }
+}

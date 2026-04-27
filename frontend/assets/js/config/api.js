@@ -2,11 +2,8 @@
 // LocalWork — API Configuration
 // ============================================
 
-// Si estamos en Vercel, usamos ruta relativa para evitar CORS y problemas de caché
-// Si estamos en local (Live Server), usamos el localhost:3000
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-  ? 'http://localhost:3000/api' 
-  : '/api';
+// Siempre apuntamos al backend en Vercel, incluso si estamos desarrollando en local.
+const API_BASE_URL = 'https://localwork-aguachica.vercel.app/api';
 
 // Supabase public config (anon key — safe for frontend, protected by RLS)
 const SUPABASE_URL  = 'https://bemsnwrwrcllvsmlvksi.supabase.co';
