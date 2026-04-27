@@ -57,6 +57,13 @@ if (env.isDev) {
 }
 
 // ── Rutas ──
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'LocalWork API',
+    status: 'online',
+    version: '1.0.0'
+  });
+});
 app.use('/api', routes);
 
 // ── Manejo de errores ──
