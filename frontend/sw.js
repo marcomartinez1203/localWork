@@ -2,7 +2,7 @@
 // LocalWork — Service Worker (Offline Cache)
 // ============================================
 
-const CACHE_NAME = 'localwork-v1';
+const CACHE_NAME = 'localwork-v2';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -45,9 +45,11 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Cache successful responses
+        // Cache successful responses, but only http/https (prevents chrome-extension errors)
         const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        if (event.request.url.startsWith('http')) {
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
         return response;
       })
       .catch(() => caches.match(event.request))

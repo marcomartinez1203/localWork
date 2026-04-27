@@ -3,8 +3,8 @@
   var t = localStorage.getItem('lw_theme');
   if (t) {
     document.documentElement.setAttribute('data-theme', t);
-  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
   }
 }());
 
