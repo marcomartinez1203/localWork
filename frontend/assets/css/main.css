@@ -47,15 +47,15 @@
   --font-body:     'Inter', system-ui, sans-serif;
   --font-mono:     'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 
-  --fs-xs:    0.8125rem;
-  --fs-sm:    0.875rem;
-  --fs-base:  1rem;
-  --fs-md:    1.125rem;
-  --fs-lg:    1.25rem;
-  --fs-xl:    1.5rem;
-  --fs-2xl:   1.875rem;
-  --fs-3xl:   2.25rem;
-  --fs-4xl:   3rem;
+  --fs-xs:    0.75rem;     /* 12px */
+  --fs-sm:    0.8125rem;   /* 13px */
+  --fs-base:  0.875rem;    /* 14px */
+  --fs-md:    1rem;        /* 16px */
+  --fs-lg:    1.125rem;    /* 18px */
+  --fs-xl:    1.25rem;     /* 20px */
+  --fs-2xl:   1.5rem;      /* 24px */
+  --fs-3xl:   1.875rem;    /* 30px */
+  --fs-4xl:   2.25rem;     /* 36px */
 
   --fw-regular:  400;
   --fw-medium:   500;
@@ -81,12 +81,12 @@
   --space-20: 5rem;
   --space-24: 6rem;
 
-  /* Borders & Radius */
-  --radius-sm:   6px;
-  --radius:      12px;
-  --radius-lg:   16px;
-  --radius-xl:   20px;
-  --radius-2xl:  24px;
+  /* Borders & Radius - Sharper for Technical Aesthetic */
+  --radius-sm:   4px;
+  --radius:      6px;
+  --radius-lg:   8px;
+  --radius-xl:   12px;
+  --radius-2xl:  16px;
   --radius-full: 9999px;
 
   /* Shadows — NONE. We use borders only. */
@@ -124,21 +124,27 @@
    DARK MODE
    ══════════════════════════════════════════════ */
 [data-theme="dark"] {
-  --color-bg:            #09090b;
-  --color-surface:       #18181b;
-  --color-surface-alt:   #27272a;
-  --color-text:          #fafafa;
-  --color-text-secondary:#a1a1aa;
-  --color-text-muted:    #71717a;
-  --color-border:        #27272a;
-  --color-border-light:  rgba(255,255,255,0.05);
+  /* Matte deep backgrounds (Supabase style) */
+  --color-bg:            #161616;
+  --color-surface:       #1c1c1c;
+  --color-surface-alt:   #232323;
+  
+  /* Matte text */
+  --color-text:          #ededed;
+  --color-text-secondary:#8b8b8b;
+  --color-text-muted:    #5e5e5e;
+  
+  /* Crisp, subtle borders */
+  --color-border:        #2e2e2e;
+  --color-border-light:  rgba(255,255,255,0.06);
 
-  /* Brand stays emerald */
-  --color-primary-50:    rgba(16,185,129,0.08);
-  --color-primary-100:   rgba(16,185,129,0.12);
-  --color-primary-200:   rgba(16,185,129,0.20);
+  /* Brand - Supabase Green */
+  --color-primary:       #3ecf8e; 
+  --color-primary-50:    rgba(62,207,142,0.05);
+  --color-primary-100:   rgba(62,207,142,0.10);
+  --color-primary-200:   rgba(62,207,142,0.15);
 
-  --color-accent-50:     rgba(52,211,153,0.08);
+  --color-accent-50:     rgba(62,207,142,0.05);
 
   color-scheme: dark;
 }
@@ -172,6 +178,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  letter-spacing: -0.011em;
 }
 
 img, picture, video, canvas, svg {
@@ -215,18 +222,18 @@ fieldset { border: none; }
    ══════════════════════════════════════════════ */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  font-weight: var(--fw-bold);
+  font-weight: var(--fw-semibold);
   line-height: var(--lh-tight);
   color: var(--color-text);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
-h1 { font-size: var(--fs-3xl); font-weight: var(--fw-extrabold); }
+h1 { font-size: var(--fs-3xl); font-weight: var(--fw-bold); }
 h2 { font-size: var(--fs-2xl); }
 h3 { font-size: var(--fs-xl); }
 h4 { font-size: var(--fs-lg); }
 h5 { font-size: var(--fs-md); }
-h6 { font-size: var(--fs-base); font-weight: var(--fw-semibold); }
+h6 { font-size: var(--fs-base); font-weight: var(--fw-medium); }
 
 p {
   margin-bottom: var(--space-4);
