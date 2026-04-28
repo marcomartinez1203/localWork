@@ -13,7 +13,7 @@
   <style>
     .workers-page    { padding-top: var(--space-8); padding-bottom: var(--space-16); }
     .workers-header  { margin-bottom: var(--space-8); }
-    .workers-header h1 { font-size: var(--fs-2xl); margin-bottom: var(--space-2); }
+    .workers-header h1 { font-size: var(--fs-2xl); margin-bottom: var(--space-2); letter-spacing: -0.02em; }
     .workers-header p  { color: var(--color-text-secondary); margin: 0; }
     .workers-filters { display: flex; gap: var(--space-3); margin-bottom: var(--space-6); flex-wrap: wrap; }
     .workers-filters input, .workers-filters select { flex: 1; min-width: 160px; }
@@ -34,9 +34,9 @@
     /* Worker detail modal */
     .worker-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:var(--z-modal); align-items:flex-start; justify-content:center; padding:var(--space-8) var(--space-4); overflow-y:auto; }
     .worker-modal-overlay.open { display:flex; }
-    .worker-modal { background:var(--color-surface); border-radius:var(--radius-xl); padding:var(--space-8); width:100%; max-width:560px; box-shadow:var(--shadow-xl); animation:scaleIn var(--transition) forwards; }
+    .worker-modal { background:var(--color-surface); border:1px solid var(--color-border-light); border-radius:var(--radius-2xl); padding:var(--space-8); width:100%; max-width:560px; animation:scaleIn var(--transition) forwards; }
     .worker-modal__header { display:flex; align-items:center; gap:var(--space-4); margin-bottom:var(--space-6); }
-    .worker-modal__avatar { width:64px; height:64px; border-radius:var(--radius-full); background:var(--color-primary-100); color:var(--color-primary); display:flex; align-items:center; justify-content:center; font-weight:var(--fw-bold); font-size:var(--fs-lg); overflow:hidden; flex-shrink:0; }
+    .worker-modal__avatar { width:64px; height:64px; border-radius:var(--radius-full); background:var(--color-primary-50); border:1px solid var(--color-primary-100); color:var(--color-primary); display:flex; align-items:center; justify-content:center; font-weight:var(--fw-bold); font-size:var(--fs-lg); overflow:hidden; flex-shrink:0; }
     .worker-modal__avatar img { width:100%; height:100%; object-fit:cover; }
     .worker-modal__close { position:absolute; top:var(--space-4); right:var(--space-4); background:none; border:none; color:var(--color-text-muted); cursor:pointer; }
     .rating-stars { display:flex; gap:var(--space-1); }
