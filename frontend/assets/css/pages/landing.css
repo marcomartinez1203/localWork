@@ -171,7 +171,7 @@
 
 .hero-mini-card__desc {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(255,255,255,0.6);
   margin: 0;
   text-transform: uppercase;
@@ -195,7 +195,7 @@
 .features__label {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--color-primary);
   text-transform: uppercase;
@@ -311,7 +311,7 @@
 
 .category-card__count {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -356,7 +356,7 @@
 .sponsors__label {
   text-align: center;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--color-text-muted);
   text-transform: uppercase;
@@ -426,7 +426,7 @@
   }
 
   .hero__badge {
-    font-size: 10px;
+    font-size: 11px;
     padding: var(--space-1) var(--space-3);
     margin-bottom: var(--space-4);
   }
