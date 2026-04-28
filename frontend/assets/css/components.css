@@ -12,17 +12,25 @@
   left: 0;
   right: 0;
   height: var(--navbar-height);
-  background: rgba(250,250,250,0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-border-light);
   z-index: var(--z-navbar);
-  transition: background var(--transition), border-color var(--transition);
+  transition: width var(--transition), background var(--transition), border-color var(--transition);
 }
 
-.navbar.scrolled {
-  background: rgba(250,250,250,0.95);
-  border-bottom-color: var(--color-border);
+@media (min-width: 768px) {
+  .navbar--sidebar {
+    right: auto;
+    bottom: 0;
+    width: 64px;
+    height: 100vh;
+    border-bottom: none;
+    border-right: 1px solid var(--color-border-light);
+  }
+  .navbar--sidebar:hover {
+    width: 240px;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.3);
+  }
 }
 
 .navbar__inner {
@@ -36,8 +44,13 @@
 }
 
 @media (min-width: 768px) {
-  .navbar__inner {
-    padding-inline: var(--space-8);
+  .navbar--sidebar .navbar__inner {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: 100%;
+    padding: var(--space-6) 12px;
+    margin: 0;
   }
 }
 
@@ -50,6 +63,15 @@
   font-weight: var(--fw-bold);
   color: var(--color-primary);
   text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .navbar--sidebar .navbar__brand {
+    margin-bottom: var(--space-8);
+    width: 100%;
+    padding-left: 2px;
+  }
 }
 
 .navbar__brand:hover {
@@ -67,6 +89,7 @@
   color: #fff;
   font-weight: var(--fw-extrabold);
   font-size: var(--fs-md);
+  flex-shrink: 0;
 }
 
 .navbar__links {
@@ -76,8 +99,13 @@
 }
 
 @media (min-width: 768px) {
-  .navbar__links {
+  .navbar--sidebar .navbar__links {
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    flex: 1;
+    gap: var(--space-1);
   }
 }
 
@@ -88,29 +116,63 @@
   text-decoration: none;
   padding: var(--space-2) 0;
   position: relative;
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  white-space: nowrap;
 }
 
-.navbar__link::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: var(--color-primary);
-  border-radius: var(--radius-full);
-  transition: width var(--transition);
+@media (min-width: 768px) {
+  .navbar--sidebar .navbar__link {
+    width: 100%;
+    padding: 10px;
+    border-radius: var(--radius-sm);
+  }
 }
 
 .navbar__link:hover,
 .navbar__link.active {
-  color: var(--color-primary);
+  color: var(--color-text);
 }
 
-.navbar__link:hover::after,
-.navbar__link.active::after {
-  width: 100%;
+@media (min-width: 768px) {
+  .navbar--sidebar .navbar__link:hover,
+  .navbar--sidebar .navbar__link.active {
+    background: var(--color-surface-alt);
+  }
+}
+
+.navbar__link svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast);
+}
+
+@media (min-width: 768px) {
+  .navbar--sidebar .navbar__link-text,
+  .navbar--sidebar .navbar__brand-text {
+    display: inline-block;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    width: 0;
+    visibility: hidden;
+    overflow: hidden;
+  }
+
+  .navbar--sidebar:hover .navbar__link-text,
+  .navbar--sidebar:hover .navbar__brand-text {
+    opacity: 1;
+    width: auto;
+    visibility: visible;
+  }
+}
+
+.navbar__link:hover svg,
+.navbar__link.active svg {
+  color: var(--color-primary);
 }
 
 .navbar__actions {
@@ -118,6 +180,28 @@
   align-items: center;
   gap: var(--space-3);
   position: relative;
+}
+.navbar__action-item {
+  position: relative;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .navbar--sidebar .navbar__actions {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border-light);
+  }
+  
+  /* In desktop sidebar, the notification bell and avatar might need centering or alignment tweaks */
+  .navbar--sidebar .navbar__notification {
+    margin-left: 0;
+  }
+  .navbar--sidebar .navbar__avatar {
+    margin-left: 2px;
+  }
 }
 
 /* Notification bell */
@@ -186,10 +270,18 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border-light);
   z-index: var(--z-dropdown);
   animation: slideDown var(--transition-fast) forwards;
   overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .navbar--sidebar .user-dropdown {
+    top: auto;
+    bottom: 0;
+    right: auto;
+    left: calc(100% + 16px);
+  }
 }
 
 .user-dropdown.open {
@@ -268,6 +360,15 @@
   z-index: var(--z-dropdown);
   animation: slideDown var(--transition-fast) forwards;
   overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .navbar--sidebar .notif-preview {
+    top: auto;
+    bottom: 0;
+    right: auto;
+    left: calc(100% + 16px);
+  }
 }
 
 .notif-preview.open {

@@ -2,9 +2,9 @@
 
 @theme {
   /* Colors - Swiss Design Palette */
-  --color-brand: #10b981;       /* Emerald 500 */
-  --color-brand-light: #34d399; /* Emerald 400 */
-  --color-brand-dark: #059669;  /* Emerald 600 */
+  --color-brand: #047857;       /* Emerald 700 — deep matte */
+  --color-brand-light: #059669; /* Emerald 600 */
+  --color-brand-dark: #065f46;  /* Emerald 800 */
   
   --color-ink: #09090b;         /* Zinc 950 */
   --color-ink-muted: #52525b;   /* Zinc 600 */

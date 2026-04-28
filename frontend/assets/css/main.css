@@ -11,19 +11,19 @@
    LIGHT MODE (default)
    ══════════════════════════════════════════════ */
 :root {
-  /* Brand — Emerald Accent */
-  --color-primary:       #10b981;
-  --color-primary-dark:  #059669;
-  --color-primary-light: #34d399;
-  --color-primary-50:    rgba(16,185,129,0.06);
-  --color-primary-100:   rgba(16,185,129,0.10);
-  --color-primary-200:   rgba(16,185,129,0.16);
+  /* Brand — Deep Matte Emerald */
+  --color-primary:       #047857;
+  --color-primary-dark:  #065f46;
+  --color-primary-light: #059669;
+  --color-primary-50:    rgba(4,120,87,0.06);
+  --color-primary-100:   rgba(4,120,87,0.10);
+  --color-primary-200:   rgba(4,120,87,0.16);
 
   /* Accent */
-  --color-accent:        #34d399;
-  --color-accent-dark:   #059669;
-  --color-accent-light:  #6ee7b7;
-  --color-accent-50:     rgba(52,211,153,0.06);
+  --color-accent:        #059669;
+  --color-accent-dark:   #047857;
+  --color-accent-light:  #34d399;
+  --color-accent-50:     rgba(5,150,105,0.06);
 
   /* Neutrals — Zinc scale for Swiss precision */
   --color-bg:            #fafafa;
@@ -138,13 +138,15 @@
   --color-border:        #2e2e2e;
   --color-border-light:  rgba(255,255,255,0.06);
 
-  /* Brand - Supabase Green */
-  --color-primary:       #3ecf8e; 
-  --color-primary-50:    rgba(62,207,142,0.05);
-  --color-primary-100:   rgba(62,207,142,0.10);
-  --color-primary-200:   rgba(62,207,142,0.15);
+  /* Brand — Matte Emerald (dark mode — slightly brighter for contrast) */
+  --color-primary:       #059669; 
+  --color-primary-50:    rgba(5,150,105,0.06);
+  --color-primary-100:   rgba(5,150,105,0.10);
+  --color-primary-200:   rgba(5,150,105,0.16);
+  --color-primary-dark:  #047857;
+  --color-primary-light: #34d399;
 
-  --color-accent-50:     rgba(62,207,142,0.05);
+  --color-accent-50:     rgba(5,150,105,0.06);
 
   color-scheme: dark;
 }
@@ -179,6 +181,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   letter-spacing: -0.011em;
+}
+
+@media (min-width: 768px) {
+  body:has(.navbar--sidebar) {
+    padding-left: 64px;
+  }
 }
 
 img, picture, video, canvas, svg {

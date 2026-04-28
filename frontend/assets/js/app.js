@@ -80,7 +80,7 @@ const App = {
         : initials;
 
       const avatarHtml = `
-        <div style="position:relative;">
+        <div class="navbar__action-item">
           <button class="navbar__notification" aria-label="Notificaciones" onclick="App.toggleNotifPreview(event)">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
@@ -141,6 +141,7 @@ const App = {
         }
 
         const wrapper = document.createElement('div');
+        wrapper.className = 'navbar__action-item';
         existingAvatar.parentNode.insertBefore(wrapper, existingAvatar);
         wrapper.appendChild(existingAvatar);
 
