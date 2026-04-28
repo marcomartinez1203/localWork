@@ -27,7 +27,8 @@
     border-bottom: none;
     border-right: 1px solid var(--color-border-light);
   }
-  .navbar--sidebar:hover {
+  .navbar--sidebar:hover,
+  .navbar--sidebar--open {
     width: 240px;
     box-shadow: 4px 0 24px rgba(0,0,0,0.3);
   }
@@ -277,10 +278,11 @@
 
 @media (min-width: 768px) {
   .navbar--sidebar .user-dropdown {
+    position: fixed;
+    bottom: 70px;
+    left: 8px;
     top: auto;
-    bottom: 0;
     right: auto;
-    left: calc(100% + 16px);
   }
 }
 
@@ -364,10 +366,11 @@
 
 @media (min-width: 768px) {
   .navbar--sidebar .notif-preview {
+    position: fixed;
+    bottom: 130px;
+    left: 8px;
     top: auto;
-    bottom: 0;
     right: auto;
-    left: calc(100% + 16px);
   }
 }
 
