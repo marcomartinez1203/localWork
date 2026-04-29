@@ -36,8 +36,14 @@ async function apiFetch(endpoint, options = {}) {
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
-  // Si el token expiró, redirigir al login
-  if (response.status === 401) {
+  const isAuthEndpoint =
+    endpoint.startsWith('/auth/login') ||
+    endpoint.startsWith('/auth/register') ||
+    endpoint.startsWith('/auth/reset-password');
+
+  // Si el token expiró en endpoints protegidos, redirigir al login.
+  // En endpoints de auth (como login), dejar que el caller maneje el error.
+  if (response.status === 401 && !isAuthEndpoint) {
     sessionStorage.removeItem('lw_token');
     sessionStorage.removeItem('lw_user');
     const prefix = (typeof App !== 'undefined') ? App._pagePrefix() : '';

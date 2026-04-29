@@ -316,7 +316,7 @@
       btn.classList.add('loading');btn.disabled=true;
       try{
         await AuthService.login({email:em.value,password:pw.value});
-        window.location.href='home.html';
+        window.location.href=AuthService.getPostAuthRoute();
       }catch(err){
         btn.classList.remove('loading');btn.disabled=false;
         alrt.textContent=err.message||'Credenciales incorrectas';

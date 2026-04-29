@@ -218,6 +218,12 @@ const App = {
   // ── Check unread notifications ──
   async checkNotifications() {
     try {
+      const user = AuthService.getUser();
+      if (!user || user.role !== 'employer') {
+        const badge = document.getElementById('notifBadge');
+        if (badge) badge.style.display = 'none';
+        return;
+      }
       if (typeof NotificationsService !== 'undefined') {
         const result = await NotificationsService.getUnreadCount();
         const badge = document.getElementById('notifBadge');
@@ -277,6 +283,8 @@ const App = {
 
   toggleNotifPreview(e) {
     if (e) e.stopPropagation();
+    const user = AuthService.getUser();
+    if (!user || user.role !== 'employer') return;
     const preview = document.getElementById('notifPreview');
     if (!preview) return;
     const isOpen = preview.classList.toggle('open');

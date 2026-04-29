@@ -291,6 +291,10 @@
   <script>
     // ── Auth check ──
     if (!AuthService.requireAuth()) { /* redirects */ }
+    const currentUser = AuthService.getUser();
+    if (currentUser?.role === 'employer') {
+      window.location.href = 'dashboard.html';
+    }
 
     // ══════════════════════════════════════════════
     // STATE

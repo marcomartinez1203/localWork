@@ -84,10 +84,14 @@ const AuthService = {
     return true;
   },
 
+  getPostAuthRoute(user = this.getUser()) {
+    const prefix = (typeof App !== 'undefined') ? App._pagePrefix() : '';
+    return user?.role === 'employer' ? (prefix + 'dashboard.html') : (prefix + 'home.html');
+  },
+
   redirectIfAuthenticated(redirectTo) {
     if (this.isAuthenticated()) {
-      const prefix = (typeof App !== 'undefined') ? App._pagePrefix() : '';
-      window.location.href = redirectTo || (prefix + 'home.html');
+      window.location.href = redirectTo || this.getPostAuthRoute();
       return true;
     }
     return false;

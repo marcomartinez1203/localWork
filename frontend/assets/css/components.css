@@ -368,12 +368,16 @@
 }
 
 @media (min-width: 768px) {
+  .navbar--sidebar .navbar__actions .navbar__action-item:first-child {
+    width: auto;
+  }
+
   .navbar--sidebar .notif-preview {
-    position: fixed;
-    bottom: 130px;
-    left: 8px;
-    top: auto;
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 0;
     right: auto;
+    bottom: auto;
   }
 }
 
