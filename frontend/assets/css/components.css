@@ -2168,12 +2168,16 @@
 
 [data-theme="dark"] .chip.active,
 [data-theme="dark"] .chip:hover {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
+  background: #15803d;
+  border-color: #15803d;
   color: #fff;
 }
 
-/* Dark toast */
+[data-theme="dark"] .pagination__btn.active {
+  background: #15803d;
+  border-color: #15803d;
+  color: #fff;
+}
 [data-theme="dark"] .toast {
   background: var(--color-surface);
   border-color: rgba(255,255,255,0.05);
