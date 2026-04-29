@@ -3,197 +3,326 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#007200">
   <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-  <meta name="description" content="Inicia sesión en LocalWork — Tu plataforma de empleo local en Aguachica, Cesar.">
   <title>Iniciar Sesión — LocalWork</title>
-
   <script src="../assets/js/theme-init.js"></script>
-  <!-- CSS -->
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/components.css">
-  <link rel="stylesheet" href="../assets/css/pages/auth.css">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+    body {
+      min-height: 100vh;
+      background: #1e1e1e;
+      font-family: var(--font-body, 'Inter', sans-serif);
+      color: #e8e8e8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ambient glow */
+    .lw-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .lw-glow::before {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(22,163,74,.12) 0%, transparent 60%);
+      top: -140px; left: -120px;
+      animation: drift 20s ease-in-out infinite alternate;
+    }
+    .lw-glow::after {
+      content: '';
+      position: absolute;
+      width: 380px; height: 380px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(100,120,150,.18) 0%, transparent 60%);
+      bottom: -80px; right: -60px;
+      animation: drift 25s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes drift {
+      from { transform: translate(0,0); }
+      to   { transform: translate(35px, 25px); }
+    }
+
+    /* Subtle grid */
+    .lw-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+
+    /* Wrapper */
+    .lw-wrap {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 420px;
+      padding: 20px 16px;
+      animation: slideUp .5s cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* Card */
+    .lw-card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px) saturate(140%);
+      -webkit-backdrop-filter: blur(20px) saturate(140%);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 16px;
+      padding: 36px 32px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.4), 0 1px 0 rgba(255,255,255,.06) inset;
+    }
+
+    /* Brand */
+    .lw-brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; margin-bottom: 28px;
+    }
+    .lw-brand__icon {
+      width: 34px; height: 34px;
+      background: #16a34a;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800;
+      font-family: var(--font-heading,'Sora',sans-serif);
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(22,163,74,.35);
+      flex-shrink: 0;
+    }
+    .lw-brand__name {
+      font-family: var(--font-heading,'Sora',sans-serif);
+      font-size: 17px; font-weight: 700;
+      color: #e8e8e8;
+    }
+
+    /* Header */
+    .lw-hd { margin-bottom: 22px; }
+    .lw-hd h1 {
+      font-family: var(--font-heading,'Sora',sans-serif);
+      font-size: 22px; font-weight: 800;
+      color: #f0f0f0;
+      letter-spacing: -.03em; margin-bottom: 4px; line-height: 1.2;
+    }
+    .lw-hd p { font-size: 13px; color: #888; }
+
+    /* Alert */
+    .lw-alert {
+      display: none;
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.2);
+      border-radius: 8px;
+      padding: 10px 12px; font-size: 13px; color: #ef4444;
+      margin-bottom: 14px;
+    }
+    .lw-alert.show { display:block; animation:shake .4s; }
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+    /* Form */
+    .lw-form { display:flex; flex-direction:column; gap:16px; }
+    .lw-field { display:flex; flex-direction:column; gap:6px; }
+    .lw-label {
+      font-size: 12px; font-weight: 500;
+      color: #888;
+      text-transform: uppercase; letter-spacing: .05em;
+    }
+    .lw-iw { position: relative; }
+    .lw-iw .ico {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: #555; pointer-events: none; transition: color .2s;
+    }
+    .lw-inp {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 8px;
+      padding: 11px 12px 11px 38px;
+      font-size: 14px; font-family: inherit;
+      color: #e8e8e8;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .lw-inp::placeholder { color: rgba(255,255,255,.2); }
+    .lw-inp:focus {
+      border-color: #16a34a;
+      background: rgba(22,163,74,.08);
+      box-shadow: 0 0 0 3px rgba(22,163,74,.18);
+    }
+    .lw-inp.err {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,.12);
+    }
+    .pw-btn {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: #555; padding: 4px;
+      display: flex; align-items: center; transition: color .2s;
+    }
+    .pw-btn:hover { color: #ccc; }
+    .ferr {
+      display: none; align-items: center; gap: 5px;
+      font-size: 11px; color: #ef4444;
+    }
+    .ferr.show { display: flex; }
+
+    /* Meta */
+    .lw-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px;
+    }
+    .lw-chk {
+      display: flex; align-items: center; gap: 7px;
+      color: #888; cursor: pointer; user-select: none;
+    }
+    .lw-chk input { accent-color: #16a34a; width: 14px; height: 14px; cursor: pointer; }
+    .lw-fgt { color: #888; text-decoration: none; font-size: 13px; transition: color .2s; }
+    .lw-fgt:hover { color: #16a34a; }
+
+    /* Submit */
+    .lw-btn {
+      width: 100%; padding: 12px;
+      background: #16a34a;
+      border: none; border-radius: 8px;
+      color: #fff; font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 16px rgba(22,163,74,.3);
+    }
+    .lw-btn:hover:not(:disabled) {
+      background: #15803d;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(22,163,74,.4);
+    }
+    .lw-btn:active { transform: scale(.98); }
+    .lw-btn:disabled { opacity:.55; cursor:not-allowed; transform:none; }
+    .spinner {
+      display: none; width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin .65s linear infinite;
+    }
+    .lw-btn.loading .spinner { display: block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Sep / foot */
+    .lw-sep {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 11px; color: rgba(30,36,48,.4);
+      margin: 18px 0 14px;
+    }
+    .lw-sep::before,.lw-sep::after { content:''; flex:1; height:1px; background: rgba(255,255,255,.08); }
+    .lw-foot { text-align:center; font-size:13px; color:#888; }
+    .lw-foot a { color:#16a34a; text-decoration:none; font-weight:600; }
+    .lw-foot a:hover { text-decoration:underline; }
+  </style>
 </head>
 <body>
+  <div class="lw-glow"></div>
+  <div class="lw-grid"></div>
 
-  <div class="auth-page">
-    <!-- Left panel (desktop only) -->
-    <div class="auth-page__side">
-      <div class="auth-page__side-content">
-        <h2 class="auth-page__side-title">El empleo que buscas<br>está en tu comunidad</h2>
-        <p class="auth-page__side-desc">
-          LocalWork es la plataforma oficial de empleo de Aguachica, respaldada por la Alcaldía Municipal. 
-          Regístrate y encuentra oportunidades cerca de ti.
-        </p>
+  <div class="lw-wrap">
+    <div class="lw-card">
+
+      <a href="../index.html" class="lw-brand">
+        <div class="lw-brand__icon">LW</div>
+        <span class="lw-brand__name">LocalWork</span>
+      </a>
+
+      <div class="lw-hd">
+        <h1>Bienvenido de vuelta</h1>
+        <p>Ingresa tus credenciales para continuar</p>
       </div>
-    </div>
 
-    <!-- Right panel — Form -->
-    <div class="auth-page__main">
-      <div class="auth-card">
-        <a href="../index.html" class="auth-card__logo" aria-label="Volver a la página principal">
-          <img src="../assets/img/logo.png" alt="LocalWork" style="height: 60px; width: auto;">
-        </a>
+      <div class="lw-alert" id="loginAlert"></div>
 
-        <div class="auth-card__header">
-          <h1 class="auth-card__title">Bienvenido de vuelta</h1>
-          <p class="auth-card__desc">Ingresa tus credenciales para acceder a tu cuenta</p>
+      <form class="lw-form" id="loginForm" novalidate>
+
+        <div class="lw-field">
+          <label for="email" class="lw-label">Correo electrónico</label>
+          <div class="lw-iw">
+            <input type="email" id="email" class="lw-inp" placeholder="tu@correo.com" required autocomplete="email">
+            <svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+          </div>
+          <span class="ferr" id="emailErr">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg>
+            Correo inválido
+          </span>
         </div>
 
-        <form class="auth-card__form" id="loginForm" novalidate>
-          <!-- Email -->
-          <div class="form-group">
-            <label for="email" class="form-label form-label--required">Correo electrónico</label>
-            <div class="form-input-wrapper">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/>
-              </svg>
-              <input type="email" id="email" name="email" class="form-input" 
-                     placeholder="tu@correo.com" required autocomplete="email"
-                     aria-describedby="emailError">
-            </div>
-            <span class="form-error" id="emailError" role="alert" style="display: none;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/>
-              </svg>
-              Ingresa un correo electrónico válido
-            </span>
-          </div>
-
-          <!-- Password -->
-          <div class="form-group">
-            <label for="password" class="form-label form-label--required">Contraseña</label>
-            <div class="form-input-wrapper password-wrapper">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
-              </svg>
-              <input type="password" id="password" name="password" class="form-input"
-                     placeholder="••••••••" required minlength="8" autocomplete="current-password"
-                     aria-describedby="passwordError"
-                     style="padding-left: var(--space-10);">
-              <button type="button" class="password-toggle" id="togglePassword"
-                      aria-label="Mostrar contraseña">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" id="eyeIcon">
-                  <path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/>
-                  <path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                </svg>
-              </button>
-            </div>
-            <span class="form-error" id="passwordError" role="alert" style="display: none;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/>
-              </svg>
-              La contraseña debe tener al menos 8 caracteres
-            </span>
-          </div>
-
-          <!-- Forgot + Remember -->
-          <div class="flex flex--between">
-            <label class="form-check">
-              <input type="checkbox" name="remember" id="remember">
-              <span style="font-size: var(--fs-sm); color: var(--color-text-secondary);">Recordarme</span>
-            </label>
-            <a href="reset-password.html" class="forgot-link">¿Olvidaste tu contraseña?</a>
-          </div>
-
-          <!-- Submit -->
-          <div class="auth-card__actions">
-            <button type="submit" class="btn btn--primary btn--lg btn--block" id="loginBtn">
-              Iniciar Sesión
+        <div class="lw-field">
+          <label for="password" class="lw-label">Contraseña</label>
+          <div class="lw-iw">
+            <input type="password" id="password" class="lw-inp" placeholder="••••••••" required minlength="8" autocomplete="current-password">
+            <svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/></svg>
+            <button type="button" class="pw-btn" id="togglePw" aria-label="Mostrar contraseña">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
             </button>
           </div>
-        </form>
-
-        <div class="auth-card__footer">
-          ¿No tienes cuenta? <a href="register.html">Regístrate gratis</a>
+          <span class="ferr" id="pwErr">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"/></svg>
+            Mínimo 8 caracteres
+          </span>
         </div>
-      </div>
+
+        <div class="lw-meta">
+          <label class="lw-chk"><input type="checkbox" id="remember"><span>Recordarme</span></label>
+          <a href="reset-password.html" class="lw-fgt">¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <button type="submit" class="lw-btn" id="loginBtn">
+          <span class="spinner"></span>
+          <span>Iniciar Sesión</span>
+        </button>
+      </form>
+
+      <div class="lw-sep">o</div>
+      <div class="lw-foot">¿No tienes cuenta? <a href="register.html">Regístrate gratis</a></div>
+
     </div>
   </div>
 
-  <!-- JS -->
   <script src="../assets/js/config/api.js"></script>
   <script src="../assets/js/services/auth.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
   <script>
-    // Redirigir si ya está autenticado
     AuthService.redirectIfAuthenticated();
-
-    // ── Password Toggle ──
-    const togglePassword = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
-
-    togglePassword.addEventListener('click', () => {
-      const isPassword = passwordInput.type === 'password';
-      passwordInput.type = isPassword ? 'text' : 'password';
-      togglePassword.setAttribute('aria-label', isPassword ? 'Ocultar contraseña' : 'Mostrar contraseña');
-    });
-
-    // ── Form Validation ──
-    const loginForm = document.getElementById('loginForm');
-    const emailInput = document.getElementById('email');
-    const emailError = document.getElementById('emailError');
-    const passwordError = document.getElementById('passwordError');
-
-    function validateEmail(email) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    }
-
-    function showError(input, errorEl) {
-      input.classList.add('form-input--error');
-      errorEl.style.display = 'flex';
-    }
-
-    function clearError(input, errorEl) {
-      input.classList.remove('form-input--error');
-      errorEl.style.display = 'none';
-    }
-
-    emailInput.addEventListener('input', () => {
-      if (validateEmail(emailInput.value)) clearError(emailInput, emailError);
-    });
-
-    passwordInput.addEventListener('input', () => {
-      if (passwordInput.value.length >= 8) clearError(passwordInput, passwordError);
-    });
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      let valid = true;
-
-      if (!validateEmail(emailInput.value)) {
-        showError(emailInput, emailError);
-        valid = false;
-      } else {
-        clearError(emailInput, emailError);
-      }
-
-      if (passwordInput.value.length < 8) {
-        showError(passwordInput, passwordError);
-        valid = false;
-      } else {
-        clearError(passwordInput, passwordError);
-      }
-
-      if (valid) {
-        const btn = document.getElementById('loginBtn');
-        btn.classList.add('btn--loading');
-        btn.disabled = true;
-
-        try {
-          await AuthService.login({
-            email: emailInput.value,
-            password: passwordInput.value,
-          });
-          window.location.href = 'home.html';
-        } catch (err) {
-          btn.classList.remove('btn--loading');
-          btn.disabled = false;
-          showToast(err.message || 'Error al iniciar sesión', 'error');
-        }
+    const em=document.getElementById('email'),pw=document.getElementById('password');
+    const emErr=document.getElementById('emailErr'),pwErr=document.getElementById('pwErr');
+    const alrt=document.getElementById('loginAlert');
+    document.getElementById('togglePw').addEventListener('click',()=>{pw.type=pw.type==='password'?'text':'password';});
+    const vEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    const se=(i,e)=>{i.classList.add('err');e.classList.add('show');};
+    const ce=(i,e)=>{i.classList.remove('err');e.classList.remove('show');};
+    em.addEventListener('input',()=>{if(vEmail(em.value))ce(em,emErr);});
+    pw.addEventListener('input',()=>{if(pw.value.length>=8)ce(pw,pwErr);});
+    document.getElementById('loginForm').addEventListener('submit',async e=>{
+      e.preventDefault();alrt.classList.remove('show');
+      let ok=true;
+      if(!vEmail(em.value)){se(em,emErr);ok=false;}else ce(em,emErr);
+      if(pw.value.length<8){se(pw,pwErr);ok=false;}else ce(pw,pwErr);
+      if(!ok)return;
+      const btn=document.getElementById('loginBtn');
+      btn.classList.add('loading');btn.disabled=true;
+      try{
+        await AuthService.login({email:em.value,password:pw.value});
+        window.location.href='home.html';
+      }catch(err){
+        btn.classList.remove('loading');btn.disabled=false;
+        alrt.textContent=err.message||'Credenciales incorrectas';
+        alrt.classList.remove('show');void alrt.offsetWidth;alrt.classList.add('show');
       }
     });
   </script>
-
 </body>
 </html>
