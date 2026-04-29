@@ -568,21 +568,8 @@
       if (e.key === 'Escape') { searchClear.click(); }
     });
 
-    // Navbar scroll effect
-    window.addEventListener('scroll', () => {
-      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 10);
-    });
-
-    // Hamburger menu
-    const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const mobileMenu = document.getElementById('mobileMenu');
-
-    hamburgerBtn.addEventListener('click', () => {
-      const isOpen = mobileMenu.classList.toggle('open');
-      hamburgerBtn.classList.toggle('active', isOpen);
-      hamburgerBtn.setAttribute('aria-expanded', isOpen);
-      document.body.style.overflow = isOpen ? 'hidden' : '';
-    });
+    // Navbar scroll effect is handled by app.js
+    // Hamburger menu is handled by app.js
   </script>
 
 </body>

@@ -184,7 +184,7 @@
 }
 .navbar__action-item {
   position: relative;
-  width: 100%;
+  width: auto;
 }
 
 @media (min-width: 768px) {
@@ -194,6 +194,9 @@
     width: 100%;
     padding-top: var(--space-4);
     border-top: 1px solid var(--color-border-light);
+  }
+  .navbar--sidebar .navbar__action-item {
+    width: 100%;
   }
   
   /* In desktop sidebar, the notification bell and avatar might need centering or alignment tweaks */
