@@ -36,6 +36,8 @@
     .work-type-option label { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding: var(--space-4); border: 2px solid var(--color-border); border-radius: var(--radius-lg); cursor: pointer; font-size: var(--fs-sm); text-align: center; transition: all var(--transition-fast); }
     .work-type-option label:hover { border-color: var(--color-primary-200); background: var(--color-primary-50); }
     .work-type-option input:checked + label { border-color: var(--color-primary); background: var(--color-primary-50); color: var(--color-primary-dark); font-weight: var(--fw-semibold); }
+    .profile-page .btn--primary { background: #15803d; border-color: #15803d; color: #fff; }
+    .profile-page .btn--primary:hover:not(:disabled) { background: #166534; border-color: #166534; }
 
     @media (max-width: 767px) {
       .profile-page { padding-top: var(--space-5); padding-bottom: var(--space-10); }
@@ -358,6 +360,7 @@
 
   <script src="../assets/js/config/api.js"></script>
   <script src="../assets/js/services/auth.service.js"></script>
+  <script src="../assets/js/services/notifications.service.js"></script>
   <script src="../assets/js/services/companies.service.js"></script>
   <script src="../assets/js/services/jobs.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
