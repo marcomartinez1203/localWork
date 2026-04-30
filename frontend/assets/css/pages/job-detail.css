@@ -225,6 +225,17 @@
   margin-bottom: var(--space-4);
 }
 
+/* Verde específico para "Postularme ahora" */
+.job-detail__apply-btn.btn--primary {
+  background: #22a06b;
+  border-color: #22a06b;
+}
+
+.job-detail__apply-btn.btn--primary:hover:not(:disabled) {
+  background: #1a8a5c;
+  border-color: #1a8a5c;
+}
+
 .job-detail__save-btn {
   width: 100%;
 }
