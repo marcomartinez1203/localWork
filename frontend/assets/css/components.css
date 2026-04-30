@@ -1018,6 +1018,9 @@
 }
 
 .worker-card__location {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: var(--fs-xs);
   color: var(--color-text-muted);
   margin: 0;
@@ -1098,6 +1101,9 @@
 }
 
 .worker-card__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   font-size: var(--fs-xs);
   color: var(--color-text-muted);
 }

@@ -186,6 +186,7 @@ const App = {
     const p = this._pagePrefix();
     const isEmployer = user?.role === 'employer';
     const preferredMode = user?.preferred_mode === 'services' ? 'services' : 'jobs';
+    const hasDualNavigation = user?.work_type === 'both';
     const targetHref = isEmployer ? `${p}dashboard.html` : `${p}my-applications.html`;
     const targetLabel = isEmployer ? 'Dashboard' : 'Mis Postulaciones';
     const currentPath = window.location.pathname.toLowerCase();
@@ -217,13 +218,13 @@ const App = {
       if (isEmployer) {
         link.style.display = 'none';
       } else {
-        link.style.display = preferredMode === 'services' ? 'none' : '';
+        link.style.display = hasDualNavigation ? '' : (preferredMode === 'services' ? 'none' : '');
       }
     });
 
     const workersLinks = document.querySelectorAll('.navbar__link[href*="workers.html"]');
     workersLinks.forEach((link) => {
-      link.style.display = preferredMode === 'services' ? '' : 'none';
+      link.style.display = hasDualNavigation ? '' : (preferredMode === 'services' ? '' : 'none');
     });
   },
 

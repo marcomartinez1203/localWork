@@ -228,8 +228,8 @@
           const hasMeta = w.availability || w.hourly_rate;
           const footerSection = hasMeta
             ? `<div class="worker-card__footer">
-                 ${w.availability ? `<span class="worker-card__meta">⏰ ${escapeHtml(w.availability)}</span>` : ''}
-                 ${w.hourly_rate  ? `<span class="worker-card__meta">💰 ${escapeHtml(w.hourly_rate)}</span>`  : ''}
+                 ${w.availability ? `<span class="worker-card__meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg>${escapeHtml(w.availability)}</span>` : ''}
+                 ${w.hourly_rate  ? `<span class="worker-card__meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.25 9.75h19.5m-19.5 4.5h19.5M3.75 6.75h16.5a1.5 1.5 0 0 1 1.5 1.5v7.5a1.5 1.5 0 0 1-1.5 1.5H3.75a1.5 1.5 0 0 1-1.5-1.5v-7.5a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="12" r="1.5"/></svg>${escapeHtml(w.hourly_rate)}</span>`  : ''}
                </div>`
             : '';
 
@@ -239,7 +239,7 @@
                 <div class="worker-card__avatar">${avatarHtml}</div>
                 <div class="worker-card__info">
                   <p class="worker-card__name">${escapeHtml(w.full_name || 'Sin nombre')}</p>
-                  ${w.location ? `<p class="worker-card__location">📍 ${escapeHtml(w.location)}</p>` : ''}
+                  ${w.location ? `<p class="worker-card__location"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.75-5.25-6.75-11.25a6.75 6.75 0 1 1 13.5 0C18.75 15.75 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.25"/></svg>${escapeHtml(w.location)}</p>` : ''}
                   ${badgeInfo ? `<span class="worker-badge ${badgeInfo.cls}">${badgeInfo.label}</span>` : ''}
                 </div>
               </div>
@@ -320,14 +320,14 @@
             <div class="worker-modal__avatar">${avatarHtml}</div>
             <div>
               <h2 style="font-size:var(--fs-xl);margin:0;">${escapeHtml(worker.full_name || 'Sin nombre')}</h2>
-              ${worker.location ? `<p style="font-size:var(--fs-sm);color:var(--color-text-muted);margin:var(--space-1) 0 0;">📍 ${escapeHtml(worker.location)}</p>` : ''}
+              ${worker.location ? `<p style="font-size:var(--fs-sm);color:var(--color-text-muted);margin:var(--space-1) 0 0;display:flex;align-items:center;gap:var(--space-2);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.75-5.25-6.75-11.25a6.75 6.75 0 1 1 13.5 0C18.75 15.75 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.25"/></svg>${escapeHtml(worker.location)}</p>` : ''}
               <p style="font-size:var(--fs-sm);margin:var(--space-1) 0 0;">${starsDisplay}</p>
             </div>
           </div>
           ${worker.bio ? `<p style="color:var(--color-text-secondary);margin-bottom:var(--space-4);">${escapeHtml(worker.bio)}</p>` : ''}
           ${worker.skills && worker.skills.length ? `<div style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-4);">${worker.skills.map(s => `<span class="badge badge--neutral">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
-          ${worker.phone ? `<p style="font-size:var(--fs-sm);">📞 ${escapeHtml(worker.phone)}</p>` : ''}
-          ${worker.hourly_rate ? `<p style="font-size:var(--fs-sm);">💰 ${escapeHtml(worker.hourly_rate)}</p>` : ''}
+          ${worker.phone ? `<p style="font-size:var(--fs-sm);display:flex;align-items:center;gap:var(--space-2);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.25 4.5a2.25 2.25 0 0 1 2.25-2.25h2.1c.716 0 1.756.503 1.98 1.184l.87 2.607c.2.6.047 1.26-.396 1.703l-1.287 1.287a15.129 15.129 0 0 0 7.202 7.202l1.287-1.287c.443-.443 1.103-.596 1.703-.396l2.607.87c.681.224 1.184 1.264 1.184 1.98v2.1a2.25 2.25 0 0 1-2.25 2.25h-1.5C9.006 21.75 2.25 14.994 2.25 6V4.5Z"/></svg>${escapeHtml(worker.phone)}</p>` : ''}
+          ${worker.hourly_rate ? `<p style="font-size:var(--fs-sm);display:flex;align-items:center;gap:var(--space-2);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.25 9.75h19.5m-19.5 4.5h19.5M3.75 6.75h16.5a1.5 1.5 0 0 1 1.5 1.5v7.5a1.5 1.5 0 0 1-1.5 1.5H3.75a1.5 1.5 0 0 1-1.5-1.5v-7.5a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="12" r="1.5"/></svg>${escapeHtml(worker.hourly_rate)}</p>` : ''}
           <div style="margin-top:var(--space-4);">
             <p style="font-weight:var(--fw-semibold);margin-bottom:var(--space-2);">Calificaciones</p>
             ${ratingsHtml || '<p style="font-size:var(--fs-sm);color:var(--color-text-muted);">Aún no tiene calificaciones.</p>'}

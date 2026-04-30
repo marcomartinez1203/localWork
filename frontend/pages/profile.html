@@ -300,7 +300,7 @@
           </div>
         </div>
 
-        <button type="button" class="btn btn--primary btn--lg" onclick="saveSkillsSection()" style="margin-top:var(--space-4);">
+        <button type="button" class="btn btn--primary btn--lg" onclick="saveSkillsSection(event)" style="margin-top:var(--space-4);">
           Guardar habilidades
         </button>
       </div>
@@ -593,15 +593,20 @@
       });
     }
 
-    async function saveSkillsSection() {
+    async function saveSkillsSection(e) {
       const workType = document.querySelector('input[name="work_type"]:checked')?.value || 'employee';
       const availability = document.getElementById('availability').value;
       const hourlyRate = document.getElementById('hourlyRate').value.trim();
-      const btn = event.target;
+      const btn = e?.currentTarget || e?.target;
+      if (!btn) return;
       btn.classList.add('btn--loading');
       btn.disabled = true;
       try {
         await AuthService.updateProfile({ skills, work_type: workType, availability, hourly_rate: hourlyRate });
+        // Refresca la UI de navegación en caliente (sin recargar)
+        if (typeof App !== 'undefined' && typeof App.updateAuthUI === 'function') {
+          App.updateAuthUI();
+        }
         showToast('Habilidades guardadas', 'success');
       } catch (err) {
         showToast(err.message || 'Error al guardar', 'error');

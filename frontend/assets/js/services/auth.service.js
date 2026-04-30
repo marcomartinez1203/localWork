@@ -50,9 +50,11 @@ const AuthService = {
 
   async updateProfile(updates) {
     const data = await api.put('/auth/profile', updates);
-    if (data.user) {
-      sessionStorage.setItem('lw_user', JSON.stringify(data.user));
-    }
+    const currentUser = this.getUser() || {};
+    const nextUser = data.user
+      ? { ...currentUser, ...data.user }
+      : { ...currentUser, ...updates };
+    sessionStorage.setItem('lw_user', JSON.stringify(nextUser));
     return data;
   },
 

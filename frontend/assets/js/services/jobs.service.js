@@ -50,7 +50,12 @@ const JobsService = {
   },
 
   async getSavedJobs() {
-    return api.get('/jobs/saved');
+    const result = await api.get('/jobs/saved');
+    if (Array.isArray(result)) return result;
+    if (Array.isArray(result?.data)) return result.data;
+    if (Array.isArray(result?.items)) return result.items;
+    if (Array.isArray(result?.saved)) return result.saved;
+    return [];
   },
 
   // ── Categorías ──

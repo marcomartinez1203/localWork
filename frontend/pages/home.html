@@ -297,7 +297,7 @@
         ? 'workers.html'
         : 'dashboard.html';
     }
-    if (currentUser?.role === 'seeker' && currentUser.preferred_mode === 'services') {
+    if (currentUser?.role === 'seeker' && currentUser.preferred_mode === 'services' && currentUser.work_type !== 'both') {
       window.location.href = 'workers.html';
     }
 
