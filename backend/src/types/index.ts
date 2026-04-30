@@ -36,6 +36,7 @@ export interface Profile {
   experience: ExperienceEntry[] | null;
   skills: string[] | null;
   work_type: 'employee' | 'freelance' | 'both' | null;
+  service_public: boolean | null;
   availability: string | null;
   hourly_rate: string | null;
   created_at: string;

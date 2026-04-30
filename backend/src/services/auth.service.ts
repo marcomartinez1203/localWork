@@ -118,7 +118,7 @@ export class AuthService {
 
   static async updateProfile(userId: string, updates: Partial<Profile>): Promise<Profile> {
     // Campos permitidos
-    const allowed: (keyof Profile)[] = ['full_name', 'phone', 'bio', 'location', 'education', 'experience', 'skills', 'work_type', 'availability', 'hourly_rate'];
+    const allowed: (keyof Profile)[] = ['full_name', 'phone', 'bio', 'location', 'education', 'experience', 'skills', 'work_type', 'service_public', 'availability', 'hourly_rate'];
     const cleanUpdates: Record<string, unknown> = {};
     for (const key of allowed) {
       if (key in updates) {
@@ -126,12 +126,22 @@ export class AuthService {
       }
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('profiles')
-      .update(cleanUpdates)
-      .eq('id', userId)
-      .select()
-      .single();
+    const executeUpdate = async (payload: Record<string, unknown>) => {
+      return supabaseAdmin
+        .from('profiles')
+        .update(payload)
+        .eq('id', userId)
+        .select()
+        .single();
+    };
+
+    let { data, error } = await executeUpdate(cleanUpdates);
+
+    // Compatibilidad temporal: producción puede no tener aún la columna service_public.
+    if (error && (error as { code?: string }).code === '42703' && 'service_public' in cleanUpdates) {
+      const { service_public: _ignored, ...fallbackUpdates } = cleanUpdates;
+      ({ data, error } = await executeUpdate(fallbackUpdates));
+    }
 
     if (error) { console.error('[AuthService.updateProfile]', error); throw new AppError('Error al actualizar el perfil', 500); }
 

@@ -49,6 +49,7 @@ CREATE TABLE profiles (
   avatar_url   TEXT,
   bio          TEXT,
   location     TEXT,         -- zona: Centro, Norte, Sur, etc.
+  service_public BOOLEAN     NOT NULL DEFAULT FALSE, -- visible en el directorio de trabajadores
   resume_url   TEXT,         -- URL del CV en Supabase Storage
   education    JSONB         DEFAULT '[]'::jsonb,  -- historial educativo
   experience   JSONB         DEFAULT '[]'::jsonb,  -- experiencia laboral
@@ -405,6 +406,7 @@ SELECT
   location,
   skills,
   work_type,
+  service_public,
   availability,
   hourly_rate,
   role,

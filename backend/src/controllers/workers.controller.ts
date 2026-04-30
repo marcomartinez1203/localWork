@@ -21,28 +21,41 @@ export class WorkersController {
       const from = (page - 1) * perPage;
       const to   = from + perPage - 1;
 
-      let query = supabaseAdmin
-        .from('workers_directory')
-        .select('id, full_name, avatar_url, bio, location, skills, work_type, availability, hourly_rate, role', { count: 'exact' })
-        .in('work_type', ['freelance', 'both'])
-        .range(from, to);
+      const buildQuery = (withServicePublicFilter: boolean) => {
+        let query = supabaseAdmin
+          .from('workers_directory')
+          .select('id, full_name, avatar_url, bio, location, skills, work_type, availability, hourly_rate, role', { count: 'exact' })
+          .in('work_type', ['freelance', 'both'])
+          .range(from, to);
 
-      if (skill) {
-        query = query.contains('skills', [skill]);
-      }
-
-      if (type && ['freelance', 'both'].includes(type)) {
-        query = query.eq('work_type', type);
-      }
-
-      if (search) {
-        const sanitized = removeAccents(search.replace(/[%_(),.]/g, '').trim());
-        if (sanitized) {
-          query = query.ilike('search_name', `%${sanitized}%`);
+        if (withServicePublicFilter) {
+          query = query.eq('service_public', true);
         }
+
+        if (skill) {
+          query = query.contains('skills', [skill]);
+        }
+
+        if (type && ['freelance', 'both'].includes(type)) {
+          query = query.eq('work_type', type);
+        }
+
+        if (search) {
+          const sanitized = removeAccents(search.replace(/[%_(),.]/g, '').trim());
+          if (sanitized) {
+            query = query.ilike('search_name', `%${sanitized}%`);
+          }
+        }
+        return query;
+      };
+
+      let { data, error, count } = await buildQuery(true);
+
+      // Compatibilidad temporal: si aún no existe service_public en la vista, degradar filtro.
+      if (error && (error as { code?: string }).code === '42703') {
+        ({ data, error, count } = await buildQuery(false));
       }
 
-      const { data, error, count } = await query;
       if (error) { console.error('[WorkersController.list]', error); throw new AppError('Error al obtener trabajadores', 500); }
 
       res.json({
