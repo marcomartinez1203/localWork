@@ -293,7 +293,12 @@
     if (!AuthService.requireAuth()) { /* redirects */ }
     const currentUser = AuthService.getUser();
     if (currentUser?.role === 'employer') {
-      window.location.href = 'dashboard.html';
+      window.location.href = currentUser.preferred_mode === 'services'
+        ? 'workers.html'
+        : 'dashboard.html';
+    }
+    if (currentUser?.role === 'seeker' && currentUser.preferred_mode === 'services') {
+      window.location.href = 'workers.html';
     }
 
     // ══════════════════════════════════════════════

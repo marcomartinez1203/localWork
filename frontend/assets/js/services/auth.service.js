@@ -86,7 +86,14 @@ const AuthService = {
 
   getPostAuthRoute(user = this.getUser()) {
     const prefix = (typeof App !== 'undefined') ? App._pagePrefix() : '';
-    return user?.role === 'employer' ? (prefix + 'dashboard.html') : (prefix + 'home.html');
+    if (user?.role === 'employer') {
+      return user?.preferred_mode === 'services'
+        ? (prefix + 'workers.html')
+        : (prefix + 'dashboard.html');
+    }
+    return user?.preferred_mode === 'services'
+      ? (prefix + 'workers.html')
+      : (prefix + 'home.html');
   },
 
   redirectIfAuthenticated(redirectTo) {

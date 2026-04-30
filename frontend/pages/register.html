@@ -60,6 +60,13 @@
     .role-opt__emoji{font-size:20px;flex-shrink:0}
     .role-opt__title{font-size:13px;font-weight:600;color:#e8e8e8;margin-bottom:2px}
     .role-opt__desc{font-size:11px;color:#888}
+    .intent-box{margin:0 0 14px}
+    .intent-options{display:flex;flex-direction:column;gap:8px}
+    .intent-opt{display:flex;align-items:center;gap:10px;padding:11px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;cursor:pointer;transition:border-color .2s,background .2s;user-select:none}
+    .intent-opt:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14)}
+    .intent-opt input{accent-color:#16a34a}
+    .intent-opt strong{font-size:13px;color:#e8e8e8}
+    .intent-opt span{font-size:11px;color:#888}
     /* Terms */
     .terms{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#888}
     .terms input{accent-color:#16a34a;margin-top:2px;flex-shrink:0;cursor:pointer}
@@ -178,6 +185,19 @@
         <div id="step2" class="form" style="display:none">
 
           <div id="employerFields" style="display:none">
+            <div class="field intent-box">
+              <span class="lbl">¿Qué necesitas primero? *</span>
+              <div class="intent-options">
+                <label class="intent-opt" for="intentJobs">
+                  <input type="radio" name="employerIntent" id="intentJobs" value="jobs" checked>
+                  <div><strong>Publicar empleos</strong><br><span>Quiero contratar personal para vacantes</span></div>
+                </label>
+                <label class="intent-opt" for="intentServices">
+                  <input type="radio" name="employerIntent" id="intentServices" value="services">
+                  <div><strong>Buscar servicios</strong><br><span>Quiero encontrar trabajadores para servicios</span></div>
+                </label>
+              </div>
+            </div>
             <div class="field" style="margin-bottom:14px">
               <label for="companyName" class="lbl">Nombre de la empresa *</label>
               <div class="iw"><input type="text" id="companyName" class="inp no-icon" placeholder="Ej: Comercializadora XYZ"></div>
@@ -315,7 +335,20 @@
           companyName: selectedRole==='employer'?document.getElementById('companyName').value.trim():undefined,
           companyNit: selectedRole==='employer'?document.getElementById('companyNit').value.trim():undefined,
         });
-        window.location.href = selectedWorkType==='freelance'?'profile.html?welcome=freelance':'home.html';
+        const registeredUser = AuthService.getUser();
+        const employerIntent = document.querySelector('input[name="employerIntent"]:checked')?.value || 'jobs';
+        if (registeredUser) {
+          registeredUser.preferred_mode = selectedRole === 'employer'
+            ? employerIntent
+            : (selectedWorkType === 'freelance' ? 'services' : 'jobs');
+          sessionStorage.setItem('lw_user', JSON.stringify(registeredUser));
+        }
+
+        if (selectedRole === 'employer') {
+          window.location.href = employerIntent === 'services' ? 'workers.html' : 'dashboard.html';
+        } else {
+          window.location.href = selectedWorkType==='freelance' ? 'profile.html?welcome=freelance' : 'home.html';
+        }
       } catch(err) {
         btn.classList.remove('loading');btn.disabled=false;
         const al=document.getElementById('regAlert');
