@@ -168,6 +168,29 @@ export interface SavedJob {
   created_at: string;
 }
 
+export interface Conversation {
+  id: string;
+  application_id: string;
+  seeker_id: string;
+  employer_id: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  last_message_at: string | null;
+}
+
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string | null;
+  attachment_url: string | null;
+  attachment_name: string | null;
+  attachment_type: string | null;
+  read_at: string | null;
+  created_at: string;
+}
+
 // ── API Request / Response Types ──
 
 export interface RegisterRequest {

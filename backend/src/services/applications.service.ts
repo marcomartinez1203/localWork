@@ -106,6 +106,25 @@ export class ApplicationsService {
     };
   }
 
+  static async getMineForJob(
+    seekerId: string,
+    jobId: string
+  ): Promise<Application | null> {
+    const { data, error } = await supabaseAdmin
+      .from('applications')
+      .select('*')
+      .eq('seeker_id', seekerId)
+      .eq('job_id', jobId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('[ApplicationsService.getMineForJob]', error);
+      throw new AppError('Error al consultar la postulación', 500);
+    }
+
+    return (data as Application | null) || null;
+  }
+
   static async getForJob(
     jobId: string,
     userId: string,

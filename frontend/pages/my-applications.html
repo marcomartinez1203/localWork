@@ -363,6 +363,7 @@
   <script src="../assets/js/services/auth.service.js"></script>
   <script src="../assets/js/services/notifications.service.js"></script>
   <script src="../assets/js/services/applications.service.js"></script>
+  <script src="../assets/js/services/chat.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
   <script src="../assets/js/app.js"></script>
   <script>
@@ -381,6 +382,7 @@
       pending: 'Pendiente', reviewed: 'Revisada', shortlisted: 'Preseleccionado',
       interview: 'Entrevista', accepted: 'Aceptada', rejected: 'Rechazada'
     };
+    const CHAT_ENABLED_STATUSES = ['reviewed', 'interview', 'accepted'];
 
     loadApplications();
 
@@ -426,6 +428,7 @@
               </div>
               <div class="app-card__actions">
                 <button class="btn btn--ghost btn--sm" onclick="event.stopPropagation(); withdrawApp('${app.id}')">Retirar</button>
+                ${CHAT_ENABLED_STATUSES.includes(app.status) ? `<button class="btn btn--sm" style="background:#007200;border-color:#007200;color:#fff;" onclick="event.stopPropagation(); startChat('${app.id}')">Mensaje</button>` : ''}
               </div>
             </div>
           `;
@@ -455,6 +458,15 @@
         loadApplications();
       } catch (err) {
         showToast(err.message || 'Error', 'error');
+      }
+    }
+
+    async function startChat(applicationId) {
+      try {
+        const result = await ChatService.startConversation(applicationId);
+        App.goTo(`chat.html?conversation_id=${result.conversation_id}`);
+      } catch (err) {
+        showToast(err.message || 'No se pudo abrir el chat', 'error');
       }
     }
 

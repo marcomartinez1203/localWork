@@ -86,6 +86,14 @@ const App = {
 
       const avatarHtml = `
         <div class="navbar__action-item">
+          <a class="navbar__notification" aria-label="Mensajes" href="${p}chat.html">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a8.97 8.97 0 0 1-1.355 4.74A9 9 0 0 1 12 21a8.97 8.97 0 0 1-4.74-1.355L3 21l1.355-4.26A8.97 8.97 0 0 1 3 12a9 9 0 1 1 18 0Z"/>
+            </svg>
+            <span class="navbar__notification-badge" id="chatBadge" style="display:none;"></span>
+          </a>
+        </div>
+        <div class="navbar__action-item">
           <button class="navbar__notification" aria-label="Notificaciones" onclick="App.toggleNotifPreview(event)">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
@@ -105,6 +113,7 @@ const App = {
             <div class="user-dropdown__divider"></div>
             ${exploreLink}
             ${dashLink}
+            <a href="${p}chat.html" class="user-dropdown__item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:text-bottom;margin-right:8px;"><path d="M21 12a8.97 8.97 0 0 1-1.355 4.74A9 9 0 0 1 12 21a8.97 8.97 0 0 1-4.74-1.355L3 21l1.355-4.26A8.97 8.97 0 0 1 3 12a9 9 0 1 1 18 0Z"/></svg> Chat</a>
             <a href="${p}notifications.html" class="user-dropdown__item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:text-bottom;margin-right:8px;"><path d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg> Notificaciones</a>
             <a href="${p}profile.html" class="user-dropdown__item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:text-bottom;margin-right:8px;"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg> Mi Perfil</a>
             <div class="user-dropdown__divider"></div>
@@ -139,6 +148,21 @@ const App = {
         if (existingNotifBtn) {
           existingNotifBtn.setAttribute('onclick', 'App.toggleNotifPreview(event)');
         }
+        if (!authButtons.querySelector('#chatBadge')) {
+          const notifAction = authButtons.querySelector('.navbar__action-item');
+          if (notifAction) {
+            notifAction.insertAdjacentHTML('beforebegin', `
+              <div class="navbar__action-item">
+                <a class="navbar__notification" aria-label="Mensajes" href="${p}chat.html">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a8.97 8.97 0 0 1-1.355 4.74A9 9 0 0 1 12 21a8.97 8.97 0 0 1-4.74-1.355L3 21l1.355-4.26A8.97 8.97 0 0 1 3 12a9 9 0 1 1 18 0Z"/>
+                  </svg>
+                  <span class="navbar__notification-badge" id="chatBadge" style="display:none;"></span>
+                </a>
+              </div>
+            `);
+          }
+        }
         const existingBadge = authButtons.querySelector('.navbar__notification-badge');
         if (existingBadge && !existingBadge.id) {
           existingBadge.id = 'notifBadge';
@@ -159,6 +183,7 @@ const App = {
             <div class="user-dropdown__divider"></div>
             ${exploreLink}
             ${dashLink}
+            <a href="${p}chat.html" class="user-dropdown__item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:text-bottom;margin-right:8px;"><path d="M21 12a8.97 8.97 0 0 1-1.355 4.74A9 9 0 0 1 12 21a8.97 8.97 0 0 1-4.74-1.355L3 21l1.355-4.26A8.97 8.97 0 0 1 3 12a9 9 0 1 1 18 0Z"/></svg> Chat</a>
             <a href="${p}notifications.html" class="user-dropdown__item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:text-bottom;margin-right:8px;"><path d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg> Notificaciones</a>
             <a href="${p}profile.html" class="user-dropdown__item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:text-bottom;margin-right:8px;"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg> Mi Perfil</a>
             <div class="user-dropdown__divider"></div>
@@ -173,6 +198,7 @@ const App = {
 
       // Check unread notifications
       this.checkNotifications();
+      this.checkChatUnread();
     }
   },
 
@@ -257,6 +283,29 @@ const App = {
     } catch (e) { /* silent */ }
   },
 
+  async checkChatUnread() {
+    try {
+      const user = AuthService.getUser();
+      const badge = document.getElementById('chatBadge');
+      if (!user || !badge) return;
+      let count = 0;
+      if (typeof ChatService !== 'undefined' && typeof ChatService.getUnreadCount === 'function') {
+        const result = await ChatService.getUnreadCount();
+        count = result.count || 0;
+      } else if (typeof api !== 'undefined' && typeof api.get === 'function') {
+        const result = await api.get('/chat/unread-count');
+        count = result.count || 0;
+      }
+      if (count > 0) {
+        badge.style.display = '';
+        badge.textContent = count > 99 ? '99+' : String(count);
+      } else {
+        badge.style.display = 'none';
+        badge.textContent = '';
+      }
+    } catch (e) { /* silent */ }
+  },
+
   // ── Path helper: detect if we are inside /pages/ or not ──
   _pagePrefix() {
     return window.location.pathname.includes('/pages/') ? '' : 'pages/';
@@ -274,6 +323,7 @@ const App = {
       dashboard:     prefix + 'dashboard.html',
       applications:  prefix + 'my-applications.html',
       workers:       prefix + 'workers.html',
+      chat:          prefix + 'chat.html',
     };
     this._navigateTo(routes[page] || page);
   },

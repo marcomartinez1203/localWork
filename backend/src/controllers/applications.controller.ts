@@ -66,6 +66,13 @@ export class ApplicationsController {
     } catch (err) { next(err); }
   }
 
+  static async getMineForJob(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const application = await ApplicationsService.getMineForJob(req.userId!, req.params.jobId);
+      res.json({ data: application });
+    } catch (err) { next(err); }
+  }
+
   static async updateStatus(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const application = await ApplicationsService.updateStatus(

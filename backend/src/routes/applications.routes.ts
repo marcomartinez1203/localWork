@@ -27,6 +27,7 @@ const resumeUpload = multer({
 
 router.post('/',                   authenticate, requireRole('seeker'),   resumeUpload.single('resume'), ApplicationsController.apply);
 router.get('/mine',                authenticate, requireRole('seeker'),   ApplicationsController.getMyApplications);
+router.get('/job/:jobId/mine',     authenticate, requireRole('seeker'),   ApplicationsController.getMineForJob);
 router.get('/job/:jobId',          authenticate, requireRole('employer'), ApplicationsController.getForJob);
 router.patch('/:id/status',        authenticate, requireRole('employer'), ApplicationsController.updateStatus);
 router.delete('/:id',             authenticate, requireRole('seeker'),   ApplicationsController.withdraw);

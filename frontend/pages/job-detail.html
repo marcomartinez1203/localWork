@@ -144,6 +144,7 @@
   <script src="../assets/js/services/notifications.service.js"></script>
   <script src="../assets/js/services/jobs.service.js"></script>
   <script src="../assets/js/services/applications.service.js"></script>
+  <script src="../assets/js/services/chat.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
   <script src="../assets/js/app.js"></script>
   <script>
@@ -153,10 +154,18 @@
     if (!jobId) { window.location.href = 'home.html'; }
 
     let currentJob = null;
+    let myApplication = null;
+    const CHAT_ENABLED_STATUSES = ['reviewed', 'interview', 'accepted'];
 
     (async function init() {
       try {
         currentJob = await JobsService.getById(jobId);
+        try {
+          const appResult = await ApplicationsService.getMineForJob(jobId);
+          myApplication = appResult.data || null;
+        } catch (_appErr) {
+          myApplication = null;
+        }
         renderJob(currentJob);
       } catch (err) {
         document.getElementById('jobMain').innerHTML = `
@@ -246,6 +255,10 @@
           <button class="btn btn--primary btn--lg job-detail__apply-btn" onclick="openApplyModal()">
             Postularme ahora
           </button>
+          ${myApplication && CHAT_ENABLED_STATUSES.includes(myApplication.status) ? `
+          <button class="btn btn--lg" style="margin-top:var(--space-2);background:#007200;border-color:#007200;color:#fff;" onclick="startChatFromJobDetail()">
+            Enviar mensaje
+          </button>` : ''}
           <div style="display:flex;gap:var(--space-2);">
             <button class="btn btn--outline job-detail__save-btn" id="saveBtn" onclick="toggleSave()" style="flex:1;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"/></svg> Guardar empleo
@@ -257,6 +270,13 @@
           <p class="job-detail__posted">${job.total_applications || 0} personas se han postulado</p>
         </div>
       `;
+
+      if (myApplication) {
+        const applyBtn = document.querySelector('.job-detail__apply-btn');
+        applyBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.75l6 6 9-13.5"/></svg> Ya te postulaste';
+        applyBtn.disabled = true;
+        applyBtn.classList.replace('btn--primary', 'btn--secondary');
+      }
     }
 
     // Apply modal
@@ -340,6 +360,16 @@
           // Last fallback
           prompt('Copia este enlace:', url);
         }
+      }
+    }
+
+    async function startChatFromJobDetail() {
+      if (!myApplication) return;
+      try {
+        const result = await ChatService.startConversation(myApplication.id);
+        App.goTo(`chat.html?conversation_id=${result.conversation_id}`);
+      } catch (err) {
+        showToast(err.message || 'No se pudo abrir el chat', 'error');
       }
     }
 

@@ -27,6 +27,10 @@ const ApplicationsService = {
     return api.get(`/applications/job/${jobId}?${params.toString()}`);
   },
 
+  async getMineForJob(jobId) {
+    return api.get(`/applications/job/${jobId}/mine`);
+  },
+
   async updateStatus(applicationId, status, notes) {
     return api.patch(`/applications/${applicationId}/status`, { status, notes });
   },
