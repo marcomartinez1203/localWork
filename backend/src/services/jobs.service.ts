@@ -3,7 +3,7 @@
 // ============================================
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
-import { Job, JobWithDetails, JobFilters, PaginatedResponse, Category, NearbyJobFilters } from '../types';
+import { Job, JobWithDetails, JobFilters, PaginatedResponse, Category } from '../types';
 import { removeAccents } from '../utils/string';
 import { NotificationsService } from './notifications.service';
 
