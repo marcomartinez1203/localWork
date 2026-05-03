@@ -5,7 +5,7 @@
 -- 1. Crear tabla barrios
 CREATE TABLE IF NOT EXISTS barrios (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  nombre TEXT NOT NULL,
+  nombre TEXT NOT NULL UNIQUE,
   lat DECIMAL(10, 6) NOT NULL,
   lng DECIMAL(10, 6) NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -34,7 +34,7 @@ INSERT INTO barrios (nombre, lat, lng) VALUES
   ('20 de Julio', 8.3300, -73.6150),
   ('7 de Agosto', 8.2850, -73.6000),
   ('Simón Bolívar', 8.3150, -73.6250)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (nombre) DO NOTHING;
 
 -- 4. Migrar empleos existentes → asignar barrio Centro por defecto
 DO $$
@@ -91,5 +91,36 @@ LEFT JOIN barrios b ON b.id   = j.barrio_id;
 -- 6. Habilitar RLS en barrios (lectura pública)
 ALTER TABLE barrios ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Barrios visibles para todos" ON barrios;
 CREATE POLICY "Barrios visibles para todos"
   ON barrios FOR SELECT USING (true);
+
+-- 7. Función RPC para búsqueda geoespacial (Haversine)
+CREATE OR REPLACE FUNCTION get_jobs_nearby(
+    user_lat DECIMAL,
+    user_lng DECIMAL,
+    search_radius INTEGER,
+    filter_category TEXT DEFAULT NULL,
+    filter_modality TEXT DEFAULT NULL,
+    filter_barrio UUID DEFAULT NULL
+)
+RETURNS SETOF jobs_with_details
+LANGUAGE sql
+STABLE
+AS $$
+    SELECT *
+    FROM jobs_with_details
+    WHERE status = 'active'
+        AND location_lat IS NOT NULL
+        AND location_lng IS NOT NULL
+        AND 6371000 * acos(
+            cos(radians(user_lat)) * cos(radians(location_lat)) * 
+            cos(radians(location_lng) - radians(user_lng)) + 
+            sin(radians(user_lat)) * sin(radians(location_lat))
+        ) <= search_radius
+        AND (filter_category IS NULL OR category_slug = filter_category)
+        AND (filter_modality IS NULL OR modality::text = filter_modality)
+        AND (filter_barrio IS NULL OR barrio_id = filter_barrio)
+    ORDER BY created_at DESC
+    LIMIT 100;
+$$;

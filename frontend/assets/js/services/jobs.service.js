@@ -21,16 +21,17 @@ const JobsService = {
     return api.get(`/jobs/${jobId}`);
   },
 
-  async getNearby({ lat, lng, radius = 5000, category, modality, barrio_id } = {}) {
+  getNearby: async (filters) => {
     const params = new URLSearchParams();
-    params.set('lat', lat);
-    params.set('lng', lng);
-    params.set('radius', radius);
-    if (category && category !== 'all') params.set('category', category);
-    if (modality && modality !== 'all') params.set('modality', modality);
-    if (barrio_id && barrio_id !== 'all') params.set('barrio_id', barrio_id);
-
-    return api.get(`/jobs/nearby?${params.toString()}`);
+    if (filters.lat) params.append('lat', filters.lat);
+    if (filters.lng) params.append('lng', filters.lng);
+    if (filters.radius) params.append('radius', filters.radius);
+    if (filters.category && filters.category !== 'all') params.append('category', filters.category);
+    if (filters.modality && filters.modality !== 'all') params.append('modality', filters.modality);
+    if (filters.barrio_id && filters.barrio_id !== 'all') params.append('barrio_id', filters.barrio_id);
+    
+    const res = await api.get(`/jobs/nearby?${params.toString()}`);
+    return res;
   },
 
   async create(jobData) {
@@ -75,8 +76,9 @@ const JobsService = {
     return api.get('/jobs/categories');
   },
 
-  async getBarrios() {
-    return api.get('/jobs/barrios');
+  getBarrios: async () => {
+    const res = await api.get('/jobs/barrios');
+    return res;
   },
 
   // ── Estadísticas ──

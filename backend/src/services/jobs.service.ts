@@ -71,38 +71,31 @@ export class JobsService {
     };
   }
 
-  static async getNearbyJobs(filters: NearbyJobFilters): Promise<(JobWithDetails & { distance: number })[]> {
-    let query = supabaseAdmin
-      .from('jobs_with_details')
-      .select('*')
-      .eq('status', 'active')
-      .not('location_lat', 'is', null)
-      .not('location_lng', 'is', null)
-      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+  static async getNearby(params: {
+    lat: number;
+    lng: number;
+    radius: number;
+    category?: string;
+    modality?: string;
+    barrio_id?: string;
+  }): Promise<JobWithDetails[]> {
+    const { lat, lng, radius, category, modality, barrio_id } = params;
 
-    if (filters.category) query = query.or(`category_slug.eq.${filters.category},category_name.eq.${filters.category}`);
-    if (filters.modality) query = query.eq('modality', filters.modality);
-    if (filters.barrio_id) query = query.eq('barrio_id', filters.barrio_id);
-
-    const { data, error } = await query;
-    if (error) { console.error('[JobsService.getNearbyJobs]', error); throw new AppError('Error al obtener empleos cercanos', 500); }
-
-    const jobs = (data || []) as JobWithDetails[];
-    const toRad = (v: number) => (v * Math.PI) / 180;
-    const R = 6371e3; // meters
-
-    const withDist = jobs.map(j => {
-      const dLat = toRad(j.location_lat! - filters.lat);
-      const dLng = toRad(j.location_lng! - filters.lng);
-      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(toRad(filters.lat)) * Math.cos(toRad(j.location_lat!)) *
-                Math.sin(dLng / 2) * Math.sin(dLng / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const dist = R * c;
-      return { ...j, distance: dist };
+    const { data, error } = await supabaseAdmin.rpc('get_jobs_nearby', {
+        user_lat: lat,
+        user_lng: lng,
+        search_radius: radius,
+        filter_category: category && category !== 'all' ? category : null,
+        filter_modality: modality && modality !== 'all' ? modality : null,
+        filter_barrio: barrio_id && barrio_id !== 'all' ? barrio_id : null
     });
 
-    return withDist.filter(j => j.distance <= filters.radius).sort((a, b) => a.distance - b.distance);
+    if (error) { 
+        console.error('[JobsService.getNearby]', error); 
+        throw new AppError('Error al obtener empleos cercanos', 500); 
+    }
+
+    return (data || []) as JobWithDetails[];
   }
 
   static async getById(jobId: string): Promise<JobWithDetails> {

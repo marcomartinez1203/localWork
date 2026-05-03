@@ -1,7 +1,7 @@
 // ============================================
 // LocalWork — Jobs Controller
 // ============================================
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { JobsService } from '../services/jobs.service';
 import { AuthenticatedRequest } from '../types';
 import { supabaseAdmin } from '../config/supabase';
@@ -24,18 +24,23 @@ export class JobsController {
     } catch (err) { next(err); }
   }
 
-  static async getNearbyJobs(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  static async getNearby(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await JobsService.getNearbyJobs({
-        lat: parseFloat(req.query.lat as string),
-        lng: parseFloat(req.query.lng as string),
-        radius: parseInt(req.query.radius as string) || 5000,
-        category: req.query.category as string,
-        modality: req.query.modality as any,
-        barrio_id: req.query.barrio_id as string,
-      });
-      res.json(result);
-    } catch (err) { next(err); }
+        const { lat, lng, radius, category, modality, barrio_id } = req.query;
+        
+        const jobs = await JobsService.getNearby({
+            lat: parseFloat(lat as string),
+            lng: parseFloat(lng as string),
+            radius: parseInt(radius as string) || 5000,
+            category: category as string,
+            modality: modality as string,
+            barrio_id: barrio_id as string
+        });
+        
+        res.json({ data: jobs });
+    } catch (error) {
+        next(error);
+    }
   }
 
   static async getById(req: AuthenticatedRequest, res: Response, next: NextFunction) {
@@ -47,6 +52,11 @@ export class JobsController {
 
   static async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
+      if (req.body.barrio_id && req.userRole !== 'employer') {
+        return res.status(403).json({ error: 'Solo empleadores pueden asignar ubicación' });
+      }
+
+
       // Obtener empresa del usuario
       const { data: company } = await supabaseAdmin
         .from('companies')
@@ -63,6 +73,10 @@ export class JobsController {
 
   static async update(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
+      if (req.body.barrio_id && req.userRole !== 'employer') {
+        return res.status(403).json({ error: 'Solo empleadores pueden asignar ubicación' });
+      }
+
       const job = await JobsService.update(req.params.id, req.userId!, req.body);
       res.json(job);
     } catch (err) { next(err); }
