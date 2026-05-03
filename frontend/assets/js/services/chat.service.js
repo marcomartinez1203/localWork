@@ -7,6 +7,22 @@ const ChatService = {
     return api.post('/chat/start', { application_id: applicationId });
   },
 
+  async sendRequest(targetUserId) {
+    return api.post('/chat/requests', { target_user_id: targetUserId });
+  },
+
+  async getIncomingRequests() {
+    return api.get('/chat/requests/incoming');
+  },
+
+  async respondRequest(requestId, action) {
+    return api.patch(`/chat/requests/${requestId}/respond`, { action });
+  },
+
+  async getRequestStatus(targetUserId) {
+    return api.get(`/chat/requests/status/${targetUserId}`);
+  },
+
   async listConversations() {
     return api.get('/chat/conversations');
   },

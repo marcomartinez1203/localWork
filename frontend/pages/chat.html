@@ -76,6 +76,7 @@
       <div class="chat-shell">
         <aside class="chat-card chat-sidebar">
           <div class="chat-sidebar__header"><h1 class="chat-sidebar__title">Conversaciones</h1></div>
+          <div id="incomingRequests" style="padding:var(--space-2) var(--space-2) 0;"></div>
           <div class="chat-sidebar__list" id="conversationList"></div>
         </aside>
 
@@ -121,6 +122,7 @@
       conversations: [],
       activeConversationId: new URLSearchParams(window.location.search).get('conversation_id') || null,
       selectedAttachment: null,
+      incomingRequests: [],
       supabase: null,
       messageChannel: null,
       presenceChannel: null,
@@ -174,7 +176,9 @@
       list.innerHTML = state.conversations.map(c => {
         const lastText = c.last_message
           ? (c.last_message.content || `Adjunto: ${c.last_message.attachment_name || 'archivo'}`)
-          : `Postulacion: ${c.application.job_title}`;
+          : (c.kind === 'application'
+            ? `Postulacion: ${c.application ? c.application.job_title : 'Oferta'}`
+            : 'Chat directo');
         const avatar = c.other_user.avatar_url
           ? `<img src="${c.other_user.avatar_url}" alt="${escapeHtml(c.other_user.full_name)}">`
           : initials(c.other_user.full_name);
@@ -196,6 +200,28 @@
       }).join('');
     }
 
+    function renderIncomingRequests() {
+      const el = document.getElementById('incomingRequests');
+      if (!state.incomingRequests.length) {
+        el.innerHTML = '';
+        return;
+      }
+      el.innerHTML = `
+        <div style="border:1px solid var(--color-border-light);border-radius:var(--radius);padding:var(--space-2);display:flex;flex-direction:column;gap:var(--space-2);">
+          <p style="margin:0;font-size:12px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.04em;">Solicitudes pendientes</p>
+          ${state.incomingRequests.map(r => `
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);">
+              <span style="font-size:var(--fs-sm);">${escapeHtml(r.sender.full_name)}</span>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn--sm" style="padding:4px 8px;background:#007200;border-color:#007200;color:#fff;" onclick="respondRequest('${r.id}','accepted')">Aceptar</button>
+                <button class="btn btn--ghost btn--sm" style="padding:4px 8px;" onclick="respondRequest('${r.id}','rejected')">Rechazar</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
     function renderActiveHeader(conversation, online) {
       const avatarEl = document.getElementById('activeAvatar');
       if (conversation.other_user.avatar_url) {
@@ -206,7 +232,9 @@
       document.getElementById('activeName').textContent = conversation.other_user.full_name;
       document.getElementById('activeMeta').innerHTML = online
         ? `<span class="chat-main__meta-dot"></span><span>En linea</span>`
-        : `<span>Oferta: ${escapeHtml(conversation.application.job_title)}</span>`;
+        : `<span>${conversation.kind === 'application'
+          ? `Oferta: ${escapeHtml(conversation.application ? conversation.application.job_title : 'Oferta')}`
+          : 'Chat directo'}</span>`;
     }
 
     function renderMessages(messages) {
@@ -248,6 +276,9 @@
     async function loadConversations() {
       const result = await ChatService.listConversations();
       state.conversations = result.data || [];
+      const incoming = await ChatService.getIncomingRequests();
+      state.incomingRequests = incoming.data || [];
+      renderIncomingRequests();
       if (!state.activeConversationId && state.conversations.length) {
         state.activeConversationId = state.conversations[0].id;
       }
@@ -379,6 +410,18 @@
       } finally {
         sendBtn.disabled = false;
         sendBtn.classList.remove('btn--loading');
+      }
+    }
+
+    async function respondRequest(requestId, action) {
+      try {
+        const result = await ChatService.respondRequest(requestId, action);
+        if (result.conversation_id) {
+          state.activeConversationId = result.conversation_id;
+        }
+        await loadConversations();
+      } catch (err) {
+        showToast(err.message || 'No se pudo responder la solicitud', 'error');
       }
     }
 

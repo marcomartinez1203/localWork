@@ -21,6 +21,10 @@ const messageIpLimiter = rateLimit({
 });
 
 router.post('/start', authenticate, requireRole('seeker', 'employer'), ChatController.startConversation);
+router.post('/requests', authenticate, requireRole('seeker', 'employer'), ChatController.createDirectRequest);
+router.get('/requests/incoming', authenticate, requireRole('seeker', 'employer'), ChatController.listIncomingRequests);
+router.patch('/requests/:requestId/respond', authenticate, requireRole('seeker', 'employer'), ChatController.respondDirectRequest);
+router.get('/requests/status/:targetUserId', authenticate, requireRole('seeker', 'employer'), ChatController.getRequestStatus);
 router.get('/conversations', authenticate, requireRole('seeker', 'employer'), ChatController.listConversations);
 router.get('/unread-count', authenticate, requireRole('seeker', 'employer'), ChatController.getUnreadCount);
 router.get('/conversations/:conversationId/messages', authenticate, requireRole('seeker', 'employer'), ChatController.getMessages);

@@ -170,6 +170,7 @@
   <script src="../assets/js/config/api.js"></script>
   <script src="../assets/js/services/auth.service.js"></script>
   <script src="../assets/js/services/notifications.service.js"></script>
+  <script src="../assets/js/services/chat.service.js"></script>
   <script src="../assets/js/services/workers.service.js"></script>
   <script src="../assets/js/services/ratings.service.js"></script>
   <script src="../assets/js/utils/helpers.js"></script>
@@ -291,6 +292,15 @@
         const ratings = await RatingsService.getForUser(workerId);
         const user = AuthService.getUser();
         const isEmployer = user && user.role === 'employer';
+        const isMe = user && user.id === workerId;
+        let chatStatus = null;
+        if (!isMe) {
+          try {
+            chatStatus = await ChatService.getRequestStatus(workerId);
+          } catch (_chatErr) {
+            chatStatus = null;
+          }
+        }
 
         const initials = worker.full_name ? worker.full_name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';
         const avatarHtml = worker.avatar_url ? `<img src="${worker.avatar_url}" alt="">` : initials;
@@ -336,6 +346,9 @@
           ${worker.skills && worker.skills.length ? `<div style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-4);">${worker.skills.map(s => `<span class="badge badge--neutral">${escapeHtml(s)}</span>`).join('')}</div>` : ''}
           ${worker.phone ? `<p style="font-size:var(--fs-sm);display:flex;align-items:center;gap:var(--space-2);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.25 4.5a2.25 2.25 0 0 1 2.25-2.25h2.1c.716 0 1.756.503 1.98 1.184l.87 2.607c.2.6.047 1.26-.396 1.703l-1.287 1.287a15.129 15.129 0 0 0 7.202 7.202l1.287-1.287c.443-.443 1.103-.596 1.703-.396l2.607.87c.681.224 1.184 1.264 1.184 1.98v2.1a2.25 2.25 0 0 1-2.25 2.25h-1.5C9.006 21.75 2.25 14.994 2.25 6V4.5Z"/></svg>${escapeHtml(worker.phone)}</p>` : ''}
           ${worker.hourly_rate ? `<p style="font-size:var(--fs-sm);display:flex;align-items:center;gap:var(--space-2);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.25 9.75h19.5m-19.5 4.5h19.5M3.75 6.75h16.5a1.5 1.5 0 0 1 1.5 1.5v7.5a1.5 1.5 0 0 1-1.5 1.5H3.75a1.5 1.5 0 0 1-1.5-1.5v-7.5a1.5 1.5 0 0 1 1.5-1.5Z"/><circle cx="12" cy="12" r="1.5"/></svg>${escapeHtml(worker.hourly_rate)}</p>` : ''}
+          ${!isMe ? `<div style="margin-top:var(--space-3);">
+            ${renderChatAction(workerId, chatStatus)}
+          </div>` : ''}
           <div style="margin-top:var(--space-4);">
             <p style="font-weight:var(--fw-semibold);margin-bottom:var(--space-2);">Calificaciones</p>
             ${ratingsHtml || '<p style="font-size:var(--fs-sm);color:var(--color-text-muted);">Aún no tiene calificaciones.</p>'}
@@ -379,6 +392,55 @@
         openWorkerModal(workerId); // Reload modal
       } catch (err) {
         showToast(err.message || 'Error al calificar', 'error');
+      }
+    }
+
+    function renderChatAction(workerId, status) {
+      if (!status) {
+        return `<button class="btn btn--outline btn--sm" onclick="requestDirectChat('${workerId}')">Enviar mensaje</button>`;
+      }
+      if (status.can_message && status.conversation_id) {
+        return `<button class="btn btn--sm" style="background:#007200;border-color:#007200;color:#fff;" onclick="App.goTo('chat.html?conversation_id=${status.conversation_id}')">Abrir chat</button>`;
+      }
+      if (status.pending_outgoing) {
+        return `<button class="btn btn--ghost btn--sm" disabled>Solicitud enviada</button>`;
+      }
+      if (status.pending_incoming && status.request_id) {
+        return `
+          <div style="display:flex;gap:var(--space-2);">
+            <button class="btn btn--sm" style="background:#007200;border-color:#007200;color:#fff;" onclick="respondDirectRequest('${status.request_id}','accepted')">Aceptar</button>
+            <button class="btn btn--ghost btn--sm" onclick="respondDirectRequest('${status.request_id}','rejected')">Rechazar</button>
+          </div>
+        `;
+      }
+      return `<button class="btn btn--outline btn--sm" onclick="requestDirectChat('${workerId}')">Enviar mensaje</button>`;
+    }
+
+    async function requestDirectChat(workerId) {
+      try {
+        const result = await ChatService.sendRequest(workerId);
+        if (result.conversation_id) {
+          App.goTo(`chat.html?conversation_id=${result.conversation_id}`);
+          return;
+        }
+        showToast('Solicitud enviada', 'success');
+        openWorkerModal(workerId);
+      } catch (err) {
+        showToast(err.message || 'No se pudo enviar la solicitud', 'error');
+      }
+    }
+
+    async function respondDirectRequest(requestId, action) {
+      try {
+        const result = await ChatService.respondRequest(requestId, action);
+        if (result.conversation_id) {
+          App.goTo(`chat.html?conversation_id=${result.conversation_id}`);
+          return;
+        }
+        showToast(action === 'accepted' ? 'Solicitud aceptada' : 'Solicitud rechazada', 'success');
+        closeWorkerModal();
+      } catch (err) {
+        showToast(err.message || 'No se pudo responder la solicitud', 'error');
       }
     }
   </script>

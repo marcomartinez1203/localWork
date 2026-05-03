@@ -170,7 +170,7 @@ export interface SavedJob {
 
 export interface Conversation {
   id: string;
-  application_id: string;
+  application_id: string | null;
   seeker_id: string;
   employer_id: string;
   created_by: string;
@@ -189,6 +189,17 @@ export interface Message {
   attachment_type: string | null;
   read_at: string | null;
   created_at: string;
+}
+
+export interface ChatRequest {
+  id: string;
+  sender_id: string;
+  target_id: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled';
+  conversation_id: string | null;
+  created_at: string;
+  updated_at: string;
+  responded_at: string | null;
 }
 
 // ── API Request / Response Types ──

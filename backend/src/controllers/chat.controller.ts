@@ -25,6 +25,40 @@ export class ChatController {
     } catch (err) { next(err); }
   }
 
+  static async createDirectRequest(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const targetUserId = req.body.target_user_id;
+      if (!targetUserId) throw new AppError('target_user_id es requerido', 400);
+      const result = await ChatService.createDirectRequest(req.userId!, targetUserId);
+      res.status(201).json(result);
+    } catch (err) { next(err); }
+  }
+
+  static async listIncomingRequests(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const data = await ChatService.listIncomingRequests(req.userId!);
+      res.json({ data });
+    } catch (err) { next(err); }
+  }
+
+  static async respondDirectRequest(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const action = req.body.action;
+      if (action !== 'accepted' && action !== 'rejected') {
+        throw new AppError('action debe ser accepted o rejected', 400);
+      }
+      const result = await ChatService.respondDirectRequest(req.params.requestId, req.userId!, action);
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
+  static async getRequestStatus(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await ChatService.getRequestStatus(req.userId!, req.params.targetUserId);
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
   static async getMessages(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const page = parseInt(req.query.page as string, 10) || 1;
