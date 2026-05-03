@@ -53,7 +53,8 @@ export class JobsController {
   static async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       if (req.body.barrio_id && req.userRole !== 'employer') {
-        return res.status(403).json({ error: 'Solo empleadores pueden asignar ubicación' });
+        res.status(403).json({ error: 'Solo empleadores pueden asignar ubicación' });
+        return;
       }
 
 
@@ -74,7 +75,8 @@ export class JobsController {
   static async update(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       if (req.body.barrio_id && req.userRole !== 'employer') {
-        return res.status(403).json({ error: 'Solo empleadores pueden asignar ubicación' });
+        res.status(403).json({ error: 'Solo empleadores pueden asignar ubicación' });
+        return;
       }
 
       const job = await JobsService.update(req.params.id, req.userId!, req.body);
