@@ -1,8 +1,8 @@
 -- ============================================
--- Migration: Add Map Barrios
+-- Ejecutar esto en el SQL Editor de Supabase
 -- ============================================
 
--- 1. Create barrios table
+-- 1. Crear tabla barrios
 CREATE TABLE IF NOT EXISTS barrios (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   nombre TEXT NOT NULL,
@@ -11,15 +11,13 @@ CREATE TABLE IF NOT EXISTS barrios (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-COMMENT ON TABLE barrios IS 'Barrios predefinidos de Aguachica para agrupar ofertas en el mapa';
-
--- 2. Modify jobs table
+-- 2. Agregar columnas a jobs
 ALTER TABLE jobs
-  ADD COLUMN barrio_id UUID REFERENCES barrios(id) ON DELETE SET NULL,
-  ADD COLUMN location_lat DECIMAL(10, 6),
-  ADD COLUMN location_lng DECIMAL(10, 6);
+  ADD COLUMN IF NOT EXISTS barrio_id UUID REFERENCES barrios(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS location_lat DECIMAL(10, 6),
+  ADD COLUMN IF NOT EXISTS location_lng DECIMAL(10, 6);
 
--- 3. Insert predefined barrios
+-- 3. Insertar barrios de Aguachica
 INSERT INTO barrios (nombre, lat, lng) VALUES
   ('Centro', 8.3084, -73.6078),
   ('El Prado', 8.3120, -73.6050),
@@ -38,23 +36,60 @@ INSERT INTO barrios (nombre, lat, lng) VALUES
   ('Simón Bolívar', 8.3150, -73.6250)
 ON CONFLICT DO NOTHING;
 
--- 4. Migrate existing jobs
--- Fallback to 'Centro' if no match, else match by location name if possible.
-DO $$ 
+-- 4. Migrar empleos existentes → asignar barrio Centro por defecto
+DO $$
 DECLARE
   v_centro_id UUID;
 BEGIN
   SELECT id INTO v_centro_id FROM barrios WHERE nombre = 'Centro' LIMIT 1;
-  
-  -- Update existing jobs assigning Centro as default if no direct match, 
-  -- and applying a random offset of ~±200m (±0.0018 degrees)
-  UPDATE jobs 
-  SET 
-    barrio_id = COALESCE((SELECT id FROM barrios WHERE nombre = jobs.location LIMIT 1), v_centro_id);
+
+  UPDATE jobs
+  SET barrio_id = COALESCE(
+    (SELECT id FROM barrios WHERE nombre = jobs.location LIMIT 1),
+    v_centro_id
+  )
+  WHERE barrio_id IS NULL;
 
   UPDATE jobs
   SET
     location_lat = (SELECT lat FROM barrios WHERE id = jobs.barrio_id) + (random() * 0.0036 - 0.0018),
     location_lng = (SELECT lng FROM barrios WHERE id = jobs.barrio_id) + (random() * 0.0036 - 0.0018)
-  WHERE barrio_id IS NOT NULL;
+  WHERE barrio_id IS NOT NULL
+    AND location_lat IS NULL;
 END $$;
+
+-- 5. Actualizar la vista jobs_with_details para incluir datos del barrio
+-- (DROP necesario porque no se puede cambiar el orden de columnas con REPLACE)
+DROP VIEW IF EXISTS jobs_with_details;
+
+CREATE VIEW jobs_with_details AS
+SELECT
+  j.*,
+  c.name        AS company_name,
+  c.logo_url    AS company_logo_url,
+  c.verified    AS company_verified,
+  cat.name      AS category_name,
+  cat.slug      AS category_slug,
+  cat.icon      AS category_icon,
+  b.nombre      AS barrio_nombre,
+  b.lat         AS barrio_lat,
+  b.lng         AS barrio_lng,
+  (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id)  AS total_applications,
+  (SELECT COUNT(*) FROM saved_jobs s WHERE s.job_id = j.id)    AS total_saves,
+  unaccent(lower(
+    coalesce(j.title, '')       || ' ' ||
+    coalesce(j.description, '') || ' ' ||
+    coalesce(c.name, '')        || ' ' ||
+    coalesce(j.location, '')    || ' ' ||
+    coalesce(cat.name, '')
+  )) AS search_text
+FROM jobs j
+JOIN companies  c   ON c.id   = j.company_id
+JOIN categories cat ON cat.id = j.category_id
+LEFT JOIN barrios b ON b.id   = j.barrio_id;
+
+-- 6. Habilitar RLS en barrios (lectura pública)
+ALTER TABLE barrios ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Barrios visibles para todos"
+  ON barrios FOR SELECT USING (true);
