@@ -222,13 +222,22 @@
         </div>
         <div class="create-form__row">
           <div class="form-group">
-            <label class="form-label">Ubicación / Zona</label>
+            <label class="form-label">Ubicación en el mapa <span style="color:var(--color-text-muted);font-weight:400;">(privacidad)</span></label>
+            <select class="form-select" id="jobBarrio">
+              <option value="">No mostrar en el mapa</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Referencia / Dirección</label>
             <input type="text" class="form-input" id="jobLocation" placeholder="Ej: Centro, Norte">
           </div>
+        </div>
+        <div class="create-form__row">
           <div class="form-group">
             <label class="form-label">Vacantes</label>
             <input type="number" class="form-input" id="jobVacancies" value="1" min="1">
           </div>
+          <div class="form-group" style="visibility:hidden"></div>
         </div>
         <div class="form-group">
           <label class="form-label">Fecha de vencimiento <span style="color:var(--color-text-muted);font-weight:400;">(opcional)</span></label>
@@ -394,6 +403,16 @@
           select.innerHTML += `<option value="${c.id}">${c.icon} ${c.name}</option>`;
         });
       } catch (e) { console.warn('Categories error:', e); }
+
+      // Load barrios for the form
+      try {
+        const bResult = await JobsService.getBarrios();
+        const barrios = bResult.data || [];
+        const bSelect = document.getElementById('jobBarrio');
+        barrios.forEach(b => {
+          bSelect.innerHTML += `<option value="${b.id}">${b.nombre}</option>`;
+        });
+      } catch (e) { console.warn('Barrios error:', e); }
 
       loadJobs();
     })();
@@ -576,6 +595,7 @@
         document.getElementById('jobSalaryText').value = job.salary_text || '';
         document.getElementById('jobSalaryMin').value = job.salary_min || '';
         document.getElementById('jobSalaryMax').value = job.salary_max || '';
+        document.getElementById('jobBarrio').value = job.barrio_id || '';
         document.getElementById('jobLocation').value = job.location || '';
         document.getElementById('jobVacancies').value = job.vacancies || 1;
         document.getElementById('jobExpiresAt').value = job.expires_at ? job.expires_at.substring(0, 10) : '';
@@ -613,6 +633,7 @@
             modality: document.getElementById('jobModality').value,
             description: document.getElementById('jobDescription').value.trim(),
             requirements: document.getElementById('jobRequirements').value.trim() || null,
+            barrio_id: document.getElementById('jobBarrio').value || null,
             location: document.getElementById('jobLocation').value.trim() || null,
             salary_min: salaryMin,
             salary_max: salaryMax,
@@ -630,6 +651,7 @@
             modality: document.getElementById('jobModality').value,
             description: document.getElementById('jobDescription').value.trim(),
             requirements: document.getElementById('jobRequirements').value.trim() || null,
+            barrio_id: document.getElementById('jobBarrio').value || null,
             location: document.getElementById('jobLocation').value.trim() || null,
             salary_min: salaryMin,
             salary_max: salaryMax,

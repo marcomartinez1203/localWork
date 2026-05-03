@@ -85,6 +85,14 @@ export interface Category {
   created_at: string;
 }
 
+export interface Barrio {
+  id: string;
+  nombre: string;
+  lat: number;
+  lng: number;
+  created_at: string;
+}
+
 export interface Job {
   id: string;
   company_id: string;
@@ -101,6 +109,9 @@ export interface Job {
   vacancies: number;
   status: JobStatus;
   expires_at: string | null;
+  barrio_id: string | null;
+  location_lat: number | null;
+  location_lng: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -114,6 +125,7 @@ export interface JobWithDetails extends Job {
   category_icon: string | null;
   total_applications: number;
   total_saves: number;
+  barrio?: Pick<Barrio, 'nombre' | 'lat' | 'lng'> | null;
 }
 
 export interface Application {
@@ -196,6 +208,15 @@ export interface JobFilters {
   sort?: 'newest' | 'salary-desc' | 'salary-asc';
   search?: string;
   status?: JobStatus;
+}
+
+export interface NearbyJobFilters {
+  lat: number;
+  lng: number;
+  radius: number; // in meters
+  category?: string;
+  modality?: JobModality;
+  barrio_id?: string;
 }
 
 export interface ApiError {

@@ -21,6 +21,18 @@ const JobsService = {
     return api.get(`/jobs/${jobId}`);
   },
 
+  async getNearby({ lat, lng, radius = 5000, category, modality, barrio_id } = {}) {
+    const params = new URLSearchParams();
+    params.set('lat', lat);
+    params.set('lng', lng);
+    params.set('radius', radius);
+    if (category && category !== 'all') params.set('category', category);
+    if (modality && modality !== 'all') params.set('modality', modality);
+    if (barrio_id && barrio_id !== 'all') params.set('barrio_id', barrio_id);
+
+    return api.get(`/jobs/nearby?${params.toString()}`);
+  },
+
   async create(jobData) {
     return api.post('/jobs', jobData);
   },
@@ -58,9 +70,13 @@ const JobsService = {
     return [];
   },
 
-  // ── Categorías ──
+  // ── Categorías y Barrios ──
   async getCategories() {
     return api.get('/jobs/categories');
+  },
+
+  async getBarrios() {
+    return api.get('/jobs/barrios');
   },
 
   // ── Estadísticas ──

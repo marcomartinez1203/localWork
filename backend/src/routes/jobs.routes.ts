@@ -9,6 +9,8 @@ const router = Router();
 
 // Públicas
 router.get('/categories',      JobsController.getCategories);
+router.get('/barrios',         JobsController.getBarrios);
+router.get('/nearby',          JobsController.getNearbyJobs);
 router.get('/employer-stats',  authenticate, requireRole('employer'), JobsController.getEmployerStats);
 router.get('/stats',           JobsController.getStats);
 router.get('/',           JobsController.list);

@@ -24,6 +24,20 @@ export class JobsController {
     } catch (err) { next(err); }
   }
 
+  static async getNearbyJobs(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await JobsService.getNearbyJobs({
+        lat: parseFloat(req.query.lat as string),
+        lng: parseFloat(req.query.lng as string),
+        radius: parseInt(req.query.radius as string) || 5000,
+        category: req.query.category as string,
+        modality: req.query.modality as any,
+        barrio_id: req.query.barrio_id as string,
+      });
+      res.json(result);
+    } catch (err) { next(err); }
+  }
+
   static async getById(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const job = await JobsService.getById(req.params.id);
@@ -97,6 +111,13 @@ export class JobsController {
     try {
       const categories = await JobsService.getCategories();
       res.json({ data: categories });
+    } catch (err) { next(err); }
+  }
+
+  static async getBarrios(_req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const barrios = await JobsService.getBarrios();
+      res.json({ data: barrios });
     } catch (err) { next(err); }
   }
 

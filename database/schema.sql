@@ -96,6 +96,18 @@ CREATE TABLE categories (
 COMMENT ON TABLE categories IS 'Categorías predefinidas de empleo';
 
 
+-- ── 2.3b Barrios (Mapa) ──
+CREATE TABLE barrios (
+  id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  nombre       TEXT          NOT NULL,
+  lat          DECIMAL(10, 6) NOT NULL,
+  lng          DECIMAL(10, 6) NOT NULL,
+  created_at   TIMESTAMPTZ   NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE barrios IS 'Barrios predefinidos de Aguachica para agrupar ofertas en el mapa';
+
+
 -- ── 2.4  Ofertas de empleo ──
 CREATE TABLE jobs (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -113,6 +125,9 @@ CREATE TABLE jobs (
   vacancies    INT           NOT NULL DEFAULT 1,
   status       job_status    NOT NULL DEFAULT 'active',
   expires_at   TIMESTAMPTZ,
+  barrio_id    UUID          REFERENCES barrios(id) ON DELETE SET NULL,
+  location_lat DECIMAL(10, 6),
+  location_lng DECIMAL(10, 6),
 
   CONSTRAINT chk_salary_range CHECK (salary_min IS NULL OR salary_max IS NULL OR salary_min <= salary_max),
   created_at   TIMESTAMPTZ   NOT NULL DEFAULT now(),
@@ -382,6 +397,9 @@ SELECT
   cat.name      AS category_name,
   cat.slug      AS category_slug,
   cat.icon      AS category_icon,
+  b.nombre      AS barrio_nombre,
+  b.lat         AS barrio_lat,
+  b.lng         AS barrio_lng,
   (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.id)        AS total_applications,
   (SELECT COUNT(*) FROM saved_jobs s WHERE s.job_id = j.id)          AS total_saves,
   unaccent(lower(
@@ -393,7 +411,8 @@ SELECT
   )) AS search_text
 FROM jobs j
 JOIN companies  c   ON c.id   = j.company_id
-JOIN categories cat ON cat.id = j.category_id;
+JOIN categories cat ON cat.id = j.category_id
+LEFT JOIN barrios b ON b.id = j.barrio_id;
 
 
 -- ── Vista de trabajadores con campo de búsqueda normalizado ──

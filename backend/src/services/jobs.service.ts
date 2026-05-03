@@ -3,7 +3,7 @@
 // ============================================
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
-import { Job, JobWithDetails, JobFilters, PaginatedResponse, Category } from '../types';
+import { Job, JobWithDetails, JobFilters, PaginatedResponse, Category, NearbyJobFilters } from '../types';
 import { removeAccents } from '../utils/string';
 import { NotificationsService } from './notifications.service';
 
@@ -71,6 +71,40 @@ export class JobsService {
     };
   }
 
+  static async getNearbyJobs(filters: NearbyJobFilters): Promise<(JobWithDetails & { distance: number })[]> {
+    let query = supabaseAdmin
+      .from('jobs_with_details')
+      .select('*')
+      .eq('status', 'active')
+      .not('location_lat', 'is', null)
+      .not('location_lng', 'is', null)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+
+    if (filters.category) query = query.or(`category_slug.eq.${filters.category},category_name.eq.${filters.category}`);
+    if (filters.modality) query = query.eq('modality', filters.modality);
+    if (filters.barrio_id) query = query.eq('barrio_id', filters.barrio_id);
+
+    const { data, error } = await query;
+    if (error) { console.error('[JobsService.getNearbyJobs]', error); throw new AppError('Error al obtener empleos cercanos', 500); }
+
+    const jobs = (data || []) as JobWithDetails[];
+    const toRad = (v: number) => (v * Math.PI) / 180;
+    const R = 6371e3; // meters
+
+    const withDist = jobs.map(j => {
+      const dLat = toRad(j.location_lat! - filters.lat);
+      const dLng = toRad(j.location_lng! - filters.lng);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(filters.lat)) * Math.cos(toRad(j.location_lat!)) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const dist = R * c;
+      return { ...j, distance: dist };
+    });
+
+    return withDist.filter(j => j.distance <= filters.radius).sort((a, b) => a.distance - b.distance);
+  }
+
   static async getById(jobId: string): Promise<JobWithDetails> {
     const { data, error } = await supabaseAdmin
       .from('jobs_with_details')
@@ -83,6 +117,16 @@ export class JobsService {
   }
 
   static async create(companyId: string, jobData: Partial<Job>): Promise<Job> {
+    let lat: number | null = null;
+    let lng: number | null = null;
+    if (jobData.barrio_id) {
+      const { data: b } = await supabaseAdmin.from('barrios').select('lat, lng').eq('id', jobData.barrio_id).single();
+      if (b) {
+        lat = b.lat + (Math.random() * 0.0036 - 0.0018);
+        lng = b.lng + (Math.random() * 0.0036 - 0.0018);
+      }
+    }
+
     const { data, error } = await supabaseAdmin
       .from('jobs')
       .insert({
@@ -94,6 +138,9 @@ export class JobsService {
         benefits: jobData.benefits,
         modality: jobData.modality || 'Presencial',
         location: jobData.location,
+        barrio_id: jobData.barrio_id || null,
+        location_lat: lat,
+        location_lng: lng,
         salary_min: jobData.salary_min,
         salary_max: jobData.salary_max,
         salary_text: jobData.salary_text,
@@ -153,13 +200,26 @@ export class JobsService {
     const allowed = [
       'title', 'description', 'requirements', 'benefits',
       'modality', 'location', 'salary_min', 'salary_max',
-      'salary_text', 'vacancies', 'status', 'category_id', 'expires_at',
+      'salary_text', 'vacancies', 'status', 'category_id', 'expires_at', 'barrio_id'
     ] as const;
 
     const cleanUpdates: Record<string, unknown> = {};
     for (const key of allowed) {
       if (key in updates) {
         cleanUpdates[key] = updates[key as keyof typeof updates];
+      }
+    }
+
+    if (updates.barrio_id !== undefined) {
+      if (updates.barrio_id === null) {
+        cleanUpdates.location_lat = null;
+        cleanUpdates.location_lng = null;
+      } else {
+        const { data: b } = await supabaseAdmin.from('barrios').select('lat, lng').eq('id', updates.barrio_id).single();
+        if (b) {
+          cleanUpdates.location_lat = b.lat + (Math.random() * 0.0036 - 0.0018);
+          cleanUpdates.location_lng = b.lng + (Math.random() * 0.0036 - 0.0018);
+        }
       }
     }
 
@@ -274,6 +334,17 @@ export class JobsService {
 
     if (error) { console.error('[JobsService.getCategories]', error); throw new AppError('Error al obtener las categorías', 500); }
     return (data || []) as Category[];
+  }
+
+  // ── Barrios ──
+  static async getBarrios(): Promise<any[]> {
+    const { data, error } = await supabaseAdmin
+      .from('barrios')
+      .select('*')
+      .order('nombre', { ascending: true });
+
+    if (error) { console.error('[JobsService.getBarrios]', error); throw new AppError('Error al obtener los barrios', 500); }
+    return data || [];
   }
 
   // ── Employer Stats ──
