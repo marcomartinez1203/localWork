@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors - Swiss Design Palette */
+  --color-brand: #16a34a;       /* Green-600 */
+  --color-brand-light: #22c55e; /* Green-500 */
+  --color-brand-dark: #15803d;  /* Green-700 */
+  
+  --color-ink: #09090b;         /* Zinc 950 */
+  --color-ink-muted: #52525b;   /* Zinc 600 */
+  --color-ink-light: #a1a1aa;   /* Zinc 400 */
+  
+  --color-cream: #fafafa;       /* Zinc 50 */
+  --color-surface: #ffffff;
+  --color-surface-dark: #18181b;/* Zinc 900 */
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+@layer base {
+  :root {
+    --bg-color: var(--color-cream);
+    --text-color: var(--color-ink);
+  }
+
+  :root[data-theme="dark"] {
+    --bg-color: var(--color-ink);
+    --text-color: var(--color-cream);
+  }
+
+  body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-sans);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer utilities {
+  /* Bento Card — replaces glass */
+  .bento-card {
+    @apply bg-white rounded-2xl border border-zinc-200 transition-all;
+  }
+  
+  :root[data-theme="dark"] .bento-card {
+    @apply bg-zinc-900 border-white/5;
+  }
+
+  /* Input */
+  .input-elegant {
+    @apply w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl outline-none transition-all focus:ring-2 focus:ring-brand/20 focus:border-brand;
+  }
+  
+  :root[data-theme="dark"] .input-elegant {
+    @apply bg-zinc-800 border-white/10 text-white focus:ring-brand/30;
+  }
+
+  /* Button */
+  .btn-elegant {
+    @apply inline-flex items-center justify-center px-6 py-3 bg-brand text-white font-semibold rounded-xl transition-all hover:bg-brand-dark hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  /* Mono label */
+  .label-mono {
+    font-family: var(--font-mono);
+    @apply text-[10px] uppercase tracking-widest text-zinc-400 font-medium;
+  }
+}
