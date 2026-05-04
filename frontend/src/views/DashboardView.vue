@@ -286,6 +286,7 @@
 </template>
 
 <script setup>
+import { showToast } from '@/assets/js/utils/helpers.js'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/assets/js/config/api.js'
@@ -414,9 +415,9 @@ const toggleJobStatus = async (job) => {
   try {
     await JobsService.update(job.id, { status: newStatus })
     job.status = newStatus
-    alert(`Oferta ${newStatus === 'active' ? 'activada' : 'pausada'}`)
+    showToast(`Oferta ${newStatus === 'active' ? 'activada' : 'pausada'}`, 'success')
   } catch (e) {
-    alert('Error al actualizar oferta')
+    showToast('Error al actualizar oferta', 'error')
   }
 }
 
@@ -427,7 +428,7 @@ const deleteJob = async (id) => {
     fetchJobs()
     fetchStatsAndData()
   } catch (e) {
-    alert('Error al eliminar')
+    showToast('Error al eliminar', 'error')
   }
 }
 
@@ -456,7 +457,7 @@ const saveJob = async () => {
     fetchJobs()
     fetchStatsAndData()
   } catch (e) {
-    alert('Error al guardar oferta')
+    showToast('Error al guardar oferta', 'error')
   } finally {
     isSavingJob.value = false
   }
@@ -484,7 +485,7 @@ const saveCompany = async () => {
     closeCompanyModal()
     fetchStatsAndData()
   } catch (e) {
-    alert('Error al guardar empresa')
+    showToast('Error al guardar empresa', 'error')
   } finally {
     isSavingCompany.value = false
   }
@@ -509,7 +510,7 @@ const changeAppStatus = async (app) => {
   try {
     await ApplicationsService.updateStatus(app.id, app.status)
   } catch (e) {
-    alert('Error actualizando estado')
+    showToast('Error actualizando estado', 'error')
   }
 }
 const openApplicantChat = async (id) => {
@@ -517,7 +518,7 @@ const openApplicantChat = async (id) => {
     const res = await ChatService.startConversation(id)
     router.push(`/chat?conversation_id=${res.conversation_id}`)
   } catch (e) {
-    alert('Error al abrir chat')
+    showToast('Error al abrir chat', 'error')
   }
 }
 </script>

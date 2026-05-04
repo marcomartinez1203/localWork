@@ -2,6 +2,8 @@
 // LocalWork — Notifications Service (Frontend)
 // ============================================
 
+import api from '../config/api.js'
+
 const NotificationsService = {
 
   async list({ page = 1, perPage = 20, unreadOnly = false } = {}) {
@@ -22,3 +24,5 @@ const NotificationsService = {
     return api.get('/notifications/unread-count');
   },
 };
+
+export default NotificationsService;

@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar" id="navbar" aria-label="Navegación principal">
+  <nav class="navbar navbar--sidebar" id="navbar" aria-label="Navegación principal">
     <div class="navbar__inner">
       <router-link to="/" class="navbar__brand" aria-label="LocalWork — Inicio">
         <span class="navbar__brand-icon" aria-hidden="true">LW</span>
@@ -7,25 +7,25 @@
       </router-link>
 
       <div class="navbar__links" id="navLinks">
-        <router-link to="/home" class="navbar__link" v-if="!isEmployer">
+        <router-link to="/home" class="navbar__link" active-class="active" v-if="!isEmployer">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
           <span class="navbar__link-text">Empleos</span>
         </router-link>
-        <router-link to="/map" class="navbar__link">
+        <router-link to="/map" class="navbar__link" active-class="active">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" /></svg>
           <span class="navbar__link-text">Mapa</span>
         </router-link>
-        <router-link to="/workers" class="navbar__link">
+        <router-link to="/workers" class="navbar__link" active-class="active">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg>
           <span class="navbar__link-text">Trabajadores</span>
         </router-link>
         
-        <router-link v-if="user" :to="isEmployer ? '/dashboard' : '/my-applications'" class="navbar__link">
+        <router-link v-if="user" :to="isEmployer ? '/dashboard' : '/my-applications'" class="navbar__link" active-class="active">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
           <span class="navbar__link-text">{{ isEmployer ? 'Dashboard' : 'Mis Postulaciones' }}</span>
         </router-link>
 
-        <router-link v-if="user" to="/profile" class="navbar__link">
+        <router-link v-if="user" to="/profile" class="navbar__link" active-class="active">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
           <span class="navbar__link-text">Perfil</span>
         </router-link>
@@ -49,7 +49,7 @@
 
           <!-- Notification Action -->
           <div class="navbar__action-item" style="position:relative;">
-            <button class="navbar__notification" aria-label="Notificaciones" @click="toggleNotifPreview">
+            <button id="notifToggleBtn" class="navbar__notification" aria-label="Notificaciones" @click="toggleNotifPreview">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/>
                 <path d="M10.3 21a1.94 1.94 0 003.4 0"/>
@@ -134,14 +134,14 @@
 
     <!-- Mobile Menu -->
     <div class="navbar__mobile-menu" id="mobileMenu" role="navigation" aria-label="Menú móvil" :class="{'open': isMenuOpen}">
-      <router-link to="/home" class="navbar__link" @click="isMenuOpen = false">Empleos</router-link>
-      <router-link to="/map" class="navbar__link" @click="isMenuOpen = false">Mapa</router-link>
-      <router-link to="/workers" class="navbar__link" @click="isMenuOpen = false">Trabajadores</router-link>
+      <router-link to="/home" class="navbar__link" active-class="active" @click="isMenuOpen = false">Empleos</router-link>
+      <router-link to="/map" class="navbar__link" active-class="active" @click="isMenuOpen = false">Mapa</router-link>
+      <router-link to="/workers" class="navbar__link" active-class="active" @click="isMenuOpen = false">Trabajadores</router-link>
       <template v-if="user">
-        <router-link :to="isEmployer ? '/dashboard' : '/my-applications'" class="navbar__link" @click="isMenuOpen = false">{{ isEmployer ? 'Dashboard' : 'Mis Postulaciones' }}</router-link>
-        <router-link to="/profile" class="navbar__link" @click="isMenuOpen = false">Mi Perfil</router-link>
-        <router-link to="/chat" class="navbar__link" @click="isMenuOpen = false">Chat</router-link>
-        <router-link to="/notifications" class="navbar__link" @click="isMenuOpen = false">Notificaciones</router-link>
+        <router-link :to="isEmployer ? '/dashboard' : '/my-applications'" class="navbar__link" active-class="active" @click="isMenuOpen = false">{{ isEmployer ? 'Dashboard' : 'Mis Postulaciones' }}</router-link>
+        <router-link to="/profile" class="navbar__link" active-class="active" @click="isMenuOpen = false">Mi Perfil</router-link>
+        <router-link to="/chat" class="navbar__link" active-class="active" @click="isMenuOpen = false">Chat</router-link>
+        <router-link to="/notifications" class="navbar__link" active-class="active" @click="isMenuOpen = false">Notificaciones</router-link>
         <button @click="logout" class="btn btn--ghost btn--block" style="color: #ef4444; border-color: #ef4444; margin-top: var(--space-4);">Cerrar Sesión</button>
       </template>
       <div v-else style="margin-top: var(--space-6); display: flex; flex-direction: column; gap: var(--space-3);">
@@ -260,7 +260,7 @@ const handleClickOutside = (e) => {
     isUserMenuOpen.value = false
   }
 
-  const notifBtn = document.querySelector('.navbar__notification')
+  const notifBtn = document.getElementById('notifToggleBtn')
   const notifPreview = document.querySelector('.notif-preview')
   if (isNotifOpen.value && (!notifBtn || !notifBtn.contains(e.target)) && (!notifPreview || !notifPreview.contains(e.target))) {
     isNotifOpen.value = false

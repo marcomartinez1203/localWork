@@ -60,6 +60,11 @@
           <div class="chat-main__user" v-else>
             <div><h2>Selecciona una conversación</h2></div>
           </div>
+          <button class="btn btn--ghost btn--sm" aria-label="Cerrar chat" @click="closeConversation" style="margin-left:auto;padding:var(--space-2);" title="Cerrar chat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 18 18 6M6 6l12 12"/>
+            </svg>
+          </button>
         </header>
 
         <div class="chat-main__messages" id="messagesPanel" ref="messagesPanel">
@@ -98,6 +103,7 @@
 </template>
 
 <script setup>
+import { showToast } from '@/assets/js/utils/helpers.js'
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthService from '@/assets/js/services/auth.service.js'
@@ -196,6 +202,15 @@ const openConversation = async (id) => {
   subscribeToPresence(activeConversation.value)
 }
 
+const closeConversation = () => {
+  if (activeConversationId.value) {
+    activeConversationId.value = null
+    router.replace({ query: {} })
+  } else {
+    router.push('/home')
+  }
+}
+
 const sendMessage = async () => {
   if (!activeConversation.value) return
   const txt = messageText.value.trim()
@@ -214,7 +229,7 @@ const sendMessage = async () => {
     selectedAttachment.value = null
     scrollToBottom()
   } catch (e) {
-    alert('No se pudo enviar el mensaje')
+    showToast('No se pudo enviar el mensaje', 'error')
   } finally {
     isSending.value = false
   }
@@ -229,7 +244,7 @@ const respondRequest = async (id, action) => {
     }
     await loadConversations()
   } catch (e) {
-    alert('Error al responder solicitud')
+    showToast('Error al responder solicitud', 'error')
   }
 }
 

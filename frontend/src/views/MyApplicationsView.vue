@@ -78,6 +78,7 @@
 </template>
 
 <script setup>
+import { showToast } from '@/assets/js/utils/helpers.js'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from '@/assets/js/services/auth.service.js'
@@ -154,10 +155,10 @@ const withdrawApp = async (id) => {
   if (!confirm('¿Seguro que deseas retirar esta postulación?')) return
   try {
     await ApplicationsService.withdraw(id)
-    alert('Postulación retirada')
+    showToast('Postulación retirada', 'success')
     loadApplications()
   } catch (e) {
-    alert('Error al retirar')
+    showToast('Error al retirar', 'error')
   }
 }
 
@@ -166,7 +167,7 @@ const startChat = async (id) => {
     const result = await ChatService.startConversation(id)
     router.push(`/chat?conversation_id=${result.conversation_id}`)
   } catch (err) {
-    alert('No se pudo abrir el chat')
+    showToast('No se pudo abrir el chat', 'error')
   }
 }
 </script>

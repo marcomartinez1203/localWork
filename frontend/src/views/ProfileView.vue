@@ -342,6 +342,7 @@ import api from '@/assets/js/config/api.js'
 import AuthService from '@/assets/js/services/auth.service.js'
 import CompaniesService from '@/assets/js/services/companies.service.js'
 import JobsService from '@/assets/js/services/jobs.service.js'
+import { showToast } from '@/assets/js/utils/helpers.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -452,9 +453,9 @@ const savePersonalInfo = async () => {
     }
     await AuthService.updateProfile(updates)
     user.value.full_name = updates.full_name
-    alert('Perfil actualizado correctamente')
+    showToast('Perfil actualizado correctamente', 'success')
   } catch (e) {
-    alert('Error al guardar')
+    showToast('Error al guardar', 'error')
   } finally {
     isSavingProfile.value = false
   }
@@ -470,14 +471,14 @@ const saveEmployerInfo = async () => {
 
     if (employerCompany.value?.id) {
       await CompaniesService.update(employerCompany.value.id, employerForm.value)
-      alert('Datos del contratante actualizados')
+      showToast('Datos del contratante actualizados', 'success')
     } else {
       const company = await CompaniesService.create(employerForm.value)
       employerCompany.value = company
-      alert('Empresa creada y datos guardados')
+      showToast('Empresa creada y datos guardados', 'success')
     }
   } catch (e) {
-    alert('Error al guardar empresa')
+    showToast('Error al guardar empresa', 'error')
   } finally {
     isSavingEmployer.value = false
   }
@@ -487,7 +488,7 @@ const handleAvatarUpload = async (e) => {
   const file = e.target.files[0]
   if (!file) return
   if (file.size > 5 * 1024 * 1024) {
-    alert('La imagen no puede superar 5MB')
+    showToast('La imagen no puede superar 5MB', 'error')
     return
   }
   try {
@@ -501,7 +502,7 @@ const handleAvatarUpload = async (e) => {
       localStorage.setItem('lw_user', JSON.stringify(lwUser))
     }
   } catch (err) {
-    alert('Error al subir foto')
+    showToast('Error al subir foto', 'error')
   }
 }
 
@@ -547,9 +548,9 @@ const saveSkillsSection = async () => {
     }
     await AuthService.updateProfile(updatePayload)
     isServicePublic.value = shouldPublish
-    alert('Habilidades guardadas')
+    showToast('Habilidades guardadas', 'success')
   } catch (e) {
-    alert('Error al guardar habilidades')
+    showToast('Error al guardar habilidades', 'error')
   } finally {
     isSavingSkills.value = false
   }
@@ -567,7 +568,7 @@ const unsaveJob = async (jobId) => {
     await JobsService.unsave(jobId)
     savedJobs.value = savedJobs.value.filter(j => j.id !== jobId)
   } catch (e) {
-    alert('Error al remover empleo guardado')
+    showToast('Error al remover empleo guardado', 'error')
   }
 }
 

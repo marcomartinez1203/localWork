@@ -36,6 +36,7 @@
 </template>
 
 <script setup>
+import { showToast } from '@/assets/js/utils/helpers.js'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from '@/assets/js/services/auth.service.js'
@@ -95,9 +96,9 @@ const markAllRead = async () => {
   try {
     await NotificationsService.markAllAsRead()
     notifications.value.forEach(n => n.read = true)
-    alert('Todas marcadas como leídas')
+    showToast('Todas marcadas como leídas', 'success')
   } catch (e) {
-    alert('Error al marcar todas como leídas')
+    showToast('Error al marcar todas como leídas', 'error')
   }
 }
 </script>

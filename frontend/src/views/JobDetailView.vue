@@ -155,6 +155,7 @@
 </template>
 
 <script setup>
+import { showToast } from '@/assets/js/utils/helpers.js'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import JobsService from '@/assets/js/services/jobs.service.js'
@@ -242,7 +243,7 @@ const submitApplication = async () => {
   try {
     const resumeFile = resumeInput.value.files.length > 0 ? resumeInput.value.files[0] : null
     if (resumeFile && resumeFile.size > 5 * 1024 * 1024) {
-      alert('El archivo no puede pesar más de 5 MB')
+      showToast('El archivo no puede pesar más de 5 MB', 'error')
       isSubmitting.value = false
       return
     }
@@ -252,10 +253,10 @@ const submitApplication = async () => {
       resumeFile
     })
     closeApplyModal()
-    alert('¡Postulación enviada con éxito!')
+    showToast('¡Postulación enviada con éxito!', 'success')
     myApplication.value = { status: 'pending' } // fake state for UI reactivity
   } catch (e) {
-    alert('Error al postularse')
+    showToast('Error al postularse', 'error')
   } finally {
     isSubmitting.value = false
   }
@@ -271,7 +272,7 @@ const toggleSave = async () => {
       isSaved.value = true
     }
   } catch (e) {
-    alert('Error al guardar/remover')
+    showToast('Error al guardar/remover', 'error')
   }
 }
 
@@ -285,7 +286,7 @@ const shareJob = async () => {
   } else {
     try {
       await navigator.clipboard.writeText(url)
-      alert('Enlace copiado al portapapeles')
+      showToast('Enlace copiado al portapapeles', 'success')
     } catch(e) {
       prompt('Copia este enlace:', url)
     }
@@ -298,7 +299,7 @@ const startChatFromJobDetail = async () => {
     const result = await ChatService.startConversation(myApplication.value.id)
     router.push(`/chat?conversation_id=${result.conversation_id}`)
   } catch (err) {
-    alert('No se pudo abrir el chat')
+    showToast('No se pudo abrir el chat', 'error')
   }
 }
 </script>

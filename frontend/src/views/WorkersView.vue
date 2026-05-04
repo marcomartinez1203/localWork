@@ -169,6 +169,7 @@
 </template>
 
 <script setup>
+import { showToast } from '@/assets/js/utils/helpers.js'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import WorkersService from '@/assets/js/services/workers.service.js'
@@ -292,7 +293,7 @@ const closeWorkerModal = () => {
 
 const submitRating = async () => {
   if (selectedScore.value === 0) {
-    alert('Selecciona una calificación')
+    showToast('Selecciona una calificación', 'info')
     return
   }
   try {
@@ -301,11 +302,11 @@ const submitRating = async () => {
       score: selectedScore.value,
       comment: ratingComment.value.trim()
     })
-    alert('¡Calificación enviada!')
+    showToast('¡Calificación enviada!', 'success')
     // reload modal data
     openWorkerModal(selectedWorker.value)
   } catch (e) {
-    alert('Error al calificar')
+    showToast('Error al calificar', 'error')
   }
 }
 
@@ -320,11 +321,11 @@ const requestDirectChat = async () => {
     if (res.conversation_id) {
       router.push(`/chat?conversation_id=${res.conversation_id}`)
     } else {
-      alert('Solicitud enviada')
+      showToast('Solicitud enviada', 'success')
       openWorkerModal(selectedWorker.value)
     }
   } catch (e) {
-    alert('No se pudo enviar la solicitud')
+    showToast('No se pudo enviar la solicitud', 'error')
   }
 }
 
@@ -334,11 +335,11 @@ const respondDirectRequest = async (action) => {
     if (res.conversation_id) {
       router.push(`/chat?conversation_id=${res.conversation_id}`)
     } else {
-      alert(action === 'accepted' ? 'Solicitud aceptada' : 'Solicitud rechazada')
+      showToast(action === 'accepted' ? 'Solicitud aceptada' : 'Solicitud rechazada', 'success')
       closeWorkerModal()
     }
   } catch (e) {
-    alert('No se pudo responder la solicitud')
+    showToast('No se pudo responder la solicitud', 'error')
   }
 }
 </script>
