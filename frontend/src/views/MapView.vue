@@ -219,14 +219,14 @@ const renderMarkers = (jobs: Job[]) => {
 
   jobs.forEach(job => {
     // en map.js legacy se usaba location_lat y location_lng (y también puede venir lat/lng)
-    const lat = (job as any).location_lat || (job as any).lat
-    const lng = (job as any).location_lng || (job as any).lng
+    const lat = job.location_lat || job.lat
+    const lng = job.location_lng || job.lng
     if (!lat || !lng) return
 
     const marker = L.marker([lat, lng], { icon: customIcon })
 
-    const logoHtml = (job as any).company_logo_url 
-      ? `<img src="${(job as any).company_logo_url}" alt="${job.company_name}" class="map-popup-card__logo">`
+    const logoHtml = job.logo_url 
+      ? `<img src="${job.logo_url}" alt="${job.company_name}" class="map-popup-card__logo">`
       : `<div class="map-popup-card__logo-placeholder">${job.company_name ? job.company_name.charAt(0).toUpperCase() : 'LW'}</div>`
 
     // modal icon map (to maintain visual identity from map.js legacy)
@@ -260,7 +260,7 @@ const renderMarkers = (jobs: Job[]) => {
         <div class="map-popup-card__meta">
           <span class="map-popup-card__badge">
             <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-            ${(job as any).barrio_nombre || job.location || 'Aguachica'}
+            ${job.barrio_nombre || job.location || 'Aguachica'}
           </span>
           <span class="map-popup-card__badge">
             ${getModalityIcon(job.modality)}
@@ -275,7 +275,7 @@ const renderMarkers = (jobs: Job[]) => {
     marker.bindPopup(popupHtml)
     
     // Tooltip hover identical to old
-    marker.bindTooltip(`<b>${(job as any).barrio_nombre || job.location || 'Aguachica'}</b><br>${job.title}`, {
+    marker.bindTooltip(`<b>${job.barrio_nombre || job.location || 'Aguachica'}</b><br>${job.title}`, {
       direction: 'top',
       offset: [0, -20]
     })

@@ -41,10 +41,10 @@
 
     <div v-else-if="applications.length > 0">
       <div class="app-card" v-for="app in applications" :key="app.id" style="cursor:pointer;" @click="router.push(`/job/${app.job_id}`)">
-        <div class="app-card__logo">{{ initials((app as any).company_name || 'Empresa') }}</div>
+        <div class="app-card__logo">{{ initials(app.company_name || 'Empresa') }}</div>
         <div class="app-card__info">
-          <h3 class="app-card__title">{{ (app as any).job_title || 'Empleo' }}</h3>
-          <p class="app-card__company">{{ (app as any).company_name || 'Empresa' }}</p>
+          <h3 class="app-card__title">{{ app.job_title || 'Empleo' }}</h3>
+          <p class="app-card__company">{{ app.company_name || 'Empresa' }}</p>
         </div>
         <div class="app-card__meta">
           <span class="status-badge" :class="`status-badge--${app.status}`">{{ STATUS_LABELS[app.status] || app.status }}</span>

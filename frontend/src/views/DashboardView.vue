@@ -297,6 +297,32 @@ import ApplicationsService from '@/assets/js/services/applications.service'
 import ChatService from '@/assets/js/services/chat.service'
 import type { Job, Application, Category, Barrio } from '@/types'
 
+interface JobForm {
+  title: string
+  category_id: string
+  modality: string
+  description: string
+  requirements: string
+  salary_text: string
+  salary_min: string | number
+  salary_max: string | number
+  barrio_id: string
+  location: string
+  vacancies: number
+  expires_at: string
+}
+
+interface CompanyForm {
+  id: string
+  name: string
+  nit: string
+  phone: string
+  description: string
+  address: string
+  website: string
+  logo_url: string
+}
+
 const router = useRouter()
 
 const companyName = ref('')
@@ -320,7 +346,7 @@ const STATUS_COLORS: Record<string, string> = {
 const isJobModalOpen = ref(false)
 const isSavingJob = ref(false)
 const editingJobId = ref<string | null>(null)
-const jobForm = ref<Record<string, string | number>>({
+const jobForm = ref<JobForm>({
   title: '', category_id: '', modality: 'Presencial', description: '', requirements: '',
   salary_text: '', salary_min: '', salary_max: '', barrio_id: '', location: '', vacancies: 1, expires_at: ''
 })
@@ -328,7 +354,7 @@ const jobForm = ref<Record<string, string | number>>({
 const isCompanyModalOpen = ref(false)
 const isSavingCompany = ref(false)
 const logoInput = ref<HTMLInputElement | null>(null)
-const companyForm = ref<Record<string, string>>({
+const companyForm = ref<CompanyForm>({
   id: '', name: '', nit: '', phone: '', description: '', address: '', website: '', logo_url: ''
 })
 
@@ -372,7 +398,7 @@ const fetchJobs = async () => {
   try {
     const res = await JobsService.getMyJobs({ page: currentPage.value, perPage: 10 })
     jobs.value = res.data || []
-    totalPages.value = (res as unknown as Record<string, number>).total_pages || 1
+    totalPages.value = res.total_pages || 1
   } catch (err: unknown) {
     console.error(err)
     jobs.value = []
@@ -431,17 +457,49 @@ const openCreateModal = () => {
 const closeJobModal = () => { isJobModalOpen.value = false }
 const editJob = async (job: Job) => {
   editingJobId.value = job.id
-  jobForm.value = { ...(job as unknown as Record<string, string | number>), expires_at: job.expires_at ? job.expires_at.substring(0, 10) : '' }
+  jobForm.value = {
+    title: job.title,
+    category_id: job.category_id,
+    modality: job.modality,
+    description: job.description,
+    requirements: job.requirements || '',
+    salary_text: job.salary_text || '',
+    salary_min: job.salary_min ?? '',
+    salary_max: job.salary_max ?? '',
+    barrio_id: job.barrio_id || '',
+    location: job.location,
+    vacancies: job.vacancies,
+    expires_at: job.expires_at ? job.expires_at.substring(0, 10) : ''
+  }
   isJobModalOpen.value = true
+}
+
+const toJobPayload = (form: JobForm): Partial<Job> => {
+  const payload: Partial<Job> = {
+    title: form.title,
+    category_id: form.category_id,
+    modality: form.modality as Job['modality'],
+    description: form.description,
+    requirements: form.requirements,
+    salary_text: form.salary_text,
+    barrio_id: form.barrio_id,
+    location: form.location,
+    vacancies: form.vacancies,
+    expires_at: form.expires_at
+  }
+  if (form.salary_min !== '') payload.salary_min = Number(form.salary_min)
+  if (form.salary_max !== '') payload.salary_max = Number(form.salary_max)
+  return payload
 }
 
 const saveJob = async () => {
   isSavingJob.value = true
   try {
+    const payload = toJobPayload(jobForm.value)
     if (editingJobId.value) {
-      await JobsService.update(editingJobId.value, jobForm.value)
+      await JobsService.update(editingJobId.value, payload)
     } else {
-      await JobsService.create(jobForm.value)
+      await JobsService.create(payload)
     }
     closeJobModal()
     fetchJobs()
@@ -456,7 +514,18 @@ const saveJob = async () => {
 const openCompanyModal = async () => {
   try {
     const company = await CompaniesService.getMyCompany()
-    if (company) companyForm.value = { ...(company as unknown as Record<string, string>) }
+    if (company) {
+      companyForm.value = {
+        id: company.id,
+        name: company.name,
+        nit: company.nit || '',
+        phone: company.phone || '',
+        description: company.description || '',
+        address: company.address || '',
+        website: company.website || '',
+        logo_url: company.logo_url || ''
+      }
+    }
   } catch { /* silent */ }
   isCompanyModalOpen.value = true
 }

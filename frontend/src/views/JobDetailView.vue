@@ -39,7 +39,7 @@
             <div class="job-detail__tags">
               <span class="badge" :class="modalityClass[job.modality] || 'badge--neutral'">{{ job.modality }}</span>
               <span class="badge badge--neutral">{{ job.category_name }}</span>
-              <span v-if="(job as any).company_verified" class="badge badge--accent">✓ Verificada</span>
+              <span v-if="job.company_verified" class="badge badge--accent">✓ Verificada</span>
             </div>
           </div>
         </div>
@@ -121,7 +121,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"/></svg>
             </button>
           </div>
-          <p class="job-detail__posted">{{ (job as any).total_applications || 0 }} personas se han postulado</p>
+          <p class="job-detail__posted">{{ job.total_applications || 0 }} personas se han postulado</p>
         </div>
       </div>
     </div>

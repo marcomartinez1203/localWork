@@ -256,7 +256,7 @@ const loadWorkers = async () => {
       workType: typeFilter.value || undefined
     })
     workers.value = res.data || []
-    totalPages.value = (res as any).total_pages || Math.ceil((res.total || 0) / 12) || 1
+    totalPages.value = res.total_pages || Math.ceil((res.total || 0) / 12) || 1
   } catch {
     workers.value = []
   } finally {
@@ -279,8 +279,8 @@ const openWorkerModal = async (w: WorkerProfile) => {
     selectedWorker.value = worker
     
     const ratings = await RatingsService.getForUser(worker.id)
-    ratingsData.value = { average: ratings.average, total: (ratings as any).total ?? ratings.count }
-    ratingsList.value = (ratings as any).data || ratings.ratings || []
+    ratingsData.value = { average: ratings.average, total: ratings.total ?? ratings.count }
+    ratingsList.value = ratings.data || ratings.ratings || []
 
     if (!isMe.value && currentUser.value) {
       try {

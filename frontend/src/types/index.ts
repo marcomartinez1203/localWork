@@ -94,6 +94,7 @@ export interface Job {
   modality: JobModality
   location: string
   status: JobStatus
+  barrio_id?: string
   vacancies: number
   expires_at?: string
   created_at: string
@@ -105,6 +106,13 @@ export interface Job {
   logo_url?: string
   is_saved?: boolean
   distance?: number
+  company_verified?: boolean
+  total_applications?: number
+  location_lat?: number
+  location_lng?: number
+  lat?: number
+  lng?: number
+  barrio_nombre?: string
 }
 
 export interface JobFilters {
@@ -165,7 +173,9 @@ export interface Rating {
 export interface RatingSummary {
   average: number
   count: number
+  total?: number
   ratings: Rating[]
+  data?: Rating[]
 }
 
 export interface Notification {
