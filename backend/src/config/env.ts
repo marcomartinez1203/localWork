@@ -1,7 +1,8 @@
 // ============================================
-// LocalWork — Environment Configuration
+// LocalWork — Environment Configuration (Zod)
 // ============================================
 import dotenv from 'dotenv';
+import { z } from 'zod';
 
 dotenv.config();
 
@@ -14,28 +15,40 @@ const defaultCorsOrigins = [
   'http://127.0.0.1:5173',
 ];
 
-export const env = {
-  port:                  parseInt(process.env.PORT || '3000', 10),
-  nodeEnv:               process.env.NODE_ENV || 'development',
-  supabaseUrl:           process.env.SUPABASE_URL!,
-  supabaseAnonKey:       process.env.SUPABASE_ANON_KEY!,
-  supabaseServiceKey:    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  frontendUrl:           process.env.FRONTEND_URL || 'http://localhost:5500',
-  corsOrigins:           process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
-    : defaultCorsOrigins,
-  isDev:                 process.env.NODE_ENV !== 'production',
-};
+const envSchema = z.object({
+  PORT: z.string().optional().default('3000'),
+  NODE_ENV: z.string().optional().default('development'),
+  SUPABASE_URL: z.string().min(1, 'SUPABASE_URL es requerida'),
+  SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY es requerida'),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY es requerida'),
+  FRONTEND_URL: z.string().optional().default('http://localhost:5500'),
+  CORS_ORIGINS: z.string().optional(),
+});
 
-// Validar variables requeridas
-const required = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY'] as const;
-for (const key of required) {
-  if (!process.env[key]) {
-    if (process.env.NODE_ENV === 'test') {
-      console.warn(`⚠️  Falta la variable de entorno: ${key} (modo test)`);
-    } else {
-      console.error(`❌ Falta la variable de entorno: ${key}`);
-      process.exit(1);
-    }
+const parseResult = envSchema.safeParse(process.env);
+
+if (!parseResult.success) {
+  const issues = parseResult.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('\n  - ');
+
+  if (process.env.NODE_ENV === 'test') {
+    console.warn(`⚠️  Variables de entorno inválidas (modo test):\n  - ${issues}`);
+  } else {
+    console.error(`❌ Variables de entorno inválidas:\n  - ${issues}`);
+    process.exit(1);
   }
 }
+
+const raw = parseResult.success ? parseResult.data : (process.env as Record<string, string>);
+
+export const env = {
+  port: parseInt(raw.PORT!, 10),
+  nodeEnv: raw.NODE_ENV!,
+  supabaseUrl: raw.SUPABASE_URL!,
+  supabaseAnonKey: raw.SUPABASE_ANON_KEY!,
+  supabaseServiceKey: raw.SUPABASE_SERVICE_ROLE_KEY!,
+  frontendUrl: raw.FRONTEND_URL!,
+  corsOrigins: raw.CORS_ORIGINS
+    ? raw.CORS_ORIGINS.split(',').map((o: string) => o.trim())
+    : defaultCorsOrigins,
+  isDev: raw.NODE_ENV !== 'production',
+};
