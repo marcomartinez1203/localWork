@@ -11,11 +11,12 @@ Plataforma de empleo local para **Aguachica, Cesar** — conecta buscadores de e
 | **Backend** | Node.js · Express · TypeScript |
 | **Base de datos** | PostgreSQL vía Supabase |
 | **Autenticación** | Supabase Auth |
-| **Tiempo real** | Supabase Realtime (WebSockets) |
-| **Frontend** | HTML5 · CSS3 · JavaScript vanilla |
+| **Tiempo real** | Supabase Realtime (WebSockets) para Chat y Notificaciones |
+| **Frontend SPA**| Vue 3 · Vite · Vue Router |
+| **Landing Page**| Astro · Tailwind CSS |
 | **Seguridad** | Helmet · CORS · express-rate-limit |
-| **Validación** | Zod |
 | **Subida de archivos** | Multer + Supabase Storage |
+| **Despliegue**| Vercel (`vercel.json`) |
 
 ---
 
@@ -54,43 +55,35 @@ localWork/
 │       └── config/                 # Variables de entorno y Supabase
 │
 ├── frontend/
-│   ├── index.html                  # Landing page
-│   ├── pages/                      # Vistas de la app
-│   │   ├── home.html               # Feed de empleos con búsqueda y filtros
-│   │   ├── workers.html            # Directorio de trabajadores + modal detalle
-│   │   ├── job-detail.html         # Detalle de oferta + postularse + compartir
-│   │   ├── dashboard.html          # Panel del empleador (CRUD ofertas, empresa)
-│   │   ├── my-applications.html    # Postulaciones con filtro por estado
-│   │   ├── profile.html            # Perfil + educación + experiencia + guardados
-│   │   ├── notifications.html      # Centro de notificaciones
-│   │   ├── login.html
-│   │   ├── register.html
-│   │   └── reset-password.html
-│   └── assets/
-│       ├── css/
-│       │   ├── main.css            # Variables, reset, tipografía, layout
-│       │   ├── components.css      # Navbar, botones, tarjetas, formularios
-│       │   └── pages/              # Estilos específicos por página
-│       ├── js/
-│       │   ├── app.js              # App principal, navegación, notificaciones UI
-│       │   ├── theme-init.js       # Inicialización de tema (dark/light)
-│       │   ├── config/
-│       │   │   └── api.js          # Configuración centralizada (URL, keys, fetch)
-│       │   ├── services/           # Capa de integración con la API
-│       │   │   ├── auth.service.js
-│       │   │   ├── jobs.service.js
-│       │   │   ├── applications.service.js
-│       │   │   ├── companies.service.js
-│       │   │   ├── workers.service.js
-│       │   │   ├── ratings.service.js
-│       │   │   ├── notifications.service.js
-│       │   │   └── realtime.service.js
-│       │   └── utils/
-│       │       └── helpers.js      # escapeHtml, timeAgo, formatCurrency, debounce
-│       └── img/
-│           ├── favicon.png
-│           └── logo.png
+│   ├── index.html                  # Punto de entrada de Vite
+│   ├── package.json                # Dependencias (Vue 3, Vite, Vue Router)
+│   ├── vite.config.js              # Configuración de Vite
+│   ├── vercel.json                 # Configuración de Vercel (rewrites SPA y backend)
+│   ├── public/                     # Archivos estáticos
+│   └── src/
+│       ├── main.js                 # Inicialización de Vue y Router
+│       ├── App.vue                 # Componente raíz
+│       ├── views/                  # Vistas del SPA (páginas)
+│       │   ├── HomeView.vue        # Feed de empleos
+│       │   ├── JobDetailView.vue   # Detalle de oferta
+│       │   ├── DashboardView.vue   # Panel del empleador
+│       │   ├── ProfileView.vue     # Perfil del usuario
+│       │   ├── ChatView.vue        # Mensajería en tiempo real
+│       │   ├── MapView.vue         # Empleos en mapa
+│       │   └── ...                 # Otras vistas (Auth, Workers, Notificaciones)
+│       ├── components/             # Componentes reutilizables
+│       │   └── layout/             # Navbar y estructura principal
+│       ├── assets/
+│       │   ├── css/                # Sistema de diseño, variables, CSS global y por página
+│       │   ├── js/
+│       │   │   ├── config/api.js   # Configuración de Supabase y API
+│       │   │   ├── services/       # Módulos de servicios HTTP (Jobs, Auth, Chat, etc.)
+│       │   │   └── utils/          # Helpers (formatters, debounce)
+│       │   └── img/                # Favicons y logotipos
 │
+├── frontend-legacy/                # Antigua versión en HTML Vanilla (deprecada)
+│
+├── landingPage/                    # Repositorio separado para la Landing Page (Astro)
 └── database/
     ├── schema.sql                  # Esquema completo de PostgreSQL
     ├── seed.sql                    # Datos de prueba (categorías, empresas, empleos)
@@ -141,9 +134,10 @@ localWork/
   - `application_status_changed` — buscador ve cambio de estado
   - `profile_viewed` — trabajador sabe cuando ven su perfil
   - `new_job_match` — notificación de nuevas ofertas relevantes
+- **Chat en tiempo real**: mensajería entre buscadores y empleadores (una vez que la postulación es revisada/aceptada).
 - Subida de avatar y CV
+- Aplicación de página única (**SPA**) súper rápida con Vue 3.
 - Diseño responsive (móvil, tablet y escritorio)
-- SEO con meta tags y Open Graph
 - Favicon + PWA manifest
 
 ---
@@ -198,20 +192,24 @@ npm run dev        # desarrollo con hot-reload
 # npm run build && npm start   # producción
 ```
 
-### 6. Levantar el frontend
+### 6. Levantar el frontend (Vue 3 SPA)
 
-El frontend es HTML/JS estático. Puedes usar cualquier servidor local:
+El frontend está construido con Vue 3 y empaquetado con Vite.
 
 ```bash
-# VS Code Live Server (puerto 5500 por defecto)
-# O con Python:
 cd frontend
-python -m http.server 5500
+npm install
+npm run dev
 ```
 
-Abre `http://localhost:5500` en el navegador.
+La aplicación se levantará normalmente en `http://localhost:5173`.
 
----
+### 7. Despliegue en Vercel
+
+El proyecto está preparado para desplegarse como monorepo en Vercel. 
+- Vercel detectará el archivo `vercel.json` en la raíz.
+- Este archivo enruta la carpeta `frontend/` mediante `@vercel/static-build` para construir la SPA de Vue y redirigir correctamente las rutas de `vue-router`.
+- Para evitar conflictos de dependencias en Vercel con Vite, se incluyó el archivo `frontend/.npmrc` con `legacy-peer-deps=true`.
 
 ## API — Referencia completa
 
