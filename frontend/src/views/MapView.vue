@@ -21,7 +21,7 @@
         <label class="form-label">Barrio / Zona</label>
         <select v-model="filterBarrio" class="form-input" @change="applyFilters">
           <option value="all">Todos los barrios</option>
-          <option v-for="b in barrios" :key="b.id" :value="b.id">{{ b.name }}</option>
+          <option v-for="b in barrios" :key="b.id" :value="b.id">{{ b.nombre || (b as any).name }}</option>
         </select>
       </div>
 

@@ -157,7 +157,7 @@
             <label class="form-label">Barrio / Zona</label>
             <select v-model="jobForm.barrio_id" class="form-select">
               <option value="">Selecciona un barrio</option>
-              <option v-for="b in barrios" :key="b.id" :value="b.id">{{ b.name }}</option>
+              <option v-for="b in barrios" :key="b.id" :value="b.id">{{ b.nombre || (b as any).name }}</option>
             </select>
           </div>
           <div class="form-group">

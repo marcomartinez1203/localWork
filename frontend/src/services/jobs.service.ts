@@ -41,7 +41,8 @@ const JobsService = {
     if (filters.modality && filters.modality !== 'all') params.append('modality', filters.modality);
     if (filters.barrio_id && filters.barrio_id !== 'all') params.append('barrio_id', filters.barrio_id);
 
-    return api.get<Job[]>(`/jobs/nearby?${params.toString()}`);
+    const response = await api.get<{ data: Job[] }>(`/jobs/nearby?${params.toString()}`);
+    return response.data || [];
   },
 
   async create(jobData: Partial<Job>): Promise<Job> {
@@ -81,11 +82,13 @@ const JobsService = {
   },
 
   async getCategories(): Promise<Category[]> {
-    return api.get<Category[]>('/jobs/categories');
+    const res = await api.get<{ data: Category[] }>('/jobs/categories');
+    return res.data || [];
   },
 
   async getBarrios(): Promise<Barrio[]> {
-    return api.get<Barrio[]>('/jobs/barrios');
+    const res = await api.get<{ data: Barrio[] }>('/jobs/barrios');
+    return res.data || [];
   },
 
   async getStats(): Promise<Record<string, unknown>> {

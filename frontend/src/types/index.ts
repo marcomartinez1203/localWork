@@ -74,7 +74,7 @@ export interface Category {
 
 export interface Barrio {
   id: string
-  name: string
+  nombre: string
   lat: number
   lng: number
 }
