@@ -47,28 +47,28 @@
         <div class="job-detail__info">
           <div class="job-detail__info-item">
             <div class="job-detail__info-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg></div>
-            <div>
+            <div class="job-detail__info-text">
               <span class="job-detail__info-label">Ubicación</span>
               <span class="job-detail__info-value">{{ job.location || 'Sin especificar' }}</span>
             </div>
           </div>
           <div class="job-detail__info-item">
             <div class="job-detail__info-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/></svg></div>
-            <div>
+            <div class="job-detail__info-text">
               <span class="job-detail__info-label">Modalidad</span>
               <span class="job-detail__info-value">{{ job.modality }}</span>
             </div>
           </div>
           <div class="job-detail__info-item">
             <div class="job-detail__info-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/></svg></div>
-            <div>
+            <div class="job-detail__info-text">
               <span class="job-detail__info-label">Vacantes</span>
               <span class="job-detail__info-value">{{ job.vacancies }}</span>
             </div>
           </div>
           <div class="job-detail__info-item">
             <div class="job-detail__info-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/></svg></div>
-            <div>
+            <div class="job-detail__info-text">
               <span class="job-detail__info-label">Publicado</span>
               <span class="job-detail__info-value">{{ timeAgo(job.created_at) }}</span>
             </div>
@@ -146,7 +146,7 @@
           <input type="file" class="form-input" ref="resumeInput" accept=".pdf,.doc,.docx" style="padding:var(--space-3);">
           <p style="font-size:var(--fs-xs);color:var(--color-text-muted);margin-top:var(--space-1);">PDF o Word, máximo 5 MB</p>
         </div>
-        <button type="submit" class="btn btn--primary btn--lg btn--block" :class="{ 'btn--loading': isSubmitting }" :disabled="isSubmitting">
+        <button type="submit" class="btn btn--primary btn--lg btn--block" :class="{ 'btn--loading': isSubmitting }" :disabled="isSubmitting" style="background:#007200; border-color:#007200; color:#fff;">
           Enviar postulación
         </button>
       </form>

@@ -138,6 +138,12 @@
   flex-shrink: 0;
 }
 
+.job-detail__info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .job-detail__info-label {
   font-family: var(--font-mono);
   font-size: 11px;
