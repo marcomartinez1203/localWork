@@ -2,7 +2,7 @@
 // LocalWork — API Configuration (TypeScript)
 // ============================================
 
-const API_BASE_URL = 'https://local-work-project.vercel.app/api';
+const API_BASE_URL = 'https://local-work-drab.vercel.app/api';
 
 export const SUPABASE_URL  = 'https://bemsnwrwrcllvsmlvksi.supabase.co';
 export const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlbXNud3J3cmNsbHZzbWx2a3NpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMjY1MDAsImV4cCI6MjA4OTcwMjUwMH0._ykvyz-2y25rWQEWHu6eOlOc6sNog_G9_9zz2d6eCBE';
