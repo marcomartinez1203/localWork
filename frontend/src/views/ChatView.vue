@@ -106,8 +106,8 @@
 import { showToast } from '@/assets/js/utils/helpers.js'
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service.js'
-import ChatService from '@/assets/js/services/chat.service.js'
+import AuthService from '@/assets/js/services/auth.service'
+import ChatService from '@/assets/js/services/chat.service'
 
 const route = useRoute()
 const router = useRouter()

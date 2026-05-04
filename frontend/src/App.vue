@@ -6,16 +6,16 @@
   </component>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
+import type { Component } from 'vue'
 
 const route = useRoute()
 
-// Por defecto usamos MainLayout, a menos que la ruta diga que es 'auth'
-const layout = computed(() => {
+const layout = computed<Component>(() => {
   if (route.meta.layout === 'auth') return AuthLayout
   return MainLayout
 })

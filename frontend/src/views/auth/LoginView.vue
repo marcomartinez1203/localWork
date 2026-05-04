@@ -66,10 +66,10 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service.js'
+import AuthService from '@/assets/js/services/auth.service'
 
 const router = useRouter()
 
@@ -83,7 +83,7 @@ const pwError = ref(false)
 const errorMessage = ref('')
 const isLoading = ref(false)
 
-const vEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+const vEmail = (v: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
 const validateEmail = () => {
   if (vEmail(email.value)) emailError.value = false
@@ -112,12 +112,11 @@ const handleLogin = async () => {
   isLoading.value = true
   try {
     await AuthService.login({ email: email.value, password: password.value })
-    // Reemplazamos el auth.service redireccion por router.push
-    const routeHtml = AuthService.getPostAuthRoute() // ej: /dashboard.html
-    const route = routeHtml.split('/').pop().replace('.html', '') // dashboard
+    const routeHtml = AuthService.getPostAuthRoute()
+    const route = routeHtml.split('/').pop()?.replace('.html', '') ?? 'home'
     router.push('/' + route)
-  } catch (err) {
-    errorMessage.value = err.message || 'Credenciales incorrectas'
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : 'Credenciales incorrectas'
   } finally {
     isLoading.value = false
   }

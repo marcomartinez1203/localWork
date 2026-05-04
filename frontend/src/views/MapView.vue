@@ -62,7 +62,7 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
-import JobsService from '@/assets/js/services/jobs.service.js'
+import JobsService from '@/assets/js/services/jobs.service'
 import { showToast } from '@/assets/js/utils/helpers.js'
 
 const router = useRouter()

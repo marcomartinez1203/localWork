@@ -172,8 +172,8 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service.js'
-import JobsService from '@/assets/js/services/jobs.service.js'
+import AuthService from '@/assets/js/services/auth.service'
+import JobsService from '@/assets/js/services/jobs.service'
 import JobCard from '@/components/JobCard.vue'
 
 const router = useRouter()

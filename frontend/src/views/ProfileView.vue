@@ -339,9 +339,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import api from '@/assets/js/config/api.js'
-import AuthService from '@/assets/js/services/auth.service.js'
-import CompaniesService from '@/assets/js/services/companies.service.js'
-import JobsService from '@/assets/js/services/jobs.service.js'
+import AuthService from '@/assets/js/services/auth.service'
+import CompaniesService from '@/assets/js/services/companies.service'
+import JobsService from '@/assets/js/services/jobs.service'
 import { showToast } from '@/assets/js/utils/helpers.js'
 
 const router = useRouter()

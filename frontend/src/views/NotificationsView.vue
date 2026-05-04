@@ -39,8 +39,8 @@
 import { showToast } from '@/assets/js/utils/helpers.js'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service.js'
-import NotificationsService from '@/assets/js/services/notifications.service.js'
+import AuthService from '@/assets/js/services/auth.service'
+import NotificationsService from '@/assets/js/services/notifications.service'
 
 const router = useRouter()
 const notifications = ref([])

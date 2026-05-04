@@ -162,20 +162,18 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service.js'
+import AuthService from '@/assets/js/services/auth.service'
 
 const router = useRouter()
 const route = useRoute()
 
-// Step control
 const step = ref(1)
 
-// Form data
-const selectedRole = ref(null)
-const selectedWorkType = ref(null)
+const selectedRole = ref<string | null>(null)
+const selectedWorkType = ref<string | null>(null)
 const fullName = ref('')
 const email = ref('')
 const phone = ref('')
@@ -183,11 +181,10 @@ const password = ref('')
 const confirmPassword = ref('')
 const terms = ref(false)
 
-const employerIntent = ref('jobs')
+const employerIntent = ref<'jobs' | 'services'>('jobs')
 const companyName = ref('')
 const companyNit = ref('')
 
-// Errors & State
 const roleError = ref(false)
 const nameError = ref(false)
 const emailError = ref(false)
@@ -197,9 +194,9 @@ const errorMessage = ref('')
 const isLoading = ref(false)
 const showPassword = ref(false)
 
-const vEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
+const vEmail = (v: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
-const selectRole = (role, wt) => {
+const selectRole = (role: string, wt: string) => {
   selectedRole.value = role
   selectedWorkType.value = wt
   roleError.value = false
@@ -220,8 +217,8 @@ const validateConfirm = () => {
 
 onMounted(() => {
   if (AuthService.isAuthenticated()) {
-    const routeName = AuthService.getPostAuthRoute().split('/').pop().replace('.html', '')
-    router.push('/' + (routeName || 'home'))
+    const routeName = AuthService.getPostAuthRoute().split('/').pop()?.replace('.html', '') ?? 'home'
+    router.push('/' + routeName)
   }
   if (route.query.role === 'employer') {
     selectRole('employer', 'employee')
@@ -253,7 +250,7 @@ const handleRegister = async () => {
       email: email.value.trim(),
       phone: phone.value.trim() || undefined,
       password: password.value,
-      role: selectedRole.value,
+      role: selectedRole.value!,
       workType: selectedWorkType.value || undefined,
       companyName: selectedRole.value === 'employer' ? companyName.value.trim() : undefined,
       companyNit: selectedRole.value === 'employer' ? companyNit.value.trim() : undefined,
@@ -270,8 +267,8 @@ const handleRegister = async () => {
     } else {
       router.push('/home')
     }
-  } catch (err) {
-    errorMessage.value = err.message || 'Error al crear la cuenta'
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : 'Error al crear la cuenta'
   } finally {
     isLoading.value = false
   }

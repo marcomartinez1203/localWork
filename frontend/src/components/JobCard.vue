@@ -40,13 +40,14 @@
   </article>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import type { Job } from '@/types'
 
-const props = defineProps({
-  job: Object
-})
+const props = defineProps<{
+  job: Job
+}>()
 
 const router = useRouter()
 
@@ -60,7 +61,7 @@ const companyInitial = computed(() => {
     : '??'
 })
 
-const formatCurrency = (val) => {
+const formatCurrency = (val: number): string => {
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
 }
 
@@ -77,7 +78,7 @@ const truncatedDescription = computed(() => {
 })
 
 const modalityClass = computed(() => {
-  const classes = {
+  const classes: Record<string, string> = {
     'Presencial': 'badge--primary',
     'Remoto': 'badge--accent',
     'Híbrido': 'badge--warning',
@@ -93,7 +94,7 @@ const timeAgoComputed = computed(() => {
   const msPerMonth = msPerDay * 30;
   const msPerYear = msPerDay * 365;
 
-  const elapsed = new Date() - new Date(props.job.created_at);
+  const elapsed = new Date().getTime() - new Date(props.job.created_at).getTime();
 
   if (elapsed < msPerMinute) { return 'hace un momento'; }
   else if (elapsed < msPerHour) { return 'hace ' + Math.round(elapsed/msPerMinute) + ' minutos'; }

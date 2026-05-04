@@ -59,9 +59,9 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-import AuthService from '@/assets/js/services/auth.service.js'
+import AuthService from '@/assets/js/services/auth.service'
 
 const email = ref('')
 const isSuccess = ref(false)
@@ -75,8 +75,8 @@ const handleReset = async () => {
   try {
     await AuthService.resetPassword(email.value.trim())
     isSuccess.value = true
-  } catch (err) {
-    errorMessage.value = err.message || 'Error al enviar el correo'
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : 'Error al enviar el correo'
   } finally {
     isLoading.value = false
   }

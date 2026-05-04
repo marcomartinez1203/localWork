@@ -81,9 +81,9 @@
 import { showToast } from '@/assets/js/utils/helpers.js'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service.js'
-import ApplicationsService from '@/assets/js/services/applications.service.js'
-import ChatService from '@/assets/js/services/chat.service.js'
+import AuthService from '@/assets/js/services/auth.service'
+import ApplicationsService from '@/assets/js/services/applications.service'
+import ChatService from '@/assets/js/services/chat.service'
 
 const router = useRouter()
 

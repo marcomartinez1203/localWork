@@ -158,9 +158,9 @@
 import { showToast } from '@/assets/js/utils/helpers.js'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import JobsService from '@/assets/js/services/jobs.service.js'
-import ApplicationsService from '@/assets/js/services/applications.service.js'
-import ChatService from '@/assets/js/services/chat.service.js'
+import JobsService from '@/assets/js/services/jobs.service'
+import ApplicationsService from '@/assets/js/services/applications.service'
+import ChatService from '@/assets/js/services/chat.service'
 
 const route = useRoute()
 const router = useRouter()

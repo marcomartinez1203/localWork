@@ -152,12 +152,13 @@
   </nav>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service.js'
-import NotificationsService from '@/assets/js/services/notifications.service.js'
-import ChatService from '@/assets/js/services/chat.service.js'
+import AuthService from '@/assets/js/services/auth.service'
+import NotificationsService from '@/assets/js/services/notifications.service'
+import ChatService from '@/assets/js/services/chat.service'
+import type { User, Notification } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
@@ -165,9 +166,9 @@ const route = useRoute()
 const isMenuOpen = ref(false)
 const isUserMenuOpen = ref(false)
 const isNotifOpen = ref(false)
-const user = ref(null)
+const user = ref<User | null>(null)
 
-const notifications = ref([])
+const notifications = ref<Notification[]>([])
 const unreadNotifCount = ref(0)
 const unreadChatCount = ref(0)
 
@@ -191,11 +192,9 @@ const checkAuth = async () => {
   user.value = AuthService.getUser()
   if (user.value) {
     try {
-      const chatRes = await ChatService.getUnreadCount()
-      unreadChatCount.value = chatRes.count || 0
-      const notifRes = await NotificationsService.getUnreadCount()
-      unreadNotifCount.value = notifRes.count || 0
-    } catch (e) {}
+      unreadChatCount.value = await ChatService.getUnreadCount()
+      unreadNotifCount.value = await NotificationsService.getUnreadCount()
+    } catch { /* silent */ }
   }
 }
 
@@ -210,7 +209,7 @@ const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
 }
 
-const toggleUserMenu = (e) => {
+const toggleUserMenu = () => {
   isUserMenuOpen.value = !isUserMenuOpen.value
   isNotifOpen.value = false
 }
@@ -222,21 +221,21 @@ const toggleNotifPreview = async () => {
     try {
       const res = await NotificationsService.list({ page: 1, perPage: 5 })
       notifications.value = res.data || []
-    } catch (e) {}
+    } catch { /* silent */ }
   }
 }
 
-const markAsRead = async (n) => {
+const markAsRead = async (n: Notification) => {
   if (n.read) return
   n.read = true
   unreadNotifCount.value = Math.max(0, unreadNotifCount.value - 1)
-  try { await NotificationsService.markAsRead(n.id) } catch (e) {}
+  try { await NotificationsService.markAsRead(n.id) } catch { /* silent */ }
 }
 
 const markAllAsRead = async () => {
   notifications.value.forEach(n => n.read = true)
   unreadNotifCount.value = 0
-  try { await NotificationsService.markAllAsRead() } catch (e) {}
+  try { await NotificationsService.markAllAsRead() } catch { /* silent */ }
 }
 
 const toggleTheme = () => {
@@ -253,16 +252,17 @@ const logout = () => {
   router.push('/login')
 }
 
-const handleClickOutside = (e) => {
+const handleClickOutside = (e: MouseEvent) => {
+  const target = e.target as HTMLElement
   const avatar = document.querySelector('.navbar__avatar')
   const dropdown = document.querySelector('.user-dropdown')
-  if (isUserMenuOpen.value && (!avatar || !avatar.contains(e.target)) && (!dropdown || !dropdown.contains(e.target))) {
+  if (isUserMenuOpen.value && (!avatar || !avatar.contains(target)) && (!dropdown || !dropdown.contains(target))) {
     isUserMenuOpen.value = false
   }
 
   const notifBtn = document.getElementById('notifToggleBtn')
   const notifPreview = document.querySelector('.notif-preview')
-  if (isNotifOpen.value && (!notifBtn || !notifBtn.contains(e.target)) && (!notifPreview || !notifPreview.contains(e.target))) {
+  if (isNotifOpen.value && (!notifBtn || !notifBtn.contains(target)) && (!notifPreview || !notifPreview.contains(target))) {
     isNotifOpen.value = false
   }
 }
@@ -275,8 +275,8 @@ const handleScroll = () => {
   }
 }
 
-const getNotifIcon = (type) => {
-  const map = {
+const getNotifIcon = (type: string): string => {
+  const map: Record<string, string> = {
     application_received: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>',
     application_status_changed: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/></svg>',
     new_job_match: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"/></svg>',
@@ -285,8 +285,8 @@ const getNotifIcon = (type) => {
   return map[type] || '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>'
 }
 
-const getNotifIconClass = (type) => {
-  const map = {
+const getNotifIconClass = (type: string): string => {
+  const map: Record<string, string> = {
     application_received: 'notif-preview__icon--app',
     application_status_changed: 'notif-preview__icon--status',
     new_job_match: 'notif-preview__icon--match',
