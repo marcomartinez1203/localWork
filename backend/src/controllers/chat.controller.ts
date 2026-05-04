@@ -3,8 +3,7 @@
 // ============================================
 import { NextFunction, Response } from 'express';
 import { AuthenticatedRequest } from '../types';
-// @ts-ignore – ChatService will be provided at runtime via dependency injection
-const ChatService = require('../services/chat.service');
+import { ChatService } from '../services/chat.service';
 import { AppError } from '../middleware/error.middleware';
 
 export class ChatController {

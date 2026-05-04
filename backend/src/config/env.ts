@@ -19,7 +19,11 @@ export const env = {
 const required = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY'] as const;
 for (const key of required) {
   if (!process.env[key]) {
-    console.error(`❌ Falta la variable de entorno: ${key}`);
-    process.exit(1);
+    if (process.env.NODE_ENV === 'test') {
+      console.warn(`⚠️  Falta la variable de entorno: ${key} (modo test)`);
+    } else {
+      console.error(`❌ Falta la variable de entorno: ${key}`);
+      process.exit(1);
+    }
   }
 }
