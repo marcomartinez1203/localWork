@@ -158,8 +158,11 @@ Crea `backend/.env` con:
 ```env
 PORT=3000
 SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_ANON_KEY=tu_anon_key
 SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
 FRONTEND_URL=http://localhost:5500
+# Opcional: lista de orígenes CORS adicionales (separados por coma)
+# CORS_ORIGINS=https://app1.com,https://app2.com
 ```
 
 ### 3. Base de datos
