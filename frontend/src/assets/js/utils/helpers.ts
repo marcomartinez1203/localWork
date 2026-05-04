@@ -1,14 +1,14 @@
 // ============================================
-// LocalWork — Utility Functions
+// LocalWork — Utility Functions (TypeScript)
 // ============================================
 
 /**
  * Tiempo relativo en español
  */
-function timeAgo(dateStr) {
+export function timeAgo(dateStr: string): string {
   const now = new Date();
   const date = new Date(dateStr);
-  const diffMs = now - date;
+  const diffMs = now.getTime() - date.getTime();
   const diffSecs = Math.floor(diffMs / 1000);
   const diffMins = Math.floor(diffSecs / 60);
   const diffHours = Math.floor(diffMins / 60);
@@ -30,7 +30,7 @@ function timeAgo(dateStr) {
 /**
  * Formatear número como moneda colombiana
  */
-function formatCurrency(amount) {
+export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('es-CO', {
     style: 'currency',
     currency: 'COP',
@@ -42,18 +42,19 @@ function formatCurrency(amount) {
 /**
  * Debounce para búsquedas
  */
-function debounce(fn, delay = 300) {
-  let timer;
-  return function (...args) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounce<T extends (...args: unknown[]) => void>(fn: T, delay = 300): (...args: Parameters<T>) => void {
+  let timer: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
     clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
+    timer = setTimeout(() => fn(...args), delay);
   };
 }
 
 /**
  * Sanitizar HTML para prevenir XSS
  */
-function escapeHtml(str) {
+export function escapeHtml(str: string): string {
   const div = document.createElement('div');
   div.appendChild(document.createTextNode(str));
   return div.innerHTML;
@@ -62,7 +63,7 @@ function escapeHtml(str) {
 /**
  * Mostrar notificación toast
  */
-function showToast(message, type = 'info', duration = 4000) {
+export function showToast(message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info', duration = 4000): void {
   const toast = document.createElement('div');
   toast.className = `toast toast--${type}`;
   toast.setAttribute('role', 'alert');
@@ -94,16 +95,14 @@ function showToast(message, type = 'info', duration = 4000) {
 /**
  * Obtener parámetros de la URL
  */
-function getUrlParams() {
+export function getUrlParams(): Record<string, string> {
   return Object.fromEntries(new URLSearchParams(window.location.search));
 }
 
 /**
  * Truncar texto
  */
-function truncate(text, maxLength = 100) {
-  if (!text || text.length <= maxLength) return text;
+export function truncate(text: string | null | undefined, maxLength = 100): string {
+  if (!text || text.length <= maxLength) return text || '';
   return text.substring(0, maxLength).trim() + '…';
 }
-
-export { timeAgo, formatCurrency, debounce, escapeHtml, showToast, getUrlParams, truncate };
