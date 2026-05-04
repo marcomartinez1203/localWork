@@ -136,7 +136,7 @@ const initRealtime = () => {
   const token = sessionStorage.getItem('lw_token')
   if (!token || !window.supabase) return
   // NOTE: Ensure window.supabase is loaded via index.html or npm
-  supabaseClient = window.supabase.createClient(import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://localwork-aguachica.vercel.app', import.meta.env.VITE_SUPABASE_ANON_KEY || 'dummy', {
+  supabaseClient = window.supabase.createClient(import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://local-work-project.vercel.app', import.meta.env.VITE_SUPABASE_ANON_KEY || 'dummy', {
     global: { headers: { Authorization: `Bearer ${token}` } },
   })
 }

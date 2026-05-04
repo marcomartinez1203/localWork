@@ -3,7 +3,7 @@
 // ============================================
 
 // Siempre apuntamos al backend en Vercel, incluso si estamos desarrollando en local.
-const API_BASE_URL = 'https://localwork-aguachica.vercel.app/api';
+const API_BASE_URL = 'https://local-work-project.vercel.app/api';
 
 // Supabase public config (anon key — safe for frontend, protected by RLS)
 const SUPABASE_URL  = 'https://bemsnwrwrcllvsmlvksi.supabase.co';
