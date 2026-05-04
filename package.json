@@ -3,10 +3,8 @@
   "version": "1.0.0",
   "description": "LocalWork Application",
   "scripts": {
-    "build:css": "npx @tailwindcss/cli -i ./frontend/assets/css/styles.css -o ./frontend/assets/css/tailwind.css --minify",
     "build:backend": "cd backend && npm install && npm run build",
-    "build": "npm run build:backend && npm run build:css",
-    "dev:css": "npx @tailwindcss/cli -i ./frontend/assets/css/styles.css -o ./frontend/assets/css/tailwind.css --watch"
+    "build": "npm run build:backend"
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.0.0",
