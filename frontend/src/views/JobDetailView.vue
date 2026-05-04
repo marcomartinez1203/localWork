@@ -155,12 +155,12 @@
 </template>
 
 <script setup lang="ts">
-import { showToast } from '@/assets/js/utils/helpers'
+import { showToast } from '@/utils/helpers'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import JobsService from '@/assets/js/services/jobs.service'
-import ApplicationsService from '@/assets/js/services/applications.service'
-import ChatService from '@/assets/js/services/chat.service'
+import JobsService from '@/services/jobs.service'
+import ApplicationsService from '@/services/applications.service'
+import ChatService from '@/services/chat.service'
 import type { Job } from '@/types'
 
 const route = useRoute()

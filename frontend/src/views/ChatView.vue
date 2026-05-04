@@ -103,11 +103,11 @@
 </template>
 
 <script setup lang="ts">
-import { showToast } from '@/assets/js/utils/helpers'
+import { showToast } from '@/utils/helpers'
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service'
-import ChatService from '@/assets/js/services/chat.service'
+import AuthService from '@/services/auth.service'
+import ChatService from '@/services/chat.service'
 import type { User, ConversationSummary, Message } from '@/types'
 
 interface ConversationItem extends ConversationSummary {

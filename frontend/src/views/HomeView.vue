@@ -172,8 +172,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service'
-import JobsService from '@/assets/js/services/jobs.service'
+import AuthService from '@/services/auth.service'
+import JobsService from '@/services/jobs.service'
 import JobCard from '@/components/JobCard.vue'
 import type { User, Job } from '@/types'
 

@@ -155,9 +155,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service'
-import NotificationsService from '@/assets/js/services/notifications.service'
-import ChatService from '@/assets/js/services/chat.service'
+import AuthService from '@/services/auth.service'
+import NotificationsService from '@/services/notifications.service'
+import ChatService from '@/services/chat.service'
 import type { User, Notification } from '@/types'
 
 const router = useRouter()

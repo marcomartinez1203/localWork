@@ -169,13 +169,13 @@
 </template>
 
 <script setup lang="ts">
-import { showToast } from '@/assets/js/utils/helpers'
+import { showToast } from '@/utils/helpers'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import WorkersService from '@/assets/js/services/workers.service'
-import RatingsService from '@/assets/js/services/ratings.service'
-import ChatService from '@/assets/js/services/chat.service'
-import AuthService from '@/assets/js/services/auth.service'
+import WorkersService from '@/services/workers.service'
+import RatingsService from '@/services/ratings.service'
+import ChatService from '@/services/chat.service'
+import AuthService from '@/services/auth.service'
 import type { WorkerProfile, User, Rating } from '@/types'
 
 const router = useRouter()

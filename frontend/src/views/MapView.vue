@@ -61,8 +61,8 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
-import JobsService from '@/assets/js/services/jobs.service'
-import { showToast } from '@/assets/js/utils/helpers.ts'
+import JobsService from '@/services/jobs.service'
+import { showToast } from '@/utils/helpers.ts'
 import type { Job, Category, Barrio } from '@/types'
 
 const mapElement = ref<HTMLElement | null>(null)

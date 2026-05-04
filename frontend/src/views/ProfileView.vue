@@ -338,11 +338,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import api from '@/assets/js/config/api'
-import AuthService from '@/assets/js/services/auth.service'
-import CompaniesService from '@/assets/js/services/companies.service'
-import JobsService from '@/assets/js/services/jobs.service'
-import { showToast } from '@/assets/js/utils/helpers'
+import api from '@/config/api'
+import AuthService from '@/services/auth.service'
+import CompaniesService from '@/services/companies.service'
+import JobsService from '@/services/jobs.service'
+import { showToast } from '@/utils/helpers'
 import type { User, Company, Job } from '@/types'
 
 const router = useRouter()

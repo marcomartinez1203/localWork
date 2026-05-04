@@ -36,11 +36,11 @@
 </template>
 
 <script setup lang="ts">
-import { showToast } from '@/assets/js/utils/helpers'
+import { showToast } from '@/utils/helpers'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service'
-import NotificationsService from '@/assets/js/services/notifications.service'
+import AuthService from '@/services/auth.service'
+import NotificationsService from '@/services/notifications.service'
 import type { Notification } from '@/types'
 
 const router = useRouter()

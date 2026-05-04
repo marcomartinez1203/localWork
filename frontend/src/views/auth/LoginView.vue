@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import AuthService from '@/assets/js/services/auth.service'
+import AuthService from '@/services/auth.service'
 
 const router = useRouter()
 

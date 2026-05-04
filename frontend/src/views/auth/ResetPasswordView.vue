@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import AuthService from '@/assets/js/services/auth.service'
+import AuthService from '@/services/auth.service'
 
 const email = ref('')
 const isSuccess = ref(false)

@@ -286,15 +286,15 @@
 </template>
 
 <script setup lang="ts">
-import { showToast } from '@/assets/js/utils/helpers'
+import { showToast } from '@/utils/helpers'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '@/assets/js/config/api'
-import AuthService from '@/assets/js/services/auth.service'
-import JobsService from '@/assets/js/services/jobs.service'
-import CompaniesService from '@/assets/js/services/companies.service'
-import ApplicationsService from '@/assets/js/services/applications.service'
-import ChatService from '@/assets/js/services/chat.service'
+import api from '@/config/api'
+import AuthService from '@/services/auth.service'
+import JobsService from '@/services/jobs.service'
+import CompaniesService from '@/services/companies.service'
+import ApplicationsService from '@/services/applications.service'
+import ChatService from '@/services/chat.service'
 import type { Job, Application, Category, Barrio } from '@/types'
 
 interface JobForm {

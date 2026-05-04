@@ -12,7 +12,7 @@ Plataforma de empleo local para **Aguachica, Cesar** — conecta buscadores de e
 | **Base de datos** | PostgreSQL vía Supabase |
 | **Autenticación** | Supabase Auth |
 | **Tiempo real** | Supabase Realtime (WebSockets) para Chat y Notificaciones |
-| **Frontend SPA**| Vue 3 · Vite · Vue Router |
+| **Frontend SPA**| Vue 3 · TypeScript · Vite · Vue Router |
 | **Landing Page**| Astro · Tailwind CSS |
 | **Seguridad** | Helmet · CORS · express-rate-limit |
 | **Subida de archivos** | Multer + Supabase Storage |
