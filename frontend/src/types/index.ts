@@ -19,6 +19,10 @@ export interface User {
   location?: string
   service_public: boolean
   resume_url?: string
+  skills?: string[]
+  work_type?: string
+  availability?: string
+  hourly_rate?: string
   education: Education[]
   experience: Experience[]
   preferred_mode?: 'jobs' | 'services'
@@ -155,6 +159,7 @@ export interface Rating {
   created_at: string
   // joined fields
   rater_name?: string
+  rater?: { full_name?: string }
 }
 
 export interface RatingSummary {
@@ -212,6 +217,9 @@ export interface ConversationSummary {
     attachment_url: string | null
     attachment_name: string | null
   }
+  application?: {
+    job_title?: string
+  }
 }
 
 export interface WorkerProfile {
@@ -224,6 +232,8 @@ export interface WorkerProfile {
   work_type?: string
   phone?: string
   email?: string
+  availability?: string
+  hourly_rate?: string
   service_public: boolean
   avg_rating?: number
   created_at: string

@@ -157,7 +157,7 @@
             <label class="form-label">Barrio / Zona</label>
             <select v-model="jobForm.barrio_id" class="form-select">
               <option value="">Selecciona un barrio</option>
-              <option v-for="b in barrios" :key="b.id" :value="b.id">{{ b.nombre }}</option>
+              <option v-for="b in barrios" :key="b.id" :value="b.id">{{ b.name }}</option>
             </select>
           </div>
           <div class="form-group">
@@ -262,12 +262,12 @@
 
         <div class="applicant-row" v-for="app in applicants" :key="app.id" v-else>
           <div class="applicant-row__avatar">
-            <img v-if="app.seeker?.avatar_url" :src="app.seeker.avatar_url" alt="Avatar">
-            <span v-else>{{ initials(app.seeker?.full_name || '??') }}</span>
+            <img v-if="app.seeker_avatar" :src="app.seeker_avatar" alt="Avatar">
+            <span v-else>{{ initials(app.seeker_name || '??') }}</span>
           </div>
           <div class="applicant-row__info">
-            <p class="applicant-row__name">{{ app.seeker?.full_name || 'Sin nombre' }}</p>
-            <p class="applicant-row__email">{{ app.seeker?.email }} {{ app.seeker?.phone ? '· ' + app.seeker.phone : '' }}</p>
+            <p class="applicant-row__name">{{ app.seeker_name || 'Sin nombre' }}</p>
+            <p class="applicant-row__email">{{ app.seeker_name }}</p>
             <p v-if="app.cover_letter" class="applicant-row__cover">"{{ app.cover_letter }}"</p>
           </div>
           <div class="applicant-row__actions">
@@ -275,7 +275,7 @@
               <option v-for="(label, key) in STATUS_LABELS" :key="key" :value="key">{{ label }}</option>
             </select>
             <button v-if="app.status !== 'pending'" class="btn btn--sm" style="background:#007200;border-color:#007200;color:#fff;" @click="openApplicantChat(app.id)">Mensaje</button>
-            <a v-if="app.resume_url || app.seeker?.resume_url" :href="app.resume_url || app.seeker?.resume_url" target="_blank" class="btn btn--ghost btn--sm" style="font-size:var(--fs-xs);">CV</a>
+            <a v-if="app.resume_url" :href="app.resume_url" target="_blank" class="btn btn--ghost btn--sm" style="font-size:var(--fs-xs);">CV</a>
           </div>
         </div>
 
@@ -285,61 +285,57 @@
 
 </template>
 
-<script setup>
-import { showToast } from '@/assets/js/utils/helpers.js'
+<script setup lang="ts">
+import { showToast } from '@/assets/js/utils/helpers'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '@/assets/js/config/api.js'
+import api from '@/assets/js/config/api'
 import AuthService from '@/assets/js/services/auth.service'
 import JobsService from '@/assets/js/services/jobs.service'
 import CompaniesService from '@/assets/js/services/companies.service'
 import ApplicationsService from '@/assets/js/services/applications.service'
 import ChatService from '@/assets/js/services/chat.service'
+import type { Job, Application, Category, Barrio } from '@/types'
 
 const router = useRouter()
 
-// State
 const companyName = ref('')
-const stats = ref({})
-const jobs = ref([])
+const stats = ref<Record<string, unknown>>({})
+const jobs = ref<Job[]>([])
 const totalPages = ref(1)
 const currentPage = ref(1)
 const isLoadingJobs = ref(true)
 
-const categories = ref([])
-const barrios = ref([])
+const categories = ref<Category[]>([])
+const barrios = ref<Barrio[]>([])
 
-// Enums
-const STATUS_LABELS = {
+const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente', reviewed: 'Revisada', shortlisted: 'Preseleccionado',
   interview: 'Entrevista', accepted: 'Aceptada', rejected: 'Rechazada'
 }
-const STATUS_COLORS = {
+const STATUS_COLORS: Record<string, string> = {
   active: 'badge--accent', paused: 'badge--warning', closed: 'badge--danger', draft: 'badge--neutral'
 }
 
-// Job Modal state
 const isJobModalOpen = ref(false)
 const isSavingJob = ref(false)
-const editingJobId = ref(null)
-const jobForm = ref({
-  title: '', category_id: '', modality: 'Presencial', description: '', requirements: '', 
+const editingJobId = ref<string | null>(null)
+const jobForm = ref<Record<string, string | number>>({
+  title: '', category_id: '', modality: 'Presencial', description: '', requirements: '',
   salary_text: '', salary_min: '', salary_max: '', barrio_id: '', location: '', vacancies: 1, expires_at: ''
 })
 
-// Company Modal state
 const isCompanyModalOpen = ref(false)
 const isSavingCompany = ref(false)
-const logoInput = ref(null)
-const companyForm = ref({
+const logoInput = ref<HTMLInputElement | null>(null)
+const companyForm = ref<Record<string, string>>({
   id: '', name: '', nit: '', phone: '', description: '', address: '', website: '', logo_url: ''
 })
 
-// Applicants Modal state
 const isApplicantsModalOpen = ref(false)
 const isLoadingApplicants = ref(false)
 const currentJobTitle = ref('')
-const applicants = ref([])
+const applicants = ref<Application[]>([])
 
 onMounted(async () => {
   const user = AuthService.getUser()
@@ -356,22 +352,19 @@ const fetchStatsAndData = async () => {
   try {
     const company = await CompaniesService.getMyCompany()
     if (company?.name) companyName.value = company.name
-  } catch (e) {}
+  } catch { /* silent */ }
 
   try {
-    const st = await api.get('/jobs/employer-stats')
-    stats.value = st
-  } catch (e) {}
+    stats.value = await api.get('/jobs/employer-stats')
+  } catch { /* silent */ }
 
   try {
-    const catRes = await JobsService.getCategories()
-    categories.value = catRes.data || []
-  } catch (e) {}
+    categories.value = await JobsService.getCategories()
+  } catch { /* silent */ }
 
   try {
-    const bRes = await JobsService.getBarrios()
-    barrios.value = bRes.data || []
-  } catch (e) {}
+    barrios.value = await JobsService.getBarrios()
+  } catch { /* silent */ }
 }
 
 const fetchJobs = async () => {
@@ -379,8 +372,8 @@ const fetchJobs = async () => {
   try {
     const res = await JobsService.getMyJobs({ page: currentPage.value, perPage: 10 })
     jobs.value = res.data || []
-    totalPages.value = res.total_pages || 1
-  } catch (err) {
+    totalPages.value = (res as unknown as Record<string, number>).total_pages || 1
+  } catch (err: unknown) {
     console.error(err)
     jobs.value = []
   } finally {
@@ -388,60 +381,57 @@ const fetchJobs = async () => {
   }
 }
 
-const goToPage = (page) => {
+const goToPage = (page: number) => {
   currentPage.value = page
   fetchJobs()
 }
 
-// UI Helpers
-const timeAgo = (dateStr) => {
+const timeAgo = (dateStr: string) => {
   if (!dateStr) return ''
-  const elapsed = new Date() - new Date(dateStr)
+  const elapsed = new Date().getTime() - new Date(dateStr).getTime()
   if (elapsed < 60000) return 'hace un momento'
   if (elapsed < 3600000) return `hace ${Math.round(elapsed/60000)}m`
   if (elapsed < 86400000) return `hace ${Math.round(elapsed/3600000)}h`
   return `hace ${Math.round(elapsed/86400000)}d`
 }
-const statusLabel = (st) => {
-  const lbls = { active: 'Activa', paused: 'Pausada', closed: 'Cerrada', draft: 'Borrador' }
+const statusLabel = (st: string) => {
+  const lbls: Record<string, string> = { active: 'Activa', paused: 'Pausada', closed: 'Cerrada', draft: 'Borrador' }
   return lbls[st] || st
 }
-const statusColor = (st) => STATUS_COLORS[st] || 'badge--neutral'
-const initials = (name) => name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()
+const statusColor = (st: string) => STATUS_COLORS[st] || 'badge--neutral'
+const initials = (name: string) => name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase()
 
-// Actions
-const toggleJobStatus = async (job) => {
+const toggleJobStatus = async (job: Job) => {
   const newStatus = job.status === 'active' ? 'paused' : 'active'
   try {
     await JobsService.update(job.id, { status: newStatus })
-    job.status = newStatus
+    job.status = newStatus as Job['status']
     showToast(`Oferta ${newStatus === 'active' ? 'activada' : 'pausada'}`, 'success')
-  } catch (e) {
+  } catch {
     showToast('Error al actualizar oferta', 'error')
   }
 }
 
-const deleteJob = async (id) => {
+const deleteJob = async (id: string) => {
   if (!confirm('¿Seguro que deseas eliminar esta oferta?')) return
   try {
     await JobsService.delete(id)
     fetchJobs()
     fetchStatsAndData()
-  } catch (e) {
+  } catch {
     showToast('Error al eliminar', 'error')
   }
 }
 
-// Job Modal
 const openCreateModal = () => {
   editingJobId.value = null
   jobForm.value = { title: '', category_id: '', modality: 'Presencial', description: '', requirements: '', salary_text: '', salary_min: '', salary_max: '', barrio_id: '', location: '', vacancies: 1, expires_at: '' }
   isJobModalOpen.value = true
 }
 const closeJobModal = () => { isJobModalOpen.value = false }
-const editJob = async (job) => {
+const editJob = async (job: Job) => {
   editingJobId.value = job.id
-  jobForm.value = { ...job, expires_at: job.expires_at ? job.expires_at.substring(0, 10) : '' }
+  jobForm.value = { ...(job as unknown as Record<string, string | number>), expires_at: job.expires_at ? job.expires_at.substring(0, 10) : '' }
   isJobModalOpen.value = true
 }
 
@@ -456,19 +446,18 @@ const saveJob = async () => {
     closeJobModal()
     fetchJobs()
     fetchStatsAndData()
-  } catch (e) {
+  } catch {
     showToast('Error al guardar oferta', 'error')
   } finally {
     isSavingJob.value = false
   }
 }
 
-// Company Modal
 const openCompanyModal = async () => {
   try {
     const company = await CompaniesService.getMyCompany()
-    if (company) companyForm.value = { ...company }
-  } catch (e) {}
+    if (company) companyForm.value = { ...(company as unknown as Record<string, string>) }
+  } catch { /* silent */ }
   isCompanyModalOpen.value = true
 }
 const closeCompanyModal = () => { isCompanyModalOpen.value = false }
@@ -477,47 +466,46 @@ const saveCompany = async () => {
   isSavingCompany.value = true
   try {
     await CompaniesService.update(companyForm.value.id, companyForm.value)
-    if (logoInput.value?.files.length > 0) {
+    if (logoInput.value?.files && logoInput.value.files.length > 0) {
       const formData = new FormData()
       formData.append('logo', logoInput.value.files[0])
       await api.upload('/upload/company-logo', formData)
     }
     closeCompanyModal()
     fetchStatsAndData()
-  } catch (e) {
+  } catch {
     showToast('Error al guardar empresa', 'error')
   } finally {
     isSavingCompany.value = false
   }
 }
 
-// Applicants
-const viewApplicants = async (job) => {
+const viewApplicants = async (job: Job) => {
   currentJobTitle.value = job.title
   isApplicantsModalOpen.value = true
   isLoadingApplicants.value = true
   try {
     const res = await ApplicationsService.getForJob(job.id)
     applicants.value = res.data || []
-  } catch (e) {
+  } catch {
     applicants.value = []
   } finally {
     isLoadingApplicants.value = false
   }
 }
 const closeApplicantsModal = () => { isApplicantsModalOpen.value = false }
-const changeAppStatus = async (app) => {
+const changeAppStatus = async (app: Application) => {
   try {
     await ApplicationsService.updateStatus(app.id, app.status)
-  } catch (e) {
+  } catch {
     showToast('Error actualizando estado', 'error')
   }
 }
-const openApplicantChat = async (id) => {
+const openApplicantChat = async (id: string) => {
   try {
     const res = await ChatService.startConversation(id)
     router.push(`/chat?conversation_id=${res.conversation_id}`)
-  } catch (e) {
+  } catch {
     showToast('Error al abrir chat', 'error')
   }
 }

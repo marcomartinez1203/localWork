@@ -10,8 +10,8 @@
             <div v-for="r in incomingRequests" :key="r.id" style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);">
               <span style="font-size:var(--fs-sm);">{{ r.sender?.full_name }}</span>
               <div style="display:flex;gap:6px;">
-                <button class="btn btn--sm" style="padding:4px 8px;background:#007200;border-color:#007200;color:#fff;" @click="respondRequest(r.id, 'accepted')">Aceptar</button>
-                <button class="btn btn--ghost btn--sm" style="padding:4px 8px;" @click="respondRequest(r.id, 'rejected')">Rechazar</button>
+                <button class="btn btn--sm" style="padding:4px 8px;background:#007200;border-color:#007200;color:#fff;" @click="respondRequest(r.id, 'accept')">Aceptar</button>
+                <button class="btn btn--ghost btn--sm" style="padding:4px 8px;" @click="respondRequest(r.id, 'reject')">Rechazar</button>
               </div>
             </div>
           </div>
@@ -31,7 +31,7 @@
               </div>
               <div class="chat-item__bottom">
                 <p class="chat-item__last">{{ getLastText(c) }}</p>
-                <span v-if="c.unread_count > 0" class="chat-item__badge">{{ c.unread_count }}</span>
+                <span v-if="(c.unread_count || 0) > 0" class="chat-item__badge">{{ c.unread_count }}</span>
               </div>
             </div>
           </article>
@@ -88,7 +88,7 @@
 
         <form class="chat-main__composer" @submit.prevent="sendMessage">
           <input type="file" ref="attachmentInput" style="display:none;" @change="handleFileSelect" />
-          <button class="btn btn--ghost btn--sm" type="button" @click="$refs.attachmentInput.click()" :disabled="!activeConversation">Adjuntar</button>
+          <button class="btn btn--ghost btn--sm" type="button" @click="attachmentInput?.click()" :disabled="!activeConversation">Adjuntar</button>
           <div style="flex:1;min-width:0;">
             <div class="chat-attachment-chip" style="display:inline-flex;" v-if="selectedAttachment">
               Adjunto: {{ selectedAttachment.name }}
@@ -102,35 +102,46 @@
   </div>
 </template>
 
-<script setup>
-import { showToast } from '@/assets/js/utils/helpers.js'
+<script setup lang="ts">
+import { showToast } from '@/assets/js/utils/helpers'
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthService from '@/assets/js/services/auth.service'
 import ChatService from '@/assets/js/services/chat.service'
+import type { User, ConversationSummary, Message } from '@/types'
+
+interface ConversationItem extends ConversationSummary {
+  unread_count?: number
+  application?: { job_title?: string }
+}
+
+interface ChatRequest {
+  id: string
+  sender?: { full_name?: string }
+}
 
 const route = useRoute()
 const router = useRouter()
 
-const user = ref(null)
-const conversations = ref([])
-const incomingRequests = ref([])
-const activeConversationId = ref(null)
-const activeConversation = computed(() => conversations.value.find(c => c.id === activeConversationId.value))
-const messages = ref([])
+const user = ref<User | null>(null)
+const conversations = ref<ConversationItem[]>([])
+const incomingRequests = ref<ChatRequest[]>([])
+const activeConversationId = ref<string | null>(null)
+const activeConversation = computed(() => conversations.value.find(c => c.id === activeConversationId.value) || null)
+const messages = ref<Message[]>([])
 const isOnline = ref(false)
 
 const messageText = ref('')
-const selectedAttachment = ref(null)
-const attachmentInput = ref(null)
+const selectedAttachment = ref<File | null>(null)
+const attachmentInput = ref<HTMLInputElement | null>(null)
 const isSending = ref(false)
-const messagesPanel = ref(null)
+const messagesPanel = ref<HTMLElement | null>(null)
 
 // Supabase Realtime State
-let supabaseClient = null
-let messageChannel = null
-let presenceChannel = null
-const knownMessageIds = new Set()
+let supabaseClient: any = null
+let messageChannel: any = null
+let presenceChannel: any = null
+const knownMessageIds = new Set<string>()
 
 const initRealtime = () => {
   const token = sessionStorage.getItem('lw_token')
@@ -148,7 +159,7 @@ onMounted(async () => {
     return
   }
 
-  activeConversationId.value = route.query.conversation_id || null
+  activeConversationId.value = (route.query.conversation_id as string | undefined) || null
 
   await loadConversations()
   initRealtime()
@@ -166,21 +177,21 @@ onUnmounted(() => {
 const loadConversations = async () => {
   try {
     const res = await ChatService.listConversations()
-    conversations.value = res.data || []
+    conversations.value = (res as ConversationItem[]) || []
     const inc = await ChatService.getIncomingRequests()
-    incomingRequests.value = inc.data || []
+    incomingRequests.value = (inc as ChatRequest[]) || []
 
     if (!activeConversationId.value && conversations.value.length) {
       activeConversationId.value = conversations.value[0].id
     }
-  } catch (e) {
-    console.error('Error loading conversations', e)
+  } catch {
+    console.error('Error loading conversations')
   }
 }
 
-const openConversation = async (id) => {
+const openConversation = async (id: string) => {
   activeConversationId.value = id
-  if (route.query.conversation_id !== id) {
+  if ((route.query.conversation_id as string | undefined) !== id) {
     router.replace({ query: { conversation_id: id } })
   }
 
@@ -193,13 +204,17 @@ const openConversation = async (id) => {
     scrollToBottom()
 
     await ChatService.markAsRead(id)
-    activeConversation.value.unread_count = 0
-  } catch (e) {
-    console.error('Error fetching messages', e)
+    if (activeConversation.value) {
+      activeConversation.value.unread_count = 0
+    }
+  } catch {
+    console.error('Error fetching messages')
   }
 
   subscribeToMessages(id)
-  subscribeToPresence(activeConversation.value)
+  if (activeConversation.value) {
+    subscribeToPresence(activeConversation.value)
+  }
 }
 
 const closeConversation = () => {
@@ -219,7 +234,7 @@ const sendMessage = async () => {
 
   isSending.value = true
   try {
-    let payload = { content: txt }
+    let payload: { content: string; attachment_url?: string; attachment_name?: string } = { content: txt }
     if (file) {
       const upload = await ChatService.uploadAttachment(file)
       payload = { ...payload, ...upload }
@@ -228,37 +243,38 @@ const sendMessage = async () => {
     messageText.value = ''
     selectedAttachment.value = null
     scrollToBottom()
-  } catch (e) {
+  } catch {
     showToast('No se pudo enviar el mensaje', 'error')
   } finally {
     isSending.value = false
   }
 }
 
-const respondRequest = async (id, action) => {
+const respondRequest = async (id: string, action: 'accept' | 'reject') => {
   try {
-    const res = await ChatService.respondRequest(id, action)
+    const res = await ChatService.respondRequest(id, action) as { conversation_id?: string }
     if (res.conversation_id) {
       activeConversationId.value = res.conversation_id
       openConversation(res.conversation_id)
     }
     await loadConversations()
-  } catch (e) {
+  } catch {
     showToast('Error al responder solicitud', 'error')
   }
 }
 
-const handleFileSelect = (e) => {
-  selectedAttachment.value = e.target.files && e.target.files[0] ? e.target.files[0] : null
+const handleFileSelect = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  selectedAttachment.value = target.files && target.files[0] ? target.files[0] : null
 }
 
-const subscribeToMessages = (conversationId) => {
+const subscribeToMessages = (conversationId: string) => {
   if (!supabaseClient) return
   if (messageChannel) supabaseClient.removeChannel(messageChannel)
   
   messageChannel = supabaseClient
     .channel(`messages:${conversationId}`)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, async (payload) => {
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, async (payload: { new: Message }) => {
       const msg = payload.new
       if (knownMessageIds.has(msg.id)) return
       knownMessageIds.add(msg.id)
@@ -267,7 +283,7 @@ const subscribeToMessages = (conversationId) => {
         const res = await ChatService.getMessages(conversationId, { page: 1, perPage: 200 })
         messages.value = res.data || []
         scrollToBottom()
-        if (msg.sender_id !== user.value.id) {
+        if (msg.sender_id !== user.value?.id) {
           await ChatService.markAsRead(conversationId)
         }
       }
@@ -276,20 +292,20 @@ const subscribeToMessages = (conversationId) => {
     .subscribe()
 }
 
-const subscribeToPresence = (conversation) => {
+const subscribeToPresence = (conversation: ConversationItem) => {
   if (!supabaseClient) return
   if (presenceChannel) supabaseClient.removeChannel(presenceChannel)
 
   const channelName = `presence:conversation:${conversation.id}`
-  presenceChannel = supabaseClient.channel(channelName, { config: { presence: { key: user.value.id } } })
+  presenceChannel = supabaseClient.channel(channelName, { config: { presence: { key: user.value?.id } } })
 
   presenceChannel.on('presence', { event: 'sync' }, () => {
     const state = presenceChannel.presenceState()
-    const otherId = conversation.other_user.id
+    const otherId = conversation.other_user?.id
     isOnline.value = Boolean(state[otherId]?.length)
-  }).subscribe(async (status) => {
+  }).subscribe(async (status: string) => {
     if (status === 'SUBSCRIBED') {
-      await presenceChannel.track({ user_id: user.value.id, at: new Date().toISOString() })
+      await presenceChannel.track({ user_id: user.value?.id, at: new Date().toISOString() })
     }
   })
 }
@@ -303,16 +319,16 @@ const scrollToBottom = () => {
 }
 
 // Formatters
-const initials = (name) => name ? name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : '??'
-const fmtTime = (val) => val ? new Date(val).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : ''
-const dayKey = (val) => { const d = new Date(val); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}` }
-const dayLabel = (val) => new Date(val).toLocaleDateString('es-CO', { weekday: 'short', day: '2-digit', month: 'short' })
+const initials = (name?: string) => name ? name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : '??'
+const fmtTime = (val?: string | null) => val ? new Date(val).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }) : ''
+const dayKey = (val: string) => { const d = new Date(val); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}` }
+const dayLabel = (val: string) => new Date(val).toLocaleDateString('es-CO', { weekday: 'short', day: '2-digit', month: 'short' })
 
-const showDateSeparator = (idx) => {
+const showDateSeparator = (idx: number) => {
   if (idx === 0) return true
   return dayKey(messages.value[idx].created_at) !== dayKey(messages.value[idx-1].created_at)
 }
-const getLastText = (c) => {
+const getLastText = (c: ConversationItem) => {
   if (c.last_message) return c.last_message.content || `Adjunto: ${c.last_message.attachment_name || 'archivo'}`
   return c.kind === 'application' ? `Postulación: ${c.application?.job_title || 'Oferta'}` : 'Chat directo'
 }

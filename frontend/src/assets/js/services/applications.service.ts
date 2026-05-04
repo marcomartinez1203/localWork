@@ -4,11 +4,12 @@
 import api from '../config/api';
 import type { Application, ApplicationStatus, ApplicationFilters } from '@/types';
 
-interface ApplicationsListResponse {
+export interface ApplicationsListResponse {
   data: Application[];
   total: number;
   page: number;
   per_page: number;
+  total_pages?: number;
 }
 
 const ApplicationsService = {

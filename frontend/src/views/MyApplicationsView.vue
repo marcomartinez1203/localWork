@@ -6,7 +6,7 @@
     </div>
 
     <div class="apps-filters">
-      <button class="chip" :class="{ active: activeStatus === null }" @click="setStatus(null)">Todas</button>
+      <button class="chip" :class="{ active: activeStatus === undefined }" @click="setStatus(undefined)">Todas</button>
       <button class="chip" :class="{ active: activeStatus === 'pending' }" @click="setStatus('pending')">
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
         Pendientes
@@ -41,10 +41,10 @@
 
     <div v-else-if="applications.length > 0">
       <div class="app-card" v-for="app in applications" :key="app.id" style="cursor:pointer;" @click="router.push(`/job/${app.job_id}`)">
-        <div class="app-card__logo">{{ initials(app.job?.company?.name || 'Empresa') }}</div>
+        <div class="app-card__logo">{{ initials((app as any).company_name || 'Empresa') }}</div>
         <div class="app-card__info">
-          <h3 class="app-card__title">{{ app.job?.title || 'Empleo' }}</h3>
-          <p class="app-card__company">{{ app.job?.company?.name || 'Empresa' }}</p>
+          <h3 class="app-card__title">{{ (app as any).job_title || 'Empleo' }}</h3>
+          <p class="app-card__company">{{ (app as any).company_name || 'Empresa' }}</p>
         </div>
         <div class="app-card__meta">
           <span class="status-badge" :class="`status-badge--${app.status}`">{{ STATUS_LABELS[app.status] || app.status }}</span>
@@ -77,21 +77,22 @@
   </div>
 </template>
 
-<script setup>
-import { showToast } from '@/assets/js/utils/helpers.js'
+<script setup lang="ts">
+import { showToast } from '@/assets/js/utils/helpers'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from '@/assets/js/services/auth.service'
 import ApplicationsService from '@/assets/js/services/applications.service'
 import ChatService from '@/assets/js/services/chat.service'
+import type { Application, ApplicationStatus } from '@/types'
 
 const router = useRouter()
 
-const applications = ref([])
+const applications = ref<Application[]>([])
 const isLoading = ref(true)
 const currentPage = ref(1)
 const totalPages = ref(1)
-const activeStatus = ref(null)
+const activeStatus = ref<ApplicationStatus | undefined>(undefined)
 
 const STATUS_LABELS = {
   pending: 'Pendiente', reviewed: 'Revisada', shortlisted: 'Preseleccionado',
@@ -99,12 +100,12 @@ const STATUS_LABELS = {
 }
 const CHAT_ENABLED_STATUSES = ['reviewed', 'interview', 'accepted']
 
-const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() : '??'
+const initials = (name?: string) => name ? name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() : '??'
 
-const timeAgo = (dateStr) => {
+const timeAgo = (dateStr: string) => {
   const d = new Date(dateStr)
   const now = new Date()
-  const diffHours = Math.round((now - d) / (1000 * 60 * 60))
+  const diffHours = Math.round((now.getTime() - d.getTime()) / (1000 * 60 * 60))
   if (diffHours < 24) return `Hace ${diffHours} horas`
   const diffDays = Math.round(diffHours / 24)
   return `Hace ${diffDays} días`
@@ -140,33 +141,33 @@ const loadApplications = async () => {
   }
 }
 
-const setStatus = (status) => {
+const setStatus = (status?: ApplicationStatus) => {
   activeStatus.value = status
   currentPage.value = 1
   loadApplications()
 }
 
-const goToPage = (p) => {
+const goToPage = (p: number) => {
   currentPage.value = p
   loadApplications()
 }
 
-const withdrawApp = async (id) => {
+const withdrawApp = async (id: string) => {
   if (!confirm('¿Seguro que deseas retirar esta postulación?')) return
   try {
     await ApplicationsService.withdraw(id)
     showToast('Postulación retirada', 'success')
     loadApplications()
-  } catch (e) {
+  } catch {
     showToast('Error al retirar', 'error')
   }
 }
 
-const startChat = async (id) => {
+const startChat = async (id: string) => {
   try {
     const result = await ChatService.startConversation(id)
     router.push(`/chat?conversation_id=${result.conversation_id}`)
-  } catch (err) {
+  } catch {
     showToast('No se pudo abrir el chat', 'error')
   }
 }

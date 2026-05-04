@@ -4,11 +4,12 @@
 import api from '../config/api';
 import type { Job, JobFilters, NearbyFilters, Category, Barrio } from '@/types';
 
-interface JobsListResponse {
+export interface JobsListResponse {
   data: Job[];
   total: number;
   page: number;
   per_page: number;
+  total_pages?: number;
 }
 
 const JobsService = {

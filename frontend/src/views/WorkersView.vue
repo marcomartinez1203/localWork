@@ -32,7 +32,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.75-5.25-6.75-11.25a6.75 6.75 0 1 1 13.5 0C18.75 15.75 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.25"/></svg>
               {{ w.location }}
             </p>
-            <span v-if="WORK_TYPE_LABEL[w.work_type]" class="worker-badge" :class="WORK_TYPE_LABEL[w.work_type].cls">
+            <span v-if="w.work_type && WORK_TYPE_LABEL[w.work_type]" class="worker-badge" :class="WORK_TYPE_LABEL[w.work_type].cls">
               {{ WORK_TYPE_LABEL[w.work_type].label }}
             </span>
           </div>
@@ -168,47 +168,56 @@
   </div>
 </template>
 
-<script setup>
-import { showToast } from '@/assets/js/utils/helpers.js'
+<script setup lang="ts">
+import { showToast } from '@/assets/js/utils/helpers'
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import WorkersService from '@/assets/js/services/workers.service'
 import RatingsService from '@/assets/js/services/ratings.service'
 import ChatService from '@/assets/js/services/chat.service'
 import AuthService from '@/assets/js/services/auth.service'
+import type { WorkerProfile, User, Rating } from '@/types'
 
 const router = useRouter()
 
-const WORK_TYPE_LABEL = {
+interface ChatStatus {
+  can_message?: boolean
+  conversation_id?: string
+  pending_outgoing?: boolean
+  pending_incoming?: boolean
+  request_id?: string
+}
+
+const WORK_TYPE_LABEL: Record<string, { label: string; cls: string }> = {
   freelance: { label: 'Servicios independientes', cls: 'worker-badge--freelance' },
   both:      { label: 'Empleo y servicios',       cls: 'worker-badge--both' },
 }
 
 // User state
-const currentUser = ref(null)
-const isEmployer = ref(false)
+const currentUser = ref<User | null>(null)
+const isEmployer = ref<boolean>(false)
 
 // List state
-const workers = ref([])
-const totalPages = ref(1)
-const currentPage = ref(1)
-const isLoading = ref(true)
+const workers = ref<WorkerProfile[]>([])
+const totalPages = ref<number>(1)
+const currentPage = ref<number>(1)
+const isLoading = ref<boolean>(true)
 
 // Filters
-const searchQuery = ref('')
-const skillQuery = ref('')
-const typeFilter = ref('')
-let searchTimeout = null
+const searchQuery = ref<string>('')
+const skillQuery = ref<string>('')
+const typeFilter = ref<string>('')
+const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 
 // Modal state
-const isModalOpen = ref(false)
-const isLoadingModal = ref(false)
-const selectedWorker = ref(null)
-const chatStatus = ref(null)
-const ratingsData = ref({ average: 0, total: 0 })
-const ratingsList = ref([])
-const selectedScore = ref(0)
-const ratingComment = ref('')
+const isModalOpen = ref<boolean>(false)
+const isLoadingModal = ref<boolean>(false)
+const selectedWorker = ref<WorkerProfile | null>(null)
+const chatStatus = ref<ChatStatus | null>(null)
+const ratingsData = ref<{ average: number; total: number }>({ average: 0, total: 0 })
+const ratingsList = ref<Rating[]>([])
+const selectedScore = ref<number>(0)
+const ratingComment = ref<string>('')
 
 onMounted(() => {
   currentUser.value = AuthService.getUser()
@@ -218,11 +227,11 @@ onMounted(() => {
   loadWorkers()
 })
 
-const initials = (name) => name ? name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : '??'
+const initials = (name: string | undefined) => name ? name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : '??'
 
 const debouncedSearch = () => {
-  if (searchTimeout) clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => { resetPage() }, 400)
+  if (searchTimeout.value) clearTimeout(searchTimeout.value)
+  searchTimeout.value = setTimeout(() => { resetPage() }, 400)
 }
 
 const resetPage = () => {
@@ -230,7 +239,7 @@ const resetPage = () => {
   loadWorkers()
 }
 
-const goToPage = (p) => {
+const goToPage = (p: number) => {
   currentPage.value = p
   loadWorkers()
   window.scrollTo(0, 0)
@@ -247,8 +256,8 @@ const loadWorkers = async () => {
       workType: typeFilter.value || undefined
     })
     workers.value = res.data || []
-    totalPages.value = res.total_pages || 1
-  } catch (e) {
+    totalPages.value = (res as any).total_pages || Math.ceil((res.total || 0) / 12) || 1
+  } catch {
     workers.value = []
   } finally {
     isLoading.value = false
@@ -259,7 +268,7 @@ const loadWorkers = async () => {
 const isMe = computed(() => currentUser.value && selectedWorker.value && currentUser.value.id === selectedWorker.value.id)
 const starsDisplay = computed(() => ratingsData.value.average > 0 ? `${'⭐'.repeat(Math.round(ratingsData.value.average))} ${ratingsData.value.average}/5 (${ratingsData.value.total})` : 'Sin calificaciones')
 
-const openWorkerModal = async (w) => {
+const openWorkerModal = async (w: WorkerProfile) => {
   isModalOpen.value = true
   isLoadingModal.value = true
   selectedScore.value = 0
@@ -270,17 +279,17 @@ const openWorkerModal = async (w) => {
     selectedWorker.value = worker
     
     const ratings = await RatingsService.getForUser(worker.id)
-    ratingsData.value = { average: ratings.average, total: ratings.total }
-    ratingsList.value = ratings.data || []
+    ratingsData.value = { average: ratings.average, total: (ratings as any).total ?? ratings.count }
+    ratingsList.value = (ratings as any).data || ratings.ratings || []
 
     if (!isMe.value && currentUser.value) {
       try {
-        chatStatus.value = await ChatService.getRequestStatus(worker.id)
-      } catch (e) {
+        chatStatus.value = await ChatService.getRequestStatus(worker.id) as ChatStatus
+      } catch {
         chatStatus.value = null
       }
     }
-  } catch (e) {
+  } catch {
     selectedWorker.value = null
   } finally {
     isLoadingModal.value = false
@@ -296,6 +305,7 @@ const submitRating = async () => {
     showToast('Selecciona una calificación', 'info')
     return
   }
+  if (!selectedWorker.value) return
   try {
     await RatingsService.create({
       ratedId: selectedWorker.value.id,
@@ -305,7 +315,7 @@ const submitRating = async () => {
     showToast('¡Calificación enviada!', 'success')
     // reload modal data
     openWorkerModal(selectedWorker.value)
-  } catch (e) {
+  } catch {
     showToast('Error al calificar', 'error')
   }
 }
@@ -316,29 +326,35 @@ const requestDirectChat = async () => {
     router.push('/login')
     return
   }
+  if (!selectedWorker.value) return
   try {
     const res = await ChatService.sendRequest(selectedWorker.value.id)
-    if (res.conversation_id) {
-      router.push(`/chat?conversation_id=${res.conversation_id}`)
+    const chatRes = res as { conversation_id?: string }
+    if (chatRes.conversation_id) {
+      router.push(`/chat?conversation_id=${chatRes.conversation_id}`)
     } else {
       showToast('Solicitud enviada', 'success')
       openWorkerModal(selectedWorker.value)
     }
-  } catch (e) {
+  } catch {
     showToast('No se pudo enviar la solicitud', 'error')
   }
 }
 
-const respondDirectRequest = async (action) => {
+const respondDirectRequest = async (action: 'accepted' | 'rejected') => {
+  const status = chatStatus.value as { request_id?: string } | null
+  if (!status?.request_id) return
   try {
-    const res = await ChatService.respondRequest(chatStatus.value.request_id, action)
-    if (res.conversation_id) {
-      router.push(`/chat?conversation_id=${res.conversation_id}`)
+    const apiAction = action === 'accepted' ? 'accept' : 'reject'
+    const res = await ChatService.respondRequest(status.request_id, apiAction)
+    const chatRes = res as { conversation_id?: string }
+    if (chatRes.conversation_id) {
+      router.push(`/chat?conversation_id=${chatRes.conversation_id}`)
     } else {
       showToast(action === 'accepted' ? 'Solicitud aceptada' : 'Solicitud rechazada', 'success')
       closeWorkerModal()
     }
-  } catch (e) {
+  } catch {
     showToast('No se pudo responder la solicitud', 'error')
   }
 }

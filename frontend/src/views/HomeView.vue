@@ -169,25 +169,24 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from '@/assets/js/services/auth.service'
 import JobsService from '@/assets/js/services/jobs.service'
 import JobCard from '@/components/JobCard.vue'
+import type { User, Job } from '@/types'
 
 const router = useRouter()
 
-// State
-const user = ref(null)
-const stats = ref({})
-const jobs = ref([])
+const user = ref<User | null>(null)
+const stats = ref<Record<string, unknown>>({})
+const jobs = ref<Job[]>([])
 const totalJobs = ref(0)
 const totalPages = ref(1)
 const currentPage = ref(1)
 const isLoading = ref(true)
 
-// Filters
 const activeCategory = ref('all')
 const activeModality = ref('all')
 const activeLocation = ref('all')
@@ -196,7 +195,7 @@ const searchQuery = ref('')
 const searchHint = ref('')
 
 const ITEMS_PER_PAGE = 9
-let searchTimeout = null
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
 const firstName = computed(() => {
   return user.value && user.value.full_name ? user.value.full_name.split(' ')[0] : ''
@@ -253,7 +252,7 @@ const fetchJobs = async () => {
   }
 }
 
-const setCategory = (category) => {
+const setCategory = (category: string) => {
   activeCategory.value = category
   resetPage()
 }
@@ -263,7 +262,7 @@ const resetPage = () => {
   fetchJobs()
 }
 
-const goToPage = (page) => {
+const goToPage = (page: number) => {
   currentPage.value = page
   fetchJobs()
   window.scrollTo({ top: 0, behavior: 'smooth' })

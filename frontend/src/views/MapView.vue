@@ -21,7 +21,7 @@
         <label class="form-label">Barrio / Zona</label>
         <select v-model="filterBarrio" class="form-input" @change="applyFilters">
           <option value="all">Todos los barrios</option>
-          <option v-for="b in barrios" :key="b.id" :value="b.id">{{ b.nombre }}</option>
+          <option v-for="b in barrios" :key="b.id" :value="b.id">{{ b.name }}</option>
         </select>
       </div>
 
@@ -54,37 +54,35 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import JobsService from '@/assets/js/services/jobs.service'
-import { showToast } from '@/assets/js/utils/helpers.js'
+import { showToast } from '@/assets/js/utils/helpers.ts'
+import type { Job, Category, Barrio } from '@/types'
 
-const router = useRouter()
-const mapElement = ref(null)
-let map = null
-let markerCluster = null
-let allJobs = []
-let userMarker = null
-let userCircle = null
+const mapElement = ref<HTMLElement | null>(null)
+let map: L.Map | null = null
+let markerCluster: L.MarkerClusterGroup | null = null
+let userMarker: L.Marker | null = null
+let userCircle: L.Circle | null = null
 
 const filterDistance = ref(5000)
 const filterBarrio = ref('all')
 const filterCategory = ref('all')
 const filterModality = ref('all')
 
-const barrios = ref([])
-const categories = ref([])
+const barrios = ref<Barrio[]>([])
+const categories = ref<Category[]>([])
 const filteredJobsCount = ref(0)
-const userLocation = ref(null)
+const userLocation = ref<[number, number] | null>(null)
 
 // Aguachica coords
-const DEFAULT_CENTER = [8.3114, -73.6128]
+const DEFAULT_CENTER: [number, number] = [8.3114, -73.6128]
 const DEFAULT_ZOOM = 14
 
 onMounted(async () => {
@@ -104,6 +102,7 @@ onUnmounted(() => {
 })
 
 const initMap = () => {
+  if (!mapElement.value) return
   map = L.map(mapElement.value, {
     zoomControl: false
   }).setView(DEFAULT_CENTER, DEFAULT_ZOOM)
@@ -128,11 +127,11 @@ const initMap = () => {
 const loadFilters = async () => {
   try {
     const cats = await JobsService.getCategories()
-    categories.value = Array.isArray(cats) ? cats : (cats.data || [])
+    categories.value = cats
     const barrs = await JobsService.getBarrios()
-    barrios.value = Array.isArray(barrs) ? barrs : (barrs.data || [])
-  } catch (e) {
-    console.error('Error load filters', e)
+    barrios.value = barrs
+  } catch {
+    console.error('Error load filters')
   }
 }
 
@@ -146,12 +145,11 @@ const loadJobs = async () => {
       modality: filterModality.value,
       barrio_id: filterBarrio.value
     }
-    const res = await JobsService.getNearby(filters)
-    const jobs = Array.isArray(res) ? res : (res.data || [])
+    const jobs = await JobsService.getNearby(filters)
     filteredJobsCount.value = jobs.length
     renderMarkers(jobs)
-  } catch (e) {
-    console.error('Error load jobs map', e)
+  } catch {
+    console.error('Error load jobs map')
   }
 }
 
@@ -164,21 +162,21 @@ const getUserLocation = () => {
     (pos) => {
       userLocation.value = [pos.coords.latitude, pos.coords.longitude]
       updateUserMarker()
-      map.setView(userLocation.value, 15)
+      map?.setView(userLocation.value, 15)
       loadJobs()
       showToast('Ubicación actualizada', 'success')
     },
-    (err) => {
+    () => {
       showToast('No se pudo obtener la ubicación. Permite el acceso e intenta de nuevo.', 'error')
     }
   )
 }
 
 const updateUserMarker = () => {
-  if (userMarker) map.removeLayer(userMarker)
-  if (userCircle) map.removeLayer(userCircle)
+  if (userMarker && map) map.removeLayer(userMarker)
+  if (userCircle && map) map.removeLayer(userCircle)
 
-  if (!userLocation.value) return
+  if (!userLocation.value || !map) return
 
   userMarker = L.marker(userLocation.value, {
     icon: L.divIcon({
@@ -203,9 +201,10 @@ const applyFilters = () => {
   loadJobs()
 }
 
-const renderMarkers = (jobs) => {
+const renderMarkers = (jobs: Job[]) => {
+  if (!markerCluster) return
   markerCluster.clearLayers()
-  const markers = []
+  const markers: L.Marker[] = []
 
   const customIcon = L.divIcon({
     html: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:32px;height:32px;color:#007200;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
@@ -220,30 +219,29 @@ const renderMarkers = (jobs) => {
 
   jobs.forEach(job => {
     // en map.js legacy se usaba location_lat y location_lng (y también puede venir lat/lng)
-    const lat = job.location_lat || job.lat
-    const lng = job.location_lng || job.lng
+    const lat = (job as any).location_lat || (job as any).lat
+    const lng = (job as any).location_lng || (job as any).lng
     if (!lat || !lng) return
 
     const marker = L.marker([lat, lng], { icon: customIcon })
 
-    const logoHtml = job.company_logo_url 
-      ? `<img src="${job.company_logo_url}" alt="${job.company_name}" class="map-popup-card__logo">`
+    const logoHtml = (job as any).company_logo_url 
+      ? `<img src="${(job as any).company_logo_url}" alt="${job.company_name}" class="map-popup-card__logo">`
       : `<div class="map-popup-card__logo-placeholder">${job.company_name ? job.company_name.charAt(0).toUpperCase() : 'LW'}</div>`
 
     // modal icon map (to maintain visual identity from map.js legacy)
-    const getModalityIcon = (m) => {
+    const getModalityIcon = (m: string) => {
       if(m==='Presencial') return `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:12px;height:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>`
       if(m==='Remoto') return `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:12px;height:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" /></svg>`
       if(m==='Híbrido') return `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width:12px;height:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>`
       return ''
     }
 
-    const formatCurrency = (amount) => {
-      if (!amount) return ''
+    const formatCurrency = (amount: number) => {
       return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(amount)
     }
 
-    const getSalaryText = (j) => {
+    const getSalaryText = (j: Job) => {
       if (j.salary_text) return j.salary_text
       if (j.salary_min && j.salary_max) return `${formatCurrency(j.salary_min)} - ${formatCurrency(j.salary_max)}`
       if (j.salary_min) return `Desde ${formatCurrency(j.salary_min)}`
@@ -262,7 +260,7 @@ const renderMarkers = (jobs) => {
         <div class="map-popup-card__meta">
           <span class="map-popup-card__badge">
             <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-            ${job.barrio_nombre || job.location || 'Aguachica'}
+            ${(job as any).barrio_nombre || job.location || 'Aguachica'}
           </span>
           <span class="map-popup-card__badge">
             ${getModalityIcon(job.modality)}
@@ -277,7 +275,7 @@ const renderMarkers = (jobs) => {
     marker.bindPopup(popupHtml)
     
     // Tooltip hover identical to old
-    marker.bindTooltip(`<b>${job.barrio_nombre || job.location || 'Aguachica'}</b><br>${job.title}`, {
+    marker.bindTooltip(`<b>${(job as any).barrio_nombre || job.location || 'Aguachica'}</b><br>${job.title}`, {
       direction: 'top',
       offset: [0, -20]
     })

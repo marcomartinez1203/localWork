@@ -32,14 +32,14 @@
       <!-- Main Content -->
       <div class="job-detail__main">
         <div class="job-detail__header">
-          <div class="job-detail__logo">{{ initials(job.company_name) }}</div>
+          <div class="job-detail__logo">{{ initials(job.company_name || '') }}</div>
           <div>
             <h1 class="job-detail__title">{{ job.title }}</h1>
             <p class="job-detail__company">{{ job.company_name }}</p>
             <div class="job-detail__tags">
               <span class="badge" :class="modalityClass[job.modality] || 'badge--neutral'">{{ job.modality }}</span>
               <span class="badge badge--neutral">{{ job.category_name }}</span>
-              <span v-if="job.company_verified" class="badge badge--accent">✓ Verificada</span>
+              <span v-if="(job as any).company_verified" class="badge badge--accent">✓ Verificada</span>
             </div>
           </div>
         </div>
@@ -104,7 +104,7 @@
             Postularme ahora
           </button>
 
-          <button v-if="hasApplied && CHAT_ENABLED_STATUSES.includes(myApplication.status)" class="btn btn--lg" style="margin-top:var(--space-2);background:#007200;border-color:#007200;color:#fff;" @click="startChatFromJobDetail">
+          <button v-if="hasApplied && myApplication && CHAT_ENABLED_STATUSES.includes(myApplication.status)" class="btn btn--lg" style="margin-top:var(--space-2);background:#007200;border-color:#007200;color:#fff;" @click="startChatFromJobDetail">
             Enviar mensaje
           </button>
 
@@ -121,7 +121,7 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"/></svg>
             </button>
           </div>
-          <p class="job-detail__posted">{{ job.total_applications || 0 }} personas se han postulado</p>
+          <p class="job-detail__posted">{{ (job as any).total_applications || 0 }} personas se han postulado</p>
         </div>
       </div>
     </div>
@@ -154,35 +154,36 @@
   </div>
 </template>
 
-<script setup>
-import { showToast } from '@/assets/js/utils/helpers.js'
+<script setup lang="ts">
+import { showToast } from '@/assets/js/utils/helpers'
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import JobsService from '@/assets/js/services/jobs.service'
 import ApplicationsService from '@/assets/js/services/applications.service'
 import ChatService from '@/assets/js/services/chat.service'
+import type { Job } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
-const jobId = route.params.id
+const jobId = (route.params.id as string) || ''
 
 const isLoading = ref(true)
 const jobNotFoundError = ref(false)
-const job = ref(null)
-const myApplication = ref(null)
+const job = ref<Job | null>(null)
+const myApplication = ref<{ status: string } | null>(null)
 const isSaved = ref(false)
 const isApplyModalOpen = ref(false)
 const isSubmitting = ref(false)
 
 const coverLetter = ref('')
-const resumeInput = ref(null)
+const resumeInput = ref<HTMLInputElement | null>(null)
 
 const CHAT_ENABLED_STATUSES = ['reviewed', 'interview', 'accepted']
 const modalityClass = { 'Presencial': 'badge--primary', 'Remoto': 'badge--accent', 'Híbrido': 'badge--warning' }
 
-const initials = (name) => name ? name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() : '??'
+const initials = (name: string) => name ? name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() : '??'
 
-const formatCurrency = (val) => {
+const formatCurrency = (val: number) => {
   return '$' + Number(val).toLocaleString('es-CO')
 }
 
@@ -199,10 +200,10 @@ const salaryText = computed(() => {
 
 const hasApplied = computed(() => !!myApplication.value)
 
-const timeAgo = (dateStr) => {
+const timeAgo = (dateStr: string) => {
   const d = new Date(dateStr)
   const now = new Date()
-  const diffHours = Math.round((now - d) / (1000 * 60 * 60))
+  const diffHours = Math.round((now.getTime() - d.getTime()) / (1000 * 60 * 60))
   if (diffHours < 24) return `Hace ${diffHours} horas`
   const diffDays = Math.round(diffHours / 24)
   return `Hace ${diffDays} días`
@@ -220,15 +221,14 @@ onMounted(async () => {
 
     try {
       const savedJobs = await JobsService.getSavedJobs() || []
-      isSaved.value = savedJobs.some(j => j.id === job.value.id)
-    } catch(e) {}
+      isSaved.value = savedJobs.some(j => j.id === job.value!.id)
+    } catch { /* silent */ }
 
     try {
-      const appResult = await ApplicationsService.getMineForJob(jobId)
-      myApplication.value = appResult.data || null
-    } catch(e) {}
-    
-  } catch (err) {
+      myApplication.value = await ApplicationsService.getMineForJob(jobId)
+    } catch { /* silent */ }
+
+  } catch {
     jobNotFoundError.value = true
   } finally {
     isLoading.value = false
@@ -241,21 +241,21 @@ const closeApplyModal = () => isApplyModalOpen.value = false
 const submitApplication = async () => {
   isSubmitting.value = true
   try {
-    const resumeFile = resumeInput.value.files.length > 0 ? resumeInput.value.files[0] : null
+    const resumeFile = resumeInput.value?.files?.length ? resumeInput.value.files[0] : undefined
     if (resumeFile && resumeFile.size > 5 * 1024 * 1024) {
       showToast('El archivo no puede pesar más de 5 MB', 'error')
       isSubmitting.value = false
       return
     }
 
-    await ApplicationsService.apply(jobId, {
+    await ApplicationsService.apply(jobId as string, {
       coverLetter: coverLetter.value.trim(),
       resumeFile
     })
     closeApplyModal()
     showToast('¡Postulación enviada con éxito!', 'success')
-    myApplication.value = { status: 'pending' } // fake state for UI reactivity
-  } catch (e) {
+    myApplication.value = { status: 'pending' }
+  } catch {
     showToast('Error al postularse', 'error')
   } finally {
     isSubmitting.value = false
@@ -296,9 +296,9 @@ const shareJob = async () => {
 const startChatFromJobDetail = async () => {
   if (!myApplication.value) return
   try {
-    const result = await ChatService.startConversation(myApplication.value.id)
+    const result = await ChatService.startConversation(jobId)
     router.push(`/chat?conversation_id=${result.conversation_id}`)
-  } catch (err) {
+  } catch {
     showToast('No se pudo abrir el chat', 'error')
   }
 }

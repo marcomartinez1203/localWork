@@ -12,7 +12,7 @@
       <div class="profile-avatar" :style="avatarStyle">
         <span v-if="!user.avatar_url">{{ initials }}</span>
         <input type="file" ref="avatarInput" accept="image/jpeg,image/png,image/webp" style="display:none;" @change="handleAvatarUpload">
-        <button class="profile-avatar__edit" title="Cambiar foto" @click="$refs.avatarInput.click()">
+        <button class="profile-avatar__edit" title="Cambiar foto" @click="avatarInput?.click()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
         </button>
       </div>
@@ -335,20 +335,21 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import api from '@/assets/js/config/api.js'
+import api from '@/assets/js/config/api'
 import AuthService from '@/assets/js/services/auth.service'
 import CompaniesService from '@/assets/js/services/companies.service'
 import JobsService from '@/assets/js/services/jobs.service'
-import { showToast } from '@/assets/js/utils/helpers.js'
+import { showToast } from '@/assets/js/utils/helpers'
+import type { User, Company, Job } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
 
 // State
-const user = ref({})
+const user = ref<User | Record<string, unknown>>({})
 const isEmployer = ref(false)
 const isWelcomeFreelance = ref(false)
 
@@ -356,28 +357,36 @@ const isWelcomeFreelance = ref(false)
 const profileForm = ref({ full_name: '', phone: '', location: '', bio: '' })
 const isSavingProfile = ref(false)
 
-const employerCompany = ref(null)
+const employerCompany = ref<Company | null>(null)
 const employerForm = ref({ name: '', nit: '', phone: '', website: '', location: '', address: '', description: '', employer_type: 'company', hiring_model: 'direct' })
 const isSavingEmployer = ref(false)
 
 const isServiceSectionHidden = ref(false)
 const isServicePublic = ref(false)
 const skillsForm = ref({ work_type: 'employee', availability: '', hourly_rate: '' })
-const skillsList = ref([])
+const skillsList = ref<string[]>([])
 const newSkill = ref('')
 const suggestedSkills = ['Albañilería','Plomería','Electricidad','Carpintería','Pintura','Soldadura','Cocina','Jardinería','Mecánica','Vigilancia','Costura','Peluquería','Limpieza','Transporte','Contabilidad']
 const isSavingSkills = ref(false)
 
-const educationList = ref([])
-const experienceList = ref([])
+const educationList = ref<any[]>([])
+const experienceList = ref<any[]>([])
 
-const savedJobs = ref([])
+const savedJobs = ref<Job[]>([])
+
+const avatarInput = ref<HTMLInputElement | null>(null)
 
 // Computed
-const initials = computed(() => user.value.full_name ? user.value.full_name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : '??')
+const initials = computed(() => {
+  const u = user.value as Record<string, unknown>
+  const fullName = u.full_name as string | undefined
+  return fullName ? fullName.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase() : '??'
+})
 const avatarStyle = computed(() => {
-  if (user.value.avatar_url) {
-    return { backgroundImage: `url(${user.value.avatar_url})`, backgroundSize: 'cover', backgroundPosition: 'center', color: 'transparent' }
+  const u = user.value as Record<string, unknown>
+  const avatarUrl = u.avatar_url as string | undefined
+  if (avatarUrl) {
+    return { backgroundImage: `url(${avatarUrl})`, backgroundSize: 'cover', backgroundPosition: 'center', color: 'transparent' }
   }
   return {}
 })
@@ -409,7 +418,8 @@ onMounted(async () => {
 
 const loadEmployerInfo = async () => {
   try {
-    const meta = JSON.parse(localStorage.getItem(`lw_employer_profile_meta_${user.value.id}`) || '{}')
+    const userId = 'id' in user.value ? (user.value as User).id : ''
+    const meta = JSON.parse(localStorage.getItem(`lw_employer_profile_meta_${userId}`) || '{}')
     employerForm.value.employer_type = meta.employer_type || 'company'
     employerForm.value.hiring_model = meta.hiring_model || 'direct'
 
@@ -418,11 +428,11 @@ const loadEmployerInfo = async () => {
       employerCompany.value = company
       employerForm.value = { ...employerForm.value, ...company }
     }
-  } catch (e) {}
+  } catch { /* silent */ }
 }
 
 const loadSeekerInfo = async () => {
-  const u = user.value
+  const u = user.value as User
   skillsList.value = Array.isArray(u.skills) ? [...u.skills] : []
   skillsForm.value.work_type = u.work_type || 'employee'
   skillsForm.value.availability = u.availability || ''
@@ -437,7 +447,7 @@ const loadSeekerInfo = async () => {
 
   try {
     savedJobs.value = await JobsService.getSavedJobs() || []
-  } catch (e) {
+  } catch {
     savedJobs.value = []
   }
 }
@@ -446,15 +456,17 @@ const loadSeekerInfo = async () => {
 const savePersonalInfo = async () => {
   isSavingProfile.value = true
   try {
-    const updates = { ...profileForm.value }
+    const updates: Record<string, unknown> = { ...profileForm.value }
     if (!isEmployer.value) {
       updates.education = educationList.value
       updates.experience = experienceList.value
     }
-    await AuthService.updateProfile(updates)
-    user.value.full_name = updates.full_name
+    await AuthService.updateProfile(updates as Partial<User>)
+    if ('full_name' in user.value) {
+      (user.value as Record<string, unknown>).full_name = updates.full_name
+    }
     showToast('Perfil actualizado correctamente', 'success')
-  } catch (e) {
+  } catch {
     showToast('Error al guardar', 'error')
   } finally {
     isSavingProfile.value = false
@@ -464,7 +476,8 @@ const savePersonalInfo = async () => {
 const saveEmployerInfo = async () => {
   isSavingEmployer.value = true
   try {
-    localStorage.setItem(`lw_employer_profile_meta_${user.value.id}`, JSON.stringify({
+    const userId = 'id' in user.value ? (user.value as User).id : ''
+    localStorage.setItem(`lw_employer_profile_meta_${userId}`, JSON.stringify({
       employer_type: employerForm.value.employer_type,
       hiring_model: employerForm.value.hiring_model,
     }))
@@ -477,15 +490,15 @@ const saveEmployerInfo = async () => {
       employerCompany.value = company
       showToast('Empresa creada y datos guardados', 'success')
     }
-  } catch (e) {
+  } catch {
     showToast('Error al guardar empresa', 'error')
   } finally {
     isSavingEmployer.value = false
   }
 }
 
-const handleAvatarUpload = async (e) => {
-  const file = e.target.files[0]
+const handleAvatarUpload = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
   if (file.size > 5 * 1024 * 1024) {
     showToast('La imagen no puede superar 5MB', 'error')
@@ -495,13 +508,18 @@ const handleAvatarUpload = async (e) => {
     const formData = new FormData()
     formData.append('avatar', file)
     const result = await api.upload('/upload/avatar', formData)
-    if (result.url) {
-      user.value.avatar_url = result.url
+    const res = result as { url?: string }
+    if (res.url) {
+      if ('avatar_url' in user.value) {
+        (user.value as Record<string, unknown>).avatar_url = res.url
+      }
       const lwUser = AuthService.getUser()
-      lwUser.avatar_url = result.url
-      localStorage.setItem('lw_user', JSON.stringify(lwUser))
+      if (lwUser) {
+        lwUser.avatar_url = res.url
+        localStorage.setItem('lw_user', JSON.stringify(lwUser))
+      }
     }
-  } catch (err) {
+  } catch {
     showToast('Error al subir foto', 'error')
   }
 }
@@ -509,13 +527,14 @@ const handleAvatarUpload = async (e) => {
 // Skills
 const toggleServiceVisibility = async () => {
   isServiceSectionHidden.value = !isServiceSectionHidden.value
-  localStorage.setItem(`lw_service_section_hidden_${user.value.id}`, isServiceSectionHidden.value ? '1' : '0')
+  const userId = 'id' in user.value ? (user.value as User).id : ''
+  localStorage.setItem(`lw_service_section_hidden_${userId}`, isServiceSectionHidden.value ? '1' : '0')
   
   if (isServiceSectionHidden.value && Object.prototype.hasOwnProperty.call(user.value, 'service_public')) {
     isServicePublic.value = false
     try {
       await AuthService.updateProfile({ service_public: false })
-    } catch (e) {}
+    } catch { /* silent */ }
   }
 }
 const toggleServicePublishBtn = () => {
@@ -527,17 +546,17 @@ const addSkill = () => {
   if (val && !skillsList.value.includes(val)) skillsList.value.push(val)
   newSkill.value = ''
 }
-const addSkillByName = (name) => {
+const addSkillByName = (name: string) => {
   if (!skillsList.value.includes(name)) skillsList.value.push(name)
 }
-const removeSkill = (index) => {
+const removeSkill = (index: number) => {
   skillsList.value.splice(index, 1)
 }
 const saveSkillsSection = async () => {
   isSavingSkills.value = true
   try {
     const shouldPublish = skillsForm.value.work_type === 'freelance' ? isServicePublic.value : false
-    const updatePayload = {
+    const updatePayload: Record<string, unknown> = {
       skills: skillsList.value,
       work_type: skillsForm.value.work_type,
       availability: skillsForm.value.availability,
@@ -546,10 +565,10 @@ const saveSkillsSection = async () => {
     if (Object.prototype.hasOwnProperty.call(user.value, 'service_public')) {
       updatePayload.service_public = shouldPublish
     }
-    await AuthService.updateProfile(updatePayload)
+    await AuthService.updateProfile(updatePayload as Partial<User>)
     isServicePublic.value = shouldPublish
     showToast('Habilidades guardadas', 'success')
-  } catch (e) {
+  } catch {
     showToast('Error al guardar habilidades', 'error')
   } finally {
     isSavingSkills.value = false
@@ -558,16 +577,16 @@ const saveSkillsSection = async () => {
 
 // Education & Experience
 const addEducation = () => educationList.value.push({ institution: '', degree: '', year_start: '', year_end: '' })
-const removeEducation = (index) => educationList.value.splice(index, 1)
+const removeEducation = (index: number) => educationList.value.splice(index, 1)
 const addExperience = () => experienceList.value.push({ company: '', position: '', year_start: '', year_end: '', current: false, description: '' })
-const removeExperience = (index) => experienceList.value.splice(index, 1)
+const removeExperience = (index: number) => experienceList.value.splice(index, 1)
 
 // Saved Jobs
-const unsaveJob = async (jobId) => {
+const unsaveJob = async (jobId: string) => {
   try {
     await JobsService.unsave(jobId)
     savedJobs.value = savedJobs.value.filter(j => j.id !== jobId)
-  } catch (e) {
+  } catch {
     showToast('Error al remover empleo guardado', 'error')
   }
 }
