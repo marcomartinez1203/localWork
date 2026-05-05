@@ -1,19 +1,24 @@
 <template>
-  <component :is="layout">
-    <!-- router-view ya está dentro de cada layout, por lo que no es necesario aquí. 
-         ESPERA: la convención es que el App.vue renderice el layout, y el layout tenga un slot o renderice el router-view.
-         Dado que en MainLayout y AuthLayout pusimos un <router-view />, solo necesitamos cargar el layout aquí. -->
+  <component v-if="ready" :is="layout">
   </component>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import type { Component } from 'vue'
 
 const route = useRoute()
+const router = useRouter()
+const ready = ref(false)
+
+router.isReady().then(async () => {
+  ready.value = true
+  await nextTick()
+  document.getElementById('app')?.classList.add('app-ready')
+})
 
 const layout = computed<Component>(() => {
   if (route.meta.layout === 'auth') return AuthLayout

@@ -1,12 +1,23 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="es">
   <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="/src/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LocalWork</title>
-    <!-- Theme Script (must execute early to prevent flash of wrong theme) -->
-    <script type="module" src="/src/utils/theme-init.js"></script>
+    <script>
+      // Apply theme + background BEFORE first paint
+      (function() {
+        var t = localStorage.getItem('lw_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        // Set background immediately so there's no white/dark flash before CSS loads
+        document.documentElement.style.backgroundColor = t === 'dark' ? '#161616' : '#fafafa';
+      })();
+    </script>
+    <style>
+      #app { opacity: 0; transition: opacity .2s ease; }
+      #app.app-ready { opacity: 1; }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   </head>
   <body>
@@ -14,3 +25,4 @@
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
+

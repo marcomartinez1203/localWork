@@ -427,15 +427,7 @@ strong { font-weight: var(--fw-semibold); }
   min-height: 100vh;
 }
 
-/* Page enter transition */
-body {
-  opacity: 0;
-  transition: opacity 200ms ease;
-}
-
-body.page-loaded {
-  opacity: 1;
-}
+/* Page loaded — body is visible by default now (Vue handles mount) */
 
 
 /* ══════════════════════════════════════════════
