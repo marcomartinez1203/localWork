@@ -298,7 +298,6 @@
       </div>
     </div>
   </div>
-  </div>
 
   <!-- Rating Modal (employer rates applicant) -->
   <RatingModal
