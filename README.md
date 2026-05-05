@@ -61,29 +61,32 @@ localWork/
 │   ├── vercel.json                 # Configuración de Vercel (rewrites SPA y backend)
 │   ├── public/                     # Archivos estáticos
 │   └── src/
-│       ├── main.js                 # Inicialización de Vue y Router
-│       ├── App.vue                 # Componente raíz
+│       ├── main.ts                 # Inicialización de Vue y Router
+│       ├── App.vue                 # Componente raíz (layout dinámico + anti-flash)
 │       ├── views/                  # Vistas del SPA (páginas)
 │       │   ├── HomeView.vue        # Feed de empleos
 │       │   ├── JobDetailView.vue   # Detalle de oferta
-│       │   ├── DashboardView.vue   # Panel del empleador
+│       │   ├── DashboardView.vue   # Panel del empleador + finalización de contratos
 │       │   ├── ProfileView.vue     # Perfil del usuario
 │       │   ├── ChatView.vue        # Mensajería en tiempo real
 │       │   ├── MapView.vue         # Empleos en mapa
-│       │   └── ...                 # Otras vistas (Auth, Workers, Notificaciones)
+│       │   ├── MyApplicationsView  # Postulaciones del seeker + calificaciones
+│       │   ├── WorkersView.vue     # Directorio de trabajadores + reputación
+│       │   └── ...                 # Otras vistas (Auth, Notificaciones)
 │       ├── components/             # Componentes reutilizables
-│       │   └── layout/             # Navbar y estructura principal
+│       │   ├── layout/             # Navbar, Footer
+│       │   └── RatingModal.vue     # Modal de calificación post-servicio
+│       ├── config/
+│       │   └── api.ts              # Cliente HTTP centralizado
+│       ├── services/               # Servicios TypeScript (Jobs, Auth, Chat, Ratings...)
+│       ├── types/                  # Interfaces TypeScript
+│       ├── utils/                  # Helpers (showToast, formatters)
+│       ├── layouts/                # MainLayout, AuthLayout
 │       ├── assets/
-│       │   ├── css/                # Sistema de diseño, variables, CSS global y por página
-│       │   ├── js/
-│       │   │   ├── config/api.js   # Configuración de Supabase y API
-│       │   │   ├── services/       # Módulos de servicios HTTP (Jobs, Auth, Chat, etc.)
-│       │   │   └── utils/          # Helpers (formatters, debounce)
+│       │   ├── css/                # Sistema de diseño, variables, CSS global
 │       │   └── img/                # Favicons y logotipos
 │
-├── frontend-legacy/                # Antigua versión en HTML Vanilla (deprecada)
-│
-├── landingPage/                    # Repositorio separado para la Landing Page (Astro)
+├── landingPage/                    # Landing Page (Astro + Tailwind)
 └── database/
     ├── schema.sql                  # Esquema completo de PostgreSQL
     ├── seed.sql                    # Datos de prueba (categorías, empresas, empleos)
@@ -91,6 +94,10 @@ localWork/
         ├── add_education_experience.sql
         ├── add_unaccent_search.sql
         ├── add_ratings_function.sql
+        ├── add_post_service_ratings.sql  # Sistema de calificaciones post-servicio
+        ├── add_chat_system.sql
+        ├── add_chat_requests_direct.sql
+        ├── add_map_barrios.sql
         ├── db_integrity_fixes.sql
         └── performance_fixes.sql
 ```
@@ -106,10 +113,11 @@ localWork/
 - Ver detalle completo de cada oferta
 - Postularse con carta de presentación y **subida de CV** (PDF/Word, máx 5 MB)
 - Guardar ofertas y verlas desde el perfil (**♥ Empleos guardados**)
-- Seguimiento del estado de postulaciones con **filtro por estado** (`pendiente → revisado → entrevista → aceptado`)
+- Seguimiento del estado de postulaciones con **filtro por estado** (`pendiente → revisado → entrevista → contratado → finalizado`)
+- **Calificar al empleador** cuando el contrato finaliza
 - Perfil con educación, experiencia laboral y habilidades
 - **Compartir ofertas** vía Web Share API o portapapeles
-- Directorio de trabajadores con modal de detalle
+- Directorio de trabajadores con modal de detalle y reputación
 
 ### Para empleadores
 - Registro con empresa verificada
@@ -117,28 +125,37 @@ localWork/
 - Publicar, **editar** y cerrar/pausar ofertas de empleo
 - **Fecha de vencimiento** para auto-expiración de ofertas
 - Revisar postulantes, ver CV adjunto y mover candidatos en el pipeline
+- **Finalizar contratos** cuando el servicio termina
+- **Calificar trabajadores** post-servicio con desglose detallado
 - **Editar datos de empresa** (nombre, NIT, teléfono, dirección, web)
 - **Subir logo de empresa** (JPG/PNG/WebP)
-- **Calificar trabajadores** con estrellas (1-5) y comentario
 
-### Sistema de calificaciones
-- Los empleadores pueden calificar trabajadores desde el directorio
-- Calificación con puntaje (1-5 estrellas) y comentario opcional
-- Promedio visible en el perfil público del trabajador
+### Sistema de calificaciones post-servicio
+- **Bidireccional**: empleador califica trabajador y trabajador califica empleador
+- Solo disponible tras **finalizar el contrato** (estado `completed`)
+- Calificación general (1-5 estrellas) + subcategorías:
+  - Puntualidad · Calidad de trabajo · Comunicación
+- Toggle **"¿Lo recomendarías?"** (sí/no)
+- Comentario opcional
+- **Visualización de reputación** en el directorio de trabajadores:
+  - Promedio general, barras de progreso por categoría, % de recomendación
+  - Reviews individuales con avatar y tags
+- Calificación general desde el directorio (sin necesidad de contrato)
 - Protección contra auto-calificación y duplicados
 
 ### General
-- Modo oscuro / modo claro con persistencia
+- Modo oscuro / modo claro con persistencia (anti-flash CSS)
 - **Notificaciones en tiempo real** vía Supabase Realtime
   - `application_received` — empleador recibe aviso de nueva postulación
   - `application_status_changed` — buscador ve cambio de estado
+  - `rating_request` — ambas partes reciben invitación a calificar tras finalizar contrato
+  - `new_rating` — notificación cuando recibes una calificación
   - `profile_viewed` — trabajador sabe cuando ven su perfil
   - `new_job_match` — notificación de nuevas ofertas relevantes
-- **Chat en tiempo real**: mensajería entre buscadores y empleadores (una vez que la postulación es revisada/aceptada).
+- **Chat en tiempo real**: mensajería entre buscadores y empleadores + solicitudes de chat directo
 - Subida de avatar y CV
-- Aplicación de página única (**SPA**) súper rápida con Vue 3.
+- SPA con Vue 3 + TypeScript, empaquetada con Vite
 - Diseño responsive (móvil, tablet y escritorio)
-- Favicon + PWA manifest
 
 ---
 
@@ -174,9 +191,13 @@ Ejecuta en el **SQL Editor de Supabase**, en este orden:
 2. database/migrations/add_education_experience.sql  # Tablas educación/experiencia
 3. database/migrations/add_unaccent_search.sql       # Búsqueda sin acentos
 4. database/migrations/db_integrity_fixes.sql        # Restricciones de integridad
-5. database/migrations/performance_fixes.sql         # Índices y funciones RPC
-6. database/migrations/add_ratings_function.sql      # Función avg_rating()
-7. database/seed.sql                                 # Datos de prueba (opcional)
+5. database/migrations/performance_fixes.sql             # Índices y funciones RPC
+6. database/migrations/add_ratings_function.sql          # Función avg_rating()
+7. database/migrations/add_chat_system.sql               # Sistema de chat
+8. database/migrations/add_chat_requests_direct.sql      # Solicitudes de chat directo
+9. database/migrations/add_map_barrios.sql               # Barrios para mapa
+10. database/migrations/add_post_service_ratings.sql     # Calificaciones post-servicio + completed status
+11. database/seed.sql                                    # Datos de prueba (opcional)
 ```
 
 ### 4. Supabase Storage
@@ -264,8 +285,10 @@ GET    /api/workers/:id            Perfil público (genera notificación profile
 ### Calificaciones
 
 ```
-POST   /api/ratings                Calificar a un usuario (score 1-5, comentario)
-GET    /api/ratings/user/:id       Calificaciones de un usuario (promedio + lista)
+POST   /api/ratings                Calificación general (desde directorio)
+POST   /api/ratings/post-service   Calificación post-servicio (vinculada a postulación)
+GET    /api/ratings/check/:appId   Verificar si ya califiqué esta postulación
+GET    /api/ratings/user/:id       Calificaciones + desglose (promedio, barras, % recomendación)
 DELETE /api/ratings/:id            Eliminar calificación propia
 ```
 
@@ -330,8 +353,8 @@ experience       Experiencia laboral del perfil
 | `user_role` | `seeker`, `employer`, `admin` |
 | `job_status` | `active`, `paused`, `closed`, `draft` |
 | `job_modality` | `Presencial`, `Remoto`, `Híbrido` |
-| `application_status` | `pending`, `reviewed`, `shortlisted`, `interview`, `accepted`, `rejected` |
-| `notification_type` | `application_received`, `application_status_changed`, `profile_viewed`, `new_job_match`, `system` |
+| `application_status` | `pending`, `reviewed`, `shortlisted`, `interview`, `accepted`, `rejected`, `completed` |
+| `notification_type` | `application_received`, `application_status_changed`, `profile_viewed`, `new_job_match`, `rating_request`, `new_rating`, `system` |
 
 ---
 
