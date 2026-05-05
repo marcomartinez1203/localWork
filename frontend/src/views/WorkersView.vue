@@ -98,7 +98,6 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.75-5.25-6.75-11.25a6.75 6.75 0 1 1 13.5 0C18.75 15.75 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.25"/></svg>
               {{ selectedWorker.location }}
             </p>
-            <p style="font-size:var(--fs-sm);margin:var(--space-1) 0 0;">{{ starsDisplay }}</p>
           </div>
         </div>
         
@@ -139,18 +138,64 @@
           </template>
         </div>
 
-        <div style="margin-top:var(--space-4);">
-          <p style="font-weight:var(--fw-semibold);margin-bottom:var(--space-2);">Calificaciones</p>
-          <div v-if="ratingsList.length > 0">
-            <div class="rating-item" v-for="(r, idx) in ratingsList" :key="idx">
-              <div style="display:flex;align-items:center;justify-content:space-between;">
-                <strong style="font-size:var(--fs-sm);">{{ r.rater?.full_name || 'Anónimo' }}</strong>
-                <span style="color:#f59e0b;">{{ '★'.repeat(r.score) }}{{ '☆'.repeat(5 - r.score) }}</span>
+        <!-- Reputation Breakdown -->
+        <div class="rep-section">
+          <p class="rep-section__title">Reputación</p>
+
+          <div v-if="ratingsData.total > 0" class="rep-card">
+            <div class="rep-card__summary">
+              <div class="rep-card__score">
+                <span class="rep-card__number">{{ ratingsData.average }}</span>
+                <span class="rep-card__stars">{{ '★'.repeat(Math.round(ratingsData.average)) }}{{ '☆'.repeat(5 - Math.round(ratingsData.average)) }}</span>
+                <span class="rep-card__count">{{ ratingsData.total }} calificación{{ ratingsData.total > 1 ? 'es' : '' }}</span>
               </div>
-              <p v-if="r.comment" style="font-size:var(--fs-sm);color:var(--color-text-secondary);margin:var(--space-1) 0 0;">{{ r.comment }}</p>
+              <div v-if="breakdown.recommend_pct > 0" class="rep-card__recommend">
+                <span class="rep-card__recommend-pct">{{ breakdown.recommend_pct }}%</span>
+                <span class="rep-card__recommend-label">lo recomiendan</span>
+              </div>
+            </div>
+
+            <div class="rep-bars" v-if="breakdown.avg_punctuality > 0 || breakdown.avg_quality > 0 || breakdown.avg_communication > 0">
+              <div class="rep-bar">
+                <span class="rep-bar__label">Puntualidad</span>
+                <div class="rep-bar__track"><div class="rep-bar__fill" :style="{ width: (breakdown.avg_punctuality / 5 * 100) + '%' }"></div></div>
+                <span class="rep-bar__value">{{ breakdown.avg_punctuality }}</span>
+              </div>
+              <div class="rep-bar">
+                <span class="rep-bar__label">Calidad</span>
+                <div class="rep-bar__track"><div class="rep-bar__fill" :style="{ width: (breakdown.avg_quality / 5 * 100) + '%' }"></div></div>
+                <span class="rep-bar__value">{{ breakdown.avg_quality }}</span>
+              </div>
+              <div class="rep-bar">
+                <span class="rep-bar__label">Comunicación</span>
+                <div class="rep-bar__track"><div class="rep-bar__fill" :style="{ width: (breakdown.avg_communication / 5 * 100) + '%' }"></div></div>
+                <span class="rep-bar__value">{{ breakdown.avg_communication }}</span>
+              </div>
             </div>
           </div>
-          <p v-else style="font-size:var(--fs-sm);color:var(--color-text-muted);">Aún no tiene calificaciones.</p>
+          <p v-else class="rep-empty">Aún no tiene calificaciones.</p>
+
+          <!-- Individual reviews -->
+          <div v-if="ratingsList.length > 0" class="rep-reviews">
+            <div class="rep-review" v-for="(r, idx) in ratingsList" :key="idx">
+              <div class="rep-review__header">
+                <div class="rep-review__avatar">
+                  <img v-if="r.rater?.avatar_url" :src="r.rater.avatar_url" alt="">
+                  <span v-else>{{ initials(r.rater?.full_name) }}</span>
+                </div>
+                <div>
+                  <strong class="rep-review__name">{{ r.rater?.full_name || 'Anónimo' }}</strong>
+                  <span class="rep-review__stars">{{ '★'.repeat(r.score) }}{{ '☆'.repeat(5 - r.score) }}</span>
+                </div>
+              </div>
+              <p v-if="r.comment" class="rep-review__comment">{{ r.comment }}</p>
+              <div v-if="r.punctuality || r.quality || r.communication" class="rep-review__tags">
+                <span v-if="r.punctuality" class="rep-tag">Puntualidad: {{ r.punctuality }}/5</span>
+                <span v-if="r.quality" class="rep-tag">Calidad: {{ r.quality }}/5</span>
+                <span v-if="r.communication" class="rep-tag">Comunic.: {{ r.communication }}/5</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div v-if="isEmployer && !isMe" style="border-top:1px solid var(--color-border-light);padding-top:var(--space-4);margin-top:var(--space-4);">
@@ -216,6 +261,7 @@ const selectedWorker = ref<WorkerProfile | null>(null)
 const chatStatus = ref<ChatStatus | null>(null)
 const ratingsData = ref<{ average: number; total: number }>({ average: 0, total: 0 })
 const ratingsList = ref<Rating[]>([])
+const breakdown = ref<{ avg_punctuality: number; avg_quality: number; avg_communication: number; recommend_pct: number }>({ avg_punctuality: 0, avg_quality: 0, avg_communication: 0, recommend_pct: 0 })
 const selectedScore = ref<number>(0)
 const ratingComment = ref<string>('')
 
@@ -266,7 +312,6 @@ const loadWorkers = async () => {
 
 // Modal
 const isMe = computed(() => currentUser.value && selectedWorker.value && currentUser.value.id === selectedWorker.value.id)
-const starsDisplay = computed(() => ratingsData.value.average > 0 ? `${'⭐'.repeat(Math.round(ratingsData.value.average))} ${ratingsData.value.average}/5 (${ratingsData.value.total})` : 'Sin calificaciones')
 
 const openWorkerModal = async (w: WorkerProfile) => {
   isModalOpen.value = true
@@ -281,6 +326,11 @@ const openWorkerModal = async (w: WorkerProfile) => {
     const ratings = await RatingsService.getForUser(worker.id)
     ratingsData.value = { average: ratings.average, total: ratings.total ?? ratings.count }
     ratingsList.value = ratings.data || ratings.ratings || []
+    if (ratings.breakdown) {
+      breakdown.value = ratings.breakdown
+    } else {
+      breakdown.value = { avg_punctuality: 0, avg_quality: 0, avg_communication: 0, recommend_pct: 0 }
+    }
 
     if (!isMe.value && currentUser.value) {
       try {
@@ -395,4 +445,34 @@ const respondDirectRequest = async (action: 'accepted' | 'rejected') => {
 .rating-stars button.active { color:#f59e0b; }
 .rating-item { border-bottom:1px solid var(--color-border-light); padding:var(--space-3) 0; }
 .rating-item:last-child { border-bottom:none; }
+
+/* Reputation Section */
+.rep-section { margin-top: var(--space-6); border-top: 1px solid var(--color-border-light); padding-top: var(--space-5); }
+.rep-section__title { font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); margin-bottom: var(--space-3); }
+.rep-card { background: var(--color-surface-alt); border: 1px solid var(--color-border-light); border-radius: var(--radius-xl); padding: var(--space-4); }
+.rep-card__summary { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+.rep-card__score { display: flex; flex-direction: column; }
+.rep-card__number { font-family: var(--font-heading); font-size: var(--fs-3xl); font-weight: var(--fw-extrabold); color: var(--color-text); line-height: 1; }
+.rep-card__stars { color: #f59e0b; font-size: var(--fs-sm); margin-top: 2px; }
+.rep-card__count { font-family: var(--font-mono); font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+.rep-card__recommend { text-align: right; }
+.rep-card__recommend-pct { font-family: var(--font-heading); font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--color-primary); display: block; line-height: 1; }
+.rep-card__recommend-label { font-size: 11px; color: var(--color-text-muted); }
+.rep-bars { display: flex; flex-direction: column; gap: var(--space-2); }
+.rep-bar { display: flex; align-items: center; gap: var(--space-3); }
+.rep-bar__label { font-size: var(--fs-xs); color: var(--color-text-secondary); width: 90px; flex-shrink: 0; }
+.rep-bar__track { flex: 1; height: 6px; background: var(--color-border-light); border-radius: var(--radius-full); overflow: hidden; }
+.rep-bar__fill { height: 100%; background: var(--color-primary); border-radius: var(--radius-full); transition: width var(--transition); }
+.rep-bar__value { font-family: var(--font-mono); font-size: 11px; color: var(--color-text-muted); width: 24px; text-align: right; }
+.rep-empty { font-size: var(--fs-sm); color: var(--color-text-muted); }
+.rep-reviews { margin-top: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.rep-review { border: 1px solid var(--color-border-light); border-radius: var(--radius-lg); padding: var(--space-3); }
+.rep-review__header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2); }
+.rep-review__avatar { width: 32px; height: 32px; border-radius: var(--radius-full); background: var(--color-primary-50); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; overflow: hidden; flex-shrink: 0; }
+.rep-review__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.rep-review__name { font-size: var(--fs-sm); font-weight: var(--fw-semibold); display: block; }
+.rep-review__stars { color: #f59e0b; font-size: var(--fs-xs); }
+.rep-review__comment { font-size: var(--fs-sm); color: var(--color-text-secondary); margin: 0; }
+.rep-review__tags { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
+.rep-tag { font-family: var(--font-mono); font-size: 10px; background: var(--color-surface-alt); border: 1px solid var(--color-border-light); padding: 2px 8px; border-radius: var(--radius-full); color: var(--color-text-muted); }
 </style>
