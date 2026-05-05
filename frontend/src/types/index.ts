@@ -162,18 +162,36 @@ export interface Rating {
   id: string
   rater_id: string
   rated_user_id: string
+  job_id?: string
+  application_id?: string
+  rating_type: 'general' | 'post_service'
   score: number
+  punctuality?: number
+  quality?: number
+  communication?: number
+  would_recommend?: boolean
   comment?: string
+  is_visible: boolean
   created_at: string
   // joined fields
   rater_name?: string
-  rater?: { full_name?: string }
+  rater?: { full_name?: string; avatar_url?: string }
+}
+
+export interface RatingBreakdown {
+  avg_score: number
+  avg_punctuality: number
+  avg_quality: number
+  avg_communication: number
+  total_ratings: number
+  recommend_pct: number
 }
 
 export interface RatingSummary {
   average: number
   count: number
   total?: number
+  breakdown?: RatingBreakdown
   ratings: Rating[]
   data?: Rating[]
 }

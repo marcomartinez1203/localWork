@@ -235,6 +235,36 @@ export class ApplicationsService {
       { job_id: app.job_id, application_id: applicationId, status }
     ).catch(err => console.error('[ApplicationsService.updateStatus] notification error', err));
 
+    // Send rating_request notifications when application is finalized
+    if (status === 'accepted' || status === 'rejected') {
+      const statusLabel = status === 'accepted' ? 'aceptada' : 'rechazada';
+
+      // Get seeker name for employer notification
+      const { data: seekerProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('full_name')
+        .eq('id', app.seeker_id)
+        .single();
+
+      // Notify seeker to rate the employer/company
+      NotificationsService.create(
+        app.seeker_id,
+        'rating_request',
+        'Califica tu experiencia',
+        `Tu postulación a "${job?.title ?? ''}" fue ${statusLabel}. ¡Califica a la empresa!`,
+        { application_id: applicationId, job_id: app.job_id }
+      ).catch(err => console.error('[ApplicationsService] rating_request notification error', err));
+
+      // Notify employer to rate the seeker
+      NotificationsService.create(
+        userId,
+        'rating_request',
+        'Califica al candidato',
+        `${seekerProfile?.full_name ?? 'El candidato'} completó el proceso para "${job?.title ?? ''}". ¡Califícalo!`,
+        { application_id: applicationId, job_id: app.job_id, seeker_id: app.seeker_id }
+      ).catch(err => console.error('[ApplicationsService] rating_request notification error', err));
+    }
+
     return data as Application;
   }
 

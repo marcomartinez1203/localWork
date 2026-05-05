@@ -55,6 +55,18 @@
           <button v-if="CHAT_ENABLED_STATUSES.includes(app.status)" class="btn btn--sm" style="background:#007200;border-color:#007200;color:#fff;" @click.stop="startChat(app.id)">
             Mensaje
           </button>
+          <button
+            v-if="isRatable(app) && !ratedApps.has(app.id)"
+            class="btn btn--sm"
+            style="background:#f59e0b;border-color:#f59e0b;color:#fff;"
+            @click.stop="openRatingModal(app)"
+          >
+            ⭐ Calificar
+          </button>
+          <span v-if="ratedApps.has(app.id)" class="rated-check" title="Ya calificaste">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+            Calificado
+          </span>
         </div>
       </div>
     </div>
@@ -74,6 +86,14 @@
         {{ i }}
       </button>
     </div>
+
+    <!-- Rating Modal -->
+    <RatingModal
+      v-model="isRatingModalOpen"
+      :application-id="ratingAppId"
+      :target-name="ratingTargetName"
+      @rated="onRated"
+    />
   </div>
 </template>
 
@@ -84,6 +104,8 @@ import { useRouter } from 'vue-router'
 import AuthService from '@/services/auth.service'
 import ApplicationsService from '@/services/applications.service'
 import ChatService from '@/services/chat.service'
+import RatingsService from '@/services/ratings.service'
+import RatingModal from '@/components/RatingModal.vue'
 import type { Application, ApplicationStatus } from '@/types'
 
 const router = useRouter()
@@ -134,6 +156,7 @@ const loadApplications = async () => {
     })
     applications.value = res.data || []
     totalPages.value = res.total_pages || 1
+    await checkRatings()
   } catch (e) {
     applications.value = []
   } finally {
@@ -171,6 +194,37 @@ const startChat = async (id: string) => {
     showToast('No se pudo abrir el chat', 'error')
   }
 }
+
+// ── Rating system ──
+const ratedApps = ref<Set<string>>(new Set())
+const isRatingModalOpen = ref(false)
+const ratingAppId = ref('')
+const ratingTargetName = ref('')
+
+const isRatable = (app: Application) => ['accepted', 'rejected'].includes(app.status)
+
+// Check which applications the user already rated
+const checkRatings = async () => {
+  const ratableApps = applications.value.filter(isRatable)
+  const results = await Promise.allSettled(
+    ratableApps.map(app => RatingsService.checkForApplication(app.id))
+  )
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled' && r.value.rated) {
+      ratedApps.value.add(ratableApps[i].id)
+    }
+  })
+}
+
+const openRatingModal = (app: Application) => {
+  ratingAppId.value = app.id
+  ratingTargetName.value = app.company_name || 'la empresa'
+  isRatingModalOpen.value = true
+}
+
+const onRated = () => {
+  ratedApps.value.add(ratingAppId.value)
+}
 </script>
 
 <style scoped>
@@ -194,7 +248,8 @@ const startChat = async (id: string) => {
 .status-badge--interview { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
 .status-badge--accepted { background: rgba(16, 185, 129, 0.1); color: #059669; }
 .status-badge--rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-.app-card__actions { flex-shrink: 0; }
+.app-card__actions { flex-shrink: 0; display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+.rated-check { display: flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 11px; color: #059669; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
 
 @media (max-width: 768px) {
   .app-card { flex-wrap: wrap; padding: var(--space-4); gap: var(--space-3); }

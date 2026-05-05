@@ -275,6 +275,16 @@
               <option v-for="(label, key) in STATUS_LABELS" :key="key" :value="key">{{ label }}</option>
             </select>
             <button v-if="app.status !== 'pending'" class="btn btn--sm" style="background:#007200;border-color:#007200;color:#fff;" @click="openApplicantChat(app.id)">Mensaje</button>
+            <button
+              v-if="['accepted','rejected'].includes(app.status) && !ratedApplicants.has(app.id)"
+              class="btn btn--sm"
+              style="background:#f59e0b;border-color:#f59e0b;color:#fff;"
+              @click="openRatingForApplicant(app)"
+            >⭐ Calificar</button>
+            <span v-if="ratedApplicants.has(app.id)" style="font-family:var(--font-mono);font-size:11px;color:#059669;display:flex;align-items:center;gap:4px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+              Calificado
+            </span>
             <a v-if="app.resume_url" :href="app.resume_url" target="_blank" class="btn btn--ghost btn--sm" style="font-size:var(--fs-xs);">CV</a>
           </div>
         </div>
@@ -282,6 +292,15 @@
       </div>
     </div>
   </div>
+  </div>
+
+  <!-- Rating Modal (employer rates applicant) -->
+  <RatingModal
+    v-model="isRatingModalOpen"
+    :application-id="ratingAppId"
+    :target-name="ratingTargetName"
+    @rated="onApplicantRated"
+  />
 
 </template>
 
@@ -295,6 +314,8 @@ import JobsService from '@/services/jobs.service'
 import CompaniesService from '@/services/companies.service'
 import ApplicationsService from '@/services/applications.service'
 import ChatService from '@/services/chat.service'
+import RatingsService from '@/services/ratings.service'
+import RatingModal from '@/components/RatingModal.vue'
 import type { Job, Application, Category, Barrio } from '@/types'
 
 interface JobForm {
@@ -556,6 +577,7 @@ const viewApplicants = async (job: Job) => {
   try {
     const res = await ApplicationsService.getForJob(job.id)
     applicants.value = res.data || []
+    await checkApplicantRatings()
   } catch {
     applicants.value = []
   } finally {
@@ -577,6 +599,35 @@ const openApplicantChat = async (id: string) => {
   } catch {
     showToast('Error al abrir chat', 'error')
   }
+}
+
+// ── Rating system for employer ──
+const ratedApplicants = ref<Set<string>>(new Set())
+const isRatingModalOpen = ref(false)
+const ratingAppId = ref('')
+const ratingTargetName = ref('')
+
+const openRatingForApplicant = (app: Application) => {
+  ratingAppId.value = app.id
+  ratingTargetName.value = app.seeker_name || 'el candidato'
+  isRatingModalOpen.value = true
+}
+
+const onApplicantRated = () => {
+  ratedApplicants.value.add(ratingAppId.value)
+}
+
+// Check rated status for loaded applicants
+const checkApplicantRatings = async () => {
+  const finalized = applicants.value.filter(a => ['accepted', 'rejected'].includes(a.status))
+  const results = await Promise.allSettled(
+    finalized.map(a => RatingsService.checkForApplication(a.id))
+  )
+  results.forEach((r, i) => {
+    if (r.status === 'fulfilled' && r.value.rated) {
+      ratedApplicants.value.add(finalized[i].id)
+    }
+  })
 }
 </script>
 

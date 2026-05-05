@@ -18,7 +18,11 @@ export type NotificationType =
   | 'application_status_changed'
   | 'profile_viewed'
   | 'new_job_match'
+  | 'rating_request'
+  | 'new_rating'
   | 'system';
+
+export type RatingType = 'general' | 'post_service';
 
 // ── Database Row Types ──
 
@@ -145,8 +149,15 @@ export interface Rating {
   rater_id: string;
   rated_id: string;
   job_id: string | null;
+  application_id: string | null;
+  rating_type: RatingType;
   score: number;
+  punctuality: number | null;
+  quality: number | null;
+  communication: number | null;
+  would_recommend: boolean | null;
   comment: string | null;
+  is_visible: boolean;
   created_at: string;
 }
 
