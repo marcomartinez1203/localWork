@@ -5,7 +5,7 @@
 export type UserRole = 'seeker' | 'employer' | 'admin'
 export type JobStatus = 'active' | 'paused' | 'closed' | 'draft'
 export type JobModality = 'Presencial' | 'Remoto' | 'Híbrido'
-export type ApplicationStatus = 'pending' | 'reviewed' | 'shortlisted' | 'interview' | 'accepted' | 'rejected'
+export type ApplicationStatus = 'pending' | 'reviewed' | 'shortlisted' | 'interview' | 'accepted' | 'rejected' | 'completed'
 export type NotificationType = 'application_received' | 'application_status_changed' | 'profile_viewed' | 'new_job_match' | 'system'
 
 export interface User {

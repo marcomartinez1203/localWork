@@ -12,7 +12,8 @@ export type ApplicationStatus =
   | 'shortlisted'
   | 'interview'
   | 'accepted'
-  | 'rejected';
+  | 'rejected'
+  | 'completed';
 export type NotificationType =
   | 'application_received'
   | 'application_status_changed'

@@ -31,6 +31,10 @@
         <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
         Rechazadas
       </button>
+      <button class="chip" :class="{ active: activeStatus === 'completed' }" @click="setStatus('completed')">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75" /></svg>
+        Finalizados
+      </button>
     </div>
 
     <div v-if="isLoading">
@@ -116,9 +120,9 @@ const currentPage = ref(1)
 const totalPages = ref(1)
 const activeStatus = ref<ApplicationStatus | undefined>(undefined)
 
-const STATUS_LABELS = {
+const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente', reviewed: 'Revisada', shortlisted: 'Preseleccionado',
-  interview: 'Entrevista', accepted: 'Aceptada', rejected: 'Rechazada'
+  interview: 'Entrevista', accepted: 'Contratado', rejected: 'Rechazada', completed: 'Finalizado'
 }
 const CHAT_ENABLED_STATUSES = ['reviewed', 'interview', 'accepted']
 
@@ -201,7 +205,7 @@ const isRatingModalOpen = ref(false)
 const ratingAppId = ref('')
 const ratingTargetName = ref('')
 
-const isRatable = (app: Application) => ['accepted', 'rejected'].includes(app.status)
+const isRatable = (app: Application) => app.status === 'completed'
 
 // Check which applications the user already rated
 const checkRatings = async () => {
@@ -248,6 +252,7 @@ const onRated = () => {
 .status-badge--interview { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
 .status-badge--accepted { background: rgba(16, 185, 129, 0.1); color: #059669; }
 .status-badge--rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.status-badge--completed { background: rgba(16, 185, 129, 0.15); color: #047857; border: 1px solid rgba(16, 185, 129, 0.2); }
 .app-card__actions { flex-shrink: 0; display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
 .rated-check { display: flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 11px; color: #059669; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
 

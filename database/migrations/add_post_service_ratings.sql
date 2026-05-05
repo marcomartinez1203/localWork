@@ -69,3 +69,9 @@ $$;
 -- (si notification_type es un ENUM, descomentar la siguiente línea)
 -- ALTER TYPE notification_type ADD VALUE IF NOT EXISTS 'rating_request';
 -- ALTER TYPE notification_type ADD VALUE IF NOT EXISTS 'new_rating';
+
+-- 7. Agregar estado 'completed' a la tabla applications
+-- Si la columna status tiene un CHECK constraint, actualízalo:
+ALTER TABLE applications DROP CONSTRAINT IF EXISTS applications_status_check;
+ALTER TABLE applications ADD CONSTRAINT applications_status_check
+  CHECK (status IN ('pending', 'reviewed', 'shortlisted', 'interview', 'accepted', 'rejected', 'completed'));

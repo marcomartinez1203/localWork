@@ -276,7 +276,13 @@
             </select>
             <button v-if="app.status !== 'pending'" class="btn btn--sm" style="background:#007200;border-color:#007200;color:#fff;" @click="openApplicantChat(app.id)">Mensaje</button>
             <button
-              v-if="['accepted','rejected'].includes(app.status) && !ratedApplicants.has(app.id)"
+              v-if="app.status === 'accepted'"
+              class="btn btn--sm"
+              style="background:#dc2626;border-color:#dc2626;color:#fff;"
+              @click="finalizeContract(app)"
+            >Finalizar contrato</button>
+            <button
+              v-if="app.status === 'completed' && !ratedApplicants.has(app.id)"
               class="btn btn--sm"
               style="background:#f59e0b;border-color:#f59e0b;color:#fff;"
               @click="openRatingForApplicant(app)"
@@ -358,7 +364,7 @@ const barrios = ref<Barrio[]>([])
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente', reviewed: 'Revisada', shortlisted: 'Preseleccionado',
-  interview: 'Entrevista', accepted: 'Aceptada', rejected: 'Rechazada'
+  interview: 'Entrevista', accepted: 'Contratado', rejected: 'Rechazada', completed: 'Finalizado'
 }
 const STATUS_COLORS: Record<string, string> = {
   active: 'badge--accent', paused: 'badge--warning', closed: 'badge--danger', draft: 'badge--neutral'
@@ -601,6 +607,18 @@ const openApplicantChat = async (id: string) => {
   }
 }
 
+// ── Contract finalization ──
+const finalizeContract = async (app: Application) => {
+  if (!confirm(`¿Confirmas que el contrato con ${app.seeker_name || 'este trabajador'} ha finalizado?`)) return
+  try {
+    await ApplicationsService.updateStatus(app.id, 'completed')
+    app.status = 'completed' as Application['status']
+    showToast('Contrato finalizado. ¡Ahora puedes calificar!', 'success')
+  } catch {
+    showToast('Error al finalizar contrato', 'error')
+  }
+}
+
 // ── Rating system for employer ──
 const ratedApplicants = ref<Set<string>>(new Set())
 const isRatingModalOpen = ref(false)
@@ -609,7 +627,7 @@ const ratingTargetName = ref('')
 
 const openRatingForApplicant = (app: Application) => {
   ratingAppId.value = app.id
-  ratingTargetName.value = app.seeker_name || 'el candidato'
+  ratingTargetName.value = app.seeker_name || 'el trabajador'
   isRatingModalOpen.value = true
 }
 
@@ -617,9 +635,9 @@ const onApplicantRated = () => {
   ratedApplicants.value.add(ratingAppId.value)
 }
 
-// Check rated status for loaded applicants
+// Check rated status for completed applications
 const checkApplicantRatings = async () => {
-  const finalized = applicants.value.filter(a => ['accepted', 'rejected'].includes(a.status))
+  const finalized = applicants.value.filter(a => a.status === 'completed')
   const results = await Promise.allSettled(
     finalized.map(a => RatingsService.checkForApplication(a.id))
   )

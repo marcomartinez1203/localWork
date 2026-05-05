@@ -108,8 +108,8 @@ export class RatingsService {
     }
 
     // 3. Only allow rating for finished applications
-    if (!['accepted', 'rejected'].includes(app.status)) {
-      throw new AppError('Solo puedes calificar postulaciones finalizadas (aceptadas o rechazadas)', 400);
+    if (app.status !== 'completed') {
+      throw new AppError('Solo puedes calificar cuando el contrato ha finalizado', 400);
     }
 
     // 4. Determine who is being rated
