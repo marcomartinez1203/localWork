@@ -137,6 +137,8 @@ const attachmentInput = ref<HTMLInputElement | null>(null)
 const isSending = ref(false)
 const messagesPanel = ref<HTMLElement | null>(null)
 
+import { SUPABASE_URL, SUPABASE_ANON } from '@/config/api'
+
 // Supabase Realtime State
 let supabaseClient: any = null
 let messageChannel: any = null
@@ -145,9 +147,8 @@ const knownMessageIds = new Set<string>()
 
 const initRealtime = () => {
   const token = sessionStorage.getItem('lw_token')
-  if (!token || !window.supabase) return
-  // NOTE: Ensure window.supabase is loaded via index.html or npm
-  supabaseClient = window.supabase.createClient(import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://local-work-project.vercel.app', import.meta.env.VITE_SUPABASE_ANON_KEY || 'dummy', {
+  if (!token || !window.supabase || !SUPABASE_URL) return
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
     global: { headers: { Authorization: `Bearer ${token}` } },
   })
 }

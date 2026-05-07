@@ -2,7 +2,6 @@
 // LocalWork — Error Handling Middleware
 // ============================================
 import { Request, Response, NextFunction } from 'express';
-import { env } from '../config/env';
 
 export class AppError extends Error {
   public status: number;
@@ -25,17 +24,15 @@ export function errorHandler(
   const status = err instanceof AppError ? err.status : 500;
   const message = err.message || 'Error interno del servidor';
 
-  if (env.isDev) {
-    console.error('❌ Error:', {
-      message: err.message,
-      stack: err.stack,
-      ...(err instanceof AppError ? { details: err.details } : {}),
-    });
-  }
+  // Siempre loguear errores en el servidor (nunca exponerlos al cliente)
+  console.error('❌ Error:', {
+    message: err.message,
+    stack: err.stack,
+    ...(err instanceof AppError ? { details: err.details } : {}),
+  });
 
   res.status(status).json({
     message,
-    ...(env.isDev ? { stack: err.stack } : {}),
     ...(err instanceof AppError && err.details ? { details: err.details } : {}),
   });
 }

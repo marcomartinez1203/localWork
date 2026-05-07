@@ -2,10 +2,10 @@
 // LocalWork — API Configuration (TypeScript)
 // ============================================
 
-const API_BASE_URL = 'https://local-work-drab.vercel.app/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-export const SUPABASE_URL  = 'https://bemsnwrwrcllvsmlvksi.supabase.co';
-export const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlbXNud3J3cmNsbHZzbWx2a3NpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMjY1MDAsImV4cCI6MjA4OTcwMjUwMH0._ykvyz-2y25rWQEWHu6eOlOc6sNog_G9_9zz2d6eCBE';
+export const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL  || '';
+export const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 interface ApiOptions {
   headers?: Record<string, string>;

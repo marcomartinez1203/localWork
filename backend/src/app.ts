@@ -39,6 +39,15 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/reset-password', authLimiter);
 
+// Rate limit para endpoints públicos de datos (anti-scraping)
+const publicDataLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 40,
+  message: { message: 'Demasiadas consultas, intenta más tarde' },
+});
+app.use('/api/jobs', publicDataLimiter);
+app.use('/api/workers', publicDataLimiter);
+
 // ── Parsing ──
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));

@@ -2,11 +2,19 @@
 // LocalWork — Ratings Routes
 // ============================================
 import { Router, Response, NextFunction } from 'express';
-import { authenticate } from '../middleware/auth.middleware';
+import rateLimit from 'express-rate-limit';
+import { authenticate, optionalAuth } from '../middleware/auth.middleware';
 import { RatingsService } from '../services/ratings.service';
 import { AuthenticatedRequest } from '../types';
 
 const router = Router();
+
+// Rate limit dedicado para endpoints públicos de ratings (anti-scraping)
+const publicRatingsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  message: { message: 'Demasiadas solicitudes de calificaciones, intenta más tarde' },
+});
 
 // POST /ratings — Create a general rating (from worker directory)
 router.post('/', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -62,7 +70,7 @@ router.get('/check/:applicationId', authenticate, async (req: AuthenticatedReque
 });
 
 // GET /ratings/user/:userId — Get ratings for a user (with breakdown)
-router.get('/user/:userId', async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/user/:userId', publicRatingsLimiter, optionalAuth, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const result = await RatingsService.getForUser(
       req.params.userId,
@@ -82,3 +90,4 @@ router.delete('/:id', authenticate, async (req: AuthenticatedRequest, res: Respo
 });
 
 export default router;
+
