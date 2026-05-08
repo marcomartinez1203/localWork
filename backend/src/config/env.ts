@@ -15,6 +15,11 @@ const defaultCorsOrigins = [
   'http://127.0.0.1:5173',
 ];
 
+const productionCorsOrigins = [
+  'https://local-work-six.vercel.app',
+  'https://local-work-drab.vercel.app'
+];
+
 const envSchema = z.object({
   PORT: z.string().optional().default('3000'),
   NODE_ENV: z.string().optional().default('development'),
@@ -49,6 +54,6 @@ export const env = {
   frontendUrl: raw.FRONTEND_URL!,
   corsOrigins: raw.CORS_ORIGINS
     ? raw.CORS_ORIGINS.split(',').map((o: string) => o.trim())
-    : defaultCorsOrigins,
+    : (raw.NODE_ENV === 'production' ? productionCorsOrigins : defaultCorsOrigins),
   isDev: raw.NODE_ENV !== 'production',
 };
