@@ -22,6 +22,24 @@ const updateCompanySchema = companySchema.partial();
 
 const router = Router();
 
+// GET /companies/mine/analytics — obtener analíticas para el dashboard
+router.get(
+  '/mine/analytics',
+  authenticate,
+  requireRole('employer'),
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      const { JobsService } = await import('../services/jobs.service');
+      const data = await JobsService.getEmployerAnalytics(req.userId!);
+      if (!data) {
+        res.status(404).json({ message: 'No tienes una empresa registrada' });
+        return;
+      }
+      res.json(data);
+    } catch (err) { next(err); }
+  }
+);
+
 // GET /companies/mine — empresa del empleador autenticado
 router.get(
   '/mine',

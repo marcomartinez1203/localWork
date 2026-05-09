@@ -106,7 +106,20 @@ export class JobsService {
       .single();
 
     if (error || !data) throw new AppError('Empleo no encontrado', 404);
+
+    // Incrementar conteo de vistas en background (falla silenciosa)
+    supabaseAdmin.rpc('increment_job_view', { p_job_id: jobId }).then();
+
     return data as JobWithDetails;
+  }
+
+  static async getEmployerAnalytics(userId: string): Promise<any> {
+    const { data, error } = await supabaseAdmin.rpc('get_employer_analytics', { p_owner_id: userId });
+    if (error) {
+      console.error('[JobsService.getEmployerAnalytics]', error);
+      throw new AppError('Error al obtener analíticas', 500);
+    }
+    return data;
   }
 
   static async create(companyId: string, jobData: Partial<Job>): Promise<Job> {

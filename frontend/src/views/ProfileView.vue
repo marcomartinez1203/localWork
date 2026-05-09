@@ -25,6 +25,14 @@
       </div>
     </div>
 
+    <!-- Panel de Analíticas (Dashboard del empleador) -->
+    <div v-if="isEmployer" class="profile-card">
+      <div class="profile-card__title">
+        <span>Panel de Analíticas</span>
+      </div>
+      <EmployerDashboard />
+    </div>
+
     <!-- Personal Info -->
     <div class="profile-card">
       <div class="profile-card__title">
@@ -342,6 +350,7 @@ import api from '@/config/api'
 import AuthService from '@/services/auth.service'
 import CompaniesService from '@/services/companies.service'
 import JobsService from '@/services/jobs.service'
+import EmployerDashboard from '@/components/EmployerDashboard.vue'
 import { showToast } from '@/utils/helpers'
 import type { User, Company, Job } from '@/types'
 

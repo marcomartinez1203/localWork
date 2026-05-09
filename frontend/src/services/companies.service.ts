@@ -21,6 +21,10 @@ const CompaniesService = {
     return api.get<Company>('/companies/mine');
   },
 
+  async getAnalytics(): Promise<{ total_jobs: number; total_views: number; total_applications: number; chart_data: { date: string; count: number }[] }> {
+    return api.get('/companies/mine/analytics');
+  },
+
   async create(companyData: Partial<Company>): Promise<Company> {
     return api.post<Company>('/companies', companyData);
   },
