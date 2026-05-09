@@ -173,7 +173,7 @@ router.post(
 // ==========================================
 // 4. Subida de Documento de Identidad (Verification)
 // ==========================================
-const identityFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const identityFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
