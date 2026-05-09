@@ -13,7 +13,7 @@ export class JobsController {
     try {
       const result = await JobsService.list({
         page: parseInt(req.query.page as string) || 1,
-        per_page: parseInt(req.query.per_page as string) || 9,
+        per_page: Math.min(parseInt(req.query.per_page as string) || 9, 50),
         category: req.query.category as string,
         modality: req.query.modality as any,
         location: req.query.location as string,
@@ -95,7 +95,7 @@ export class JobsController {
     try {
       const result = await JobsService.getByCompanyOwner(req.userId!, {
         page: parseInt(req.query.page as string) || 1,
-        per_page: parseInt(req.query.per_page as string) || 10,
+        per_page: Math.min(parseInt(req.query.per_page as string) || 10, 50),
         status: req.query.status as any,
       });
       res.json(result);

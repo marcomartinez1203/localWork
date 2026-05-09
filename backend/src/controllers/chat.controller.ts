@@ -62,7 +62,7 @@ export class ChatController {
   static async getMessages(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const page = parseInt(req.query.page as string, 10) || 1;
-      const perPage = parseInt(req.query.per_page as string, 10) || 50;
+      const perPage = Math.min(parseInt(req.query.per_page as string, 10) || 50, 100);
       const result = await ChatService.getMessages(req.params.conversationId, req.userId!, page, perPage);
       res.json(result);
     } catch (err) { next(err); }

@@ -75,7 +75,7 @@ router.get('/user/:userId', publicRatingsLimiter, optionalAuth, async (req: Auth
     const result = await RatingsService.getForUser(
       req.params.userId,
       parseInt(req.query.page as string) || 1,
-      parseInt(req.query.per_page as string) || 10
+      Math.min(parseInt(req.query.per_page as string) || 10, 50)
     );
     res.json(result);
   } catch (err) { next(err); }

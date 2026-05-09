@@ -13,7 +13,7 @@ export class WorkersController {
   static async list(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const page    = parseInt(req.query.page as string) || 1;
-      const perPage = parseInt(req.query.per_page as string) || 12;
+      const perPage = Math.min(parseInt(req.query.per_page as string) || 12, 50);
       const skill   = req.query.skill as string | undefined;
       const search  = req.query.search as string | undefined;
       const type    = req.query.work_type as string | undefined;

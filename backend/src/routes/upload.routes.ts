@@ -33,6 +33,13 @@ router.post(
         return;
       }
 
+      // Only allow image types for avatars
+      const imageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!imageTypes.includes(req.file.mimetype)) {
+        res.status(400).json({ message: 'Solo se permiten imágenes (JPG, PNG, WebP) para el perfil' });
+        return;
+      }
+
       const ext = req.file.originalname.split('.').pop();
       const path = `avatars/${req.userId}.${ext}`;
 
@@ -71,6 +78,12 @@ router.post(
     try {
       if (!req.file) {
         res.status(400).json({ message: 'No se proporcionó un archivo' });
+        return;
+      }
+
+      // Only allow PDF for resumes
+      if (req.file.mimetype !== 'application/pdf') {
+        res.status(400).json({ message: 'Solo se permiten archivos PDF para el currículum' });
         return;
       }
 

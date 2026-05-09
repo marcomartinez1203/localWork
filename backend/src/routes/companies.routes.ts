@@ -6,6 +6,19 @@ import { authenticate, requireRole } from '../middleware/auth.middleware';
 import { supabaseAdmin } from '../config/supabase';
 import { AuthenticatedRequest } from '../types';
 import { AppError } from '../middleware/error.middleware';
+import { z } from 'zod';
+
+const companySchema = z.object({
+  name: z.string().min(2, 'El nombre de la empresa es requerido').max(150),
+  nit: z.string().max(30).nullable().optional(),
+  description: z.string().max(1000).nullable().optional(),
+  website: z.string().url('URL inválida').max(200).nullable().optional().or(z.literal('')),
+  phone: z.string().max(20).nullable().optional(),
+  address: z.string().max(200).nullable().optional(),
+  location: z.string().max(100).nullable().optional(),
+});
+
+const updateCompanySchema = companySchema.partial();
 
 const router = Router();
 
@@ -39,9 +52,9 @@ router.post(
   requireRole('employer'),
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const name = (req.body?.name || '').toString().trim();
-      if (!name) {
-        throw new AppError('El nombre de la empresa es requerido', 400);
+      const parsed = companySchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError(parsed.error.errors[0].message, 400);
       }
 
       const { data: existing } = await supabaseAdmin
@@ -56,13 +69,7 @@ router.post(
 
       const payload = {
         owner_id: req.userId!,
-        name,
-        nit: req.body?.nit || null,
-        description: req.body?.description || null,
-        website: req.body?.website || null,
-        phone: req.body?.phone || null,
-        address: req.body?.address || null,
-        location: req.body?.location || null,
+        ...(parsed.data as any),
       };
 
       const { data, error } = await supabaseAdmin
@@ -84,15 +91,14 @@ router.put(
   requireRole('employer'),
   async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
-      const allowed = ['name', 'nit', 'description', 'website', 'phone', 'address', 'location'];
-      const updates: Record<string, unknown> = {};
-      for (const key of allowed) {
-        if (key in req.body) updates[key] = req.body[key];
+      const parsed = updateCompanySchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError(parsed.error.errors[0].message, 400);
       }
 
       const { data, error } = await supabaseAdmin
         .from('companies')
-        .update(updates)
+        .update(parsed.data as any)
         .eq('id', req.params.id)
         .eq('owner_id', req.userId!)
         .select()

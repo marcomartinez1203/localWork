@@ -27,6 +27,20 @@ const resetPasswordSchema = z.object({
   email: z.string().email('Correo inválido'),
 });
 
+const updateProfileSchema = z.object({
+  full_name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').max(100).optional(),
+  phone: z.string().max(20).nullable().optional(),
+  bio: z.string().max(500).nullable().optional(),
+  location: z.string().max(100).nullable().optional(),
+  skills: z.array(z.string()).max(20).optional(),
+  work_type: z.enum(['employee', 'freelance', 'both']).nullable().optional(),
+  service_public: z.boolean().optional(),
+  availability: z.string().max(50).nullable().optional(),
+  hourly_rate: z.number().nonnegative('La tarifa no puede ser negativa').nullable().optional(),
+  education: z.array(z.any()).optional(),
+  experience: z.array(z.any()).optional(),
+});
+
 export class AuthController {
 
   static async register(req: AuthenticatedRequest, res: Response, next: NextFunction) {
@@ -64,7 +78,12 @@ export class AuthController {
 
   static async updateProfile(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const profile = await AuthService.updateProfile(req.userId!, req.body);
+      const parsed = updateProfileSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new AppError(parsed.error.errors[0].message, 400);
+      }
+      
+      const profile = await AuthService.updateProfile(req.userId!, parsed.data as any);
       res.json({ user: profile });
     } catch (err) { next(err); }
   }

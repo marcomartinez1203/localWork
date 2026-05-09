@@ -12,7 +12,7 @@ export class NotificationsController {
       const result = await NotificationsService.list(
         req.userId!,
         parseInt(req.query.page as string) || 1,
-        parseInt(req.query.per_page as string) || 20,
+        Math.min(parseInt(req.query.per_page as string) || 20, 50),
         req.query.unread === 'true'
       );
       res.json(result);

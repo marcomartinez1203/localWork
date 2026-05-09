@@ -47,7 +47,7 @@ export class ApplicationsController {
       const result = await ApplicationsService.getMyApplications(
         req.userId!,
         parseInt(req.query.page as string) || 1,
-        parseInt(req.query.per_page as string) || 10,
+        Math.min(parseInt(req.query.per_page as string) || 10, 50),
         req.query.status as any
       );
       res.json(result);
@@ -60,7 +60,7 @@ export class ApplicationsController {
         req.params.jobId,
         req.userId!,
         parseInt(req.query.page as string) || 1,
-        parseInt(req.query.per_page as string) || 20
+        Math.min(parseInt(req.query.per_page as string) || 20, 50)
       );
       res.json(result);
     } catch (err) { next(err); }

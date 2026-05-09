@@ -11,7 +11,22 @@ const router = Router();
 
 const attachmentUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (_req, file, cb) => {
+    // Only allow safe files in chat
+    const allowed = [
+      'image/jpeg', 'image/png', 'image/webp',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain'
+    ];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de archivo no permitido por seguridad. Usa: Imágenes, PDF, Word o TXT.'));
+    }
+  },
 });
 
 const messageIpLimiter = rateLimit({
