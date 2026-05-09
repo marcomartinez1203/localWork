@@ -5,6 +5,7 @@ import { Router, Response, NextFunction } from 'express';
 import { authenticate } from '../middleware/auth.middleware';
 import { supabaseAdmin } from '../config/supabase';
 import { AuthenticatedRequest } from '../types';
+import { AppError } from '../middleware/error.middleware';
 import multer from 'multer';
 
 const router = Router();
@@ -168,5 +169,57 @@ router.post(
     }
   }
 );
+
+// ==========================================
+// 4. Subida de Documento de Identidad (Verification)
+// ==========================================
+const identityFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Formato no válido. Sube un PDF, JPG o PNG.'));
+  }
+};
+const uploadIdentity = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: identityFilter });
+
+router.post('/identity', authenticate, uploadIdentity.single('document'), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ message: 'No se ha subido ningún documento' });
+      return;
+    }
+
+    const fileExt = req.file.originalname.split('.').pop() || 'pdf';
+    const fileName = `${req.userId}-${Date.now()}.${fileExt}`;
+    const filePath = `identity_docs/${fileName}`;
+
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('uploads')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new AppError('Error al subir documento en Supabase', 500);
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage.from('uploads').getPublicUrl(filePath);
+
+    // Update profile verification status to pending
+    await supabaseAdmin
+      .from('profiles')
+      .update({
+        identity_document_url: publicUrlData.publicUrl,
+        verification_status: 'pending'
+      })
+      .eq('id', req.userId!);
+
+    res.json({ message: 'Documento subido. En revisión.', status: 'pending' });
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;

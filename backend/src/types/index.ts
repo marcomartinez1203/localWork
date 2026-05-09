@@ -44,6 +44,8 @@ export interface Profile {
   service_public: boolean | null;
   availability: string | null;
   hourly_rate: string | null;
+  verification_status: 'unverified' | 'pending' | 'verified' | 'rejected';
+  identity_document_url: string | null;
   created_at: string;
   updated_at: string;
 }

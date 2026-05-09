@@ -27,7 +27,10 @@
             <span v-else>{{ initials(w.full_name) }}</span>
           </div>
           <div class="worker-card__info">
-            <p class="worker-card__name">{{ w.full_name || 'Sin nombre' }}</p>
+            <p class="worker-card__name" style="display:flex;align-items:center;gap:4px;">
+              {{ w.full_name || 'Sin nombre' }}
+              <svg v-if="w.verification_status === 'verified'" title="Identidad Verificada" width="16" height="16" viewBox="0 0 24 24" fill="#0284c7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            </p>
             <p class="worker-card__location" v-if="w.location">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.75-5.25-6.75-11.25a6.75 6.75 0 1 1 13.5 0C18.75 15.75 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.25"/></svg>
               {{ w.location }}
@@ -93,7 +96,10 @@
             <span v-else>{{ initials(selectedWorker.full_name) }}</span>
           </div>
           <div>
-            <h2 style="font-size:var(--fs-xl);margin:0;">{{ selectedWorker.full_name || 'Sin nombre' }}</h2>
+            <h2 style="font-size:var(--fs-xl);margin:0;display:flex;align-items:center;gap:6px;">
+              {{ selectedWorker.full_name || 'Sin nombre' }}
+              <svg v-if="selectedWorker.verification_status === 'verified'" title="Identidad Verificada" width="20" height="20" viewBox="0 0 24 24" fill="#0284c7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            </h2>
             <p v-if="selectedWorker.location" style="font-size:var(--fs-sm);color:var(--color-text-muted);margin:var(--space-1) 0 0;display:flex;align-items:center;gap:var(--space-2);">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.75-5.25-6.75-11.25a6.75 6.75 0 1 1 13.5 0C18.75 15.75 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.25"/></svg>
               {{ selectedWorker.location }}

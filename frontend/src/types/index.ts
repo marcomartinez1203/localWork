@@ -23,6 +23,8 @@ export interface User {
   work_type?: string
   availability?: string
   hourly_rate?: string
+  verification_status?: 'unverified' | 'pending' | 'verified' | 'rejected'
+  identity_document_url?: string
   education: Education[]
   experience: Experience[]
   preferred_mode?: 'jobs' | 'services'
@@ -263,6 +265,7 @@ export interface WorkerProfile {
   availability?: string
   hourly_rate?: string
   service_public: boolean
+  verification_status?: 'unverified' | 'pending' | 'verified' | 'rejected'
   avg_rating?: number
   created_at: string
 }

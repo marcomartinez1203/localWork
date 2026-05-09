@@ -24,7 +24,7 @@ export class WorkersController {
       const buildQuery = (withServicePublicFilter: boolean) => {
         let query = supabaseAdmin
           .from('workers_directory')
-          .select('id, full_name, avatar_url, bio, location, skills, work_type, availability, hourly_rate, role', { count: 'exact' })
+          .select('id, full_name, avatar_url, bio, location, skills, work_type, availability, hourly_rate, role, verification_status', { count: 'exact' })
           .in('work_type', ['freelance', 'both'])
           .range(from, to);
 
@@ -72,7 +72,7 @@ export class WorkersController {
     try {
       const { data, error } = await supabaseAdmin
         .from('profiles')
-        .select('id, full_name, avatar_url, bio, location, skills, work_type, availability, hourly_rate, role, education, experience')
+        .select('id, full_name, avatar_url, bio, location, skills, work_type, availability, hourly_rate, role, education, experience, verification_status')
         .eq('id', req.params.id)
         .single();
 

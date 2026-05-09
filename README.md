@@ -12,11 +12,11 @@ Plataforma de empleo local para **Aguachica, Cesar** — conecta buscadores de e
 | **Base de datos** | PostgreSQL vía Supabase |
 | **Autenticación** | Supabase Auth |
 | **Tiempo real** | Supabase Realtime (WebSockets) para Chat y Notificaciones |
-| **Frontend SPA**| Vue 3 · TypeScript · Vite · Vue Router |
+| **Frontend SPA**| Vue 3 · TypeScript · Vite · Vue Router · Chart.js |
 | **Landing Page**| Astro · Tailwind CSS |
-| **Seguridad** | Helmet · CORS · express-rate-limit |
-| **Subida de archivos** | Multer + Supabase Storage |
-| **Despliegue**| Vercel (`vercel.json`) |
+| **Seguridad** | Helmet · CORS estricto · express-rate-limit · Zod (Anti-Mass Assignment) |
+| **Subida de archivos** | Multer (MIME-Type filters estrictos) + Supabase Storage |
+| **Despliegue**| Vercel (`vercel.json` con Security Headers CSP/HSTS) |
 
 ---
 
@@ -116,12 +116,14 @@ localWork/
 - Seguimiento del estado de postulaciones con **filtro por estado** (`pendiente → revisado → entrevista → contratado → finalizado`)
 - **Calificar al empleador** cuando el contrato finaliza
 - Perfil con educación, experiencia laboral y habilidades
+- **Sistema de Verificación de Identidad**: subida de documento para obtener **Insignia de Confianza (Check Azul)** y mejorar reputación
 - **Compartir ofertas** vía Web Share API o portapapeles
-- Directorio de trabajadores con modal de detalle y reputación
+- Directorio de trabajadores con modal de detalle, reputación e insignia de verificación
 
 ### Para empleadores
 - Registro con empresa verificada
-- **Panel de control** con estadísticas en tiempo real (ofertas activas, total, postulaciones)
+- **Panel de analíticas interactivo (Dashboard)** con gráficas de rendimiento (Chart.js)
+- Métricas en tiempo real: Vistas de ofertas (`views_count`), total de postulaciones y % de conversión
 - Publicar, **editar** y cerrar/pausar ofertas de empleo
 - **Fecha de vencimiento** para auto-expiración de ofertas
 - Revisar postulantes, ver CV adjunto y mover candidatos en el pipeline

@@ -135,6 +135,40 @@
     </div>
 
     <template v-if="!isEmployer">
+      <!-- Verificación de Identidad -->
+      <div class="profile-card">
+        <div class="profile-card__title">
+          <span>Insignia de Confianza</span>
+          <span class="profile-badge" style="border-color:#0284c7;color:#0284c7;background:#e0f2fe;">Seguridad</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--space-4);background:var(--color-bg);padding:var(--space-4);border-radius:var(--radius-lg);border:1px solid var(--color-border-light);">
+          <div style="color:#0284c7;background:#e0f2fe;padding:12px;border-radius:50%;">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <div style="flex:1;">
+            <h4 style="margin:0 0 4px 0;font-size:var(--fs-base);">Identidad verificada</h4>
+            <p v-if="user.verification_status === 'verified'" style="margin:0;font-size:var(--fs-sm);color:var(--color-text-muted);">
+              ¡Felicidades! Tu identidad ha sido verificada. Tienes la insignia azul.
+            </p>
+            <p v-else-if="user.verification_status === 'pending'" style="margin:0;font-size:var(--fs-sm);color:#d97706;">
+              Tus documentos están en revisión. Te avisaremos pronto.
+            </p>
+            <p v-else-if="user.verification_status === 'rejected'" style="margin:0;font-size:var(--fs-sm);color:var(--color-danger);">
+              No pudimos verificar tu documento. Por favor, intenta de nuevo.
+            </p>
+            <p v-else style="margin:0;font-size:var(--fs-sm);color:var(--color-text-muted);">
+              Sube tu documento de identidad para ganar la insignia azul y generar mayor confianza en los empleadores.
+            </p>
+          </div>
+          <div v-if="user.verification_status !== 'verified' && user.verification_status !== 'pending'">
+             <input type="file" ref="idDocInput" accept=".pdf,image/jpeg,image/png" style="display:none;" @change="handleIdentityUpload">
+             <button type="button" class="btn btn--primary" @click="idDocInput?.click()" :class="{ 'btn--loading': isUploadingIdentity }">
+                Subir documento
+             </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Servicios y habilidades -->
       <div class="profile-card">
         <div class="profile-card__title">
@@ -384,6 +418,8 @@ const experienceList = ref<any[]>([])
 const savedJobs = ref<Job[]>([])
 
 const avatarInput = ref<HTMLInputElement | null>(null)
+const idDocInput = ref<HTMLInputElement | null>(null)
+const isUploadingIdentity = ref(false)
 
 // Computed
 const initials = computed(() => {
@@ -530,6 +566,37 @@ const handleAvatarUpload = async (e: Event) => {
     }
   } catch {
     showToast('Error al subir foto', 'error')
+  }
+}
+
+const handleIdentityUpload = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('El documento no puede superar 5MB', 'error')
+    return
+  }
+  isUploadingIdentity.value = true
+  try {
+    const formData = new FormData()
+    formData.append('document', file)
+    const result = await api.upload('/upload/identity', formData)
+    const res = result as { message?: string, status?: string }
+    if (res.status === 'pending') {
+      if ('verification_status' in user.value) {
+        (user.value as Record<string, unknown>).verification_status = 'pending'
+      }
+      const lwUser = AuthService.getUser()
+      if (lwUser) {
+        lwUser.verification_status = 'pending'
+        localStorage.setItem('lw_user', JSON.stringify(lwUser))
+      }
+      showToast('Documento enviado. En revisión.', 'success')
+    }
+  } catch {
+    showToast('Error al subir documento', 'error')
+  } finally {
+    isUploadingIdentity.value = false
   }
 }
 
