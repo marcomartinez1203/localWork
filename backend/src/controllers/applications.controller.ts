@@ -69,7 +69,7 @@ export class ApplicationsController {
   static async getMineForJob(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const application = await ApplicationsService.getMineForJob(req.userId!, req.params.jobId);
-      res.json({ data: application });
+      res.json(application || null);
     } catch (err) { next(err); }
   }
 
