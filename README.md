@@ -117,8 +117,9 @@ localWork/
 - **Calificar al empleador** cuando el contrato finaliza
 - Perfil con educación, experiencia laboral y habilidades
 - **Sistema de Verificación de Identidad**: subida de documento para obtener **Insignia de Confianza (Check Azul)** y mejorar reputación
+- **Portafolio Visual**: galería de hasta 5 imágenes de trabajos previos (ideal para oficios independientes: carpinteros, electricistas, pintores)
 - **Compartir ofertas** vía Web Share API o portapapeles
-- Directorio de trabajadores con modal de detalle, reputación e insignia de verificación
+- Directorio de trabajadores con modal de detalle, reputación, insignia de verificación y galería de portafolio con lightbox
 
 ### Para empleadores
 - Registro con empresa verificada

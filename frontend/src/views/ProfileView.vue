@@ -257,6 +257,41 @@
         </div>
       </div>
 
+      <!-- Portafolio Visual -->
+      <div class="profile-card">
+        <div class="profile-card__title">
+          <span style="display:flex;align-items:center;gap:6px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            Portafolio de trabajos
+          </span>
+          <span class="profile-badge" style="text-transform:none;letter-spacing:0;">{{ portfolioImages.length }}/5</span>
+        </div>
+        <p style="font-size:var(--fs-sm);color:var(--color-text-muted);margin-bottom:var(--space-4);">
+          Muestra tus mejores trabajos. Los empleadores verán estas imágenes en tu perfil del directorio.
+        </p>
+        <div class="portfolio-grid">
+          <div
+            v-for="(img, i) in portfolioImages"
+            :key="i"
+            class="portfolio-item"
+          >
+            <img :src="img" alt="Trabajo previo" loading="lazy">
+            <button class="portfolio-item__remove" @click="removePortfolioImage(img)" title="Eliminar imagen">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </div>
+          <label
+            v-if="portfolioImages.length < 5"
+            class="portfolio-add"
+            :class="{ 'portfolio-add--loading': isUploadingPortfolio }"
+          >
+            <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" @change="handlePortfolioUpload">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            <span>Agregar</span>
+          </label>
+        </div>
+      </div>
+
       <!-- Educación -->
       <div class="profile-card">
         <div class="profile-card__title">
@@ -420,6 +455,8 @@ const savedJobs = ref<Job[]>([])
 const avatarInput = ref<HTMLInputElement | null>(null)
 const idDocInput = ref<HTMLInputElement | null>(null)
 const isUploadingIdentity = ref(false)
+const portfolioImages = ref<string[]>([])
+const isUploadingPortfolio = ref(false)
 
 // Computed
 const initials = computed(() => {
@@ -489,6 +526,7 @@ const loadSeekerInfo = async () => {
 
   educationList.value = Array.isArray(u.education) ? [...u.education] : []
   experienceList.value = Array.isArray(u.experience) ? [...u.experience] : []
+  portfolioImages.value = Array.isArray(u.portfolio_images) ? [...u.portfolio_images] : []
 
   try {
     savedJobs.value = await JobsService.getSavedJobs() || []
@@ -613,6 +651,71 @@ const toggleServiceVisibility = async () => {
     } catch { /* silent */ }
   }
 }
+
+// Portfolio
+const handlePortfolioUpload = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('La imagen no puede superar 5MB', 'error')
+    return
+  }
+  if (portfolioImages.value.length >= 5) {
+    showToast('Máximo 5 imágenes en el portafolio', 'error')
+    return
+  }
+  isUploadingPortfolio.value = true
+  try {
+    const formData = new FormData()
+    formData.append('image', file)
+    const result = await api.upload<{ images: string[] }>('/upload/portfolio', formData)
+    if (result.images) {
+      portfolioImages.value = result.images
+      // Sync to local storage user
+      const lwUser = AuthService.getUser()
+      if (lwUser) {
+        lwUser.portfolio_images = result.images
+        localStorage.setItem('lw_user', JSON.stringify(lwUser))
+      }
+      showToast('Imagen agregada al portafolio', 'success')
+    }
+  } catch {
+    showToast('Error al subir imagen', 'error')
+  } finally {
+    isUploadingPortfolio.value = false
+    // Reset input so same file can be selected again
+    ;(e.target as HTMLInputElement).value = ''
+  }
+}
+
+const removePortfolioImage = async (imageUrl: string) => {
+  try {
+    const token = sessionStorage.getItem('lw_token')
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+    const resp = await fetch(`${apiUrl}/upload/portfolio`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ image_url: imageUrl }),
+    })
+    const data = await resp.json()
+    if (resp.ok && data.images) {
+      portfolioImages.value = data.images
+      const lwUser = AuthService.getUser()
+      if (lwUser) {
+        lwUser.portfolio_images = data.images
+        localStorage.setItem('lw_user', JSON.stringify(lwUser))
+      }
+      showToast('Imagen eliminada', 'success')
+    } else {
+      showToast(data.message || 'Error al eliminar', 'error')
+    }
+  } catch {
+    showToast('Error al eliminar imagen', 'error')
+  }
+}
 const toggleServicePublishBtn = () => {
   if (!canPublishServices.value) return
   isServicePublic.value = !isServicePublic.value
@@ -718,5 +821,73 @@ const logout = () => {
   .work-type-option { min-width: 0; }
   .work-type-option label { padding: var(--space-3) var(--space-2); font-size: var(--fs-xs); }
   .profile-card { padding: var(--space-4); }
+}
+
+/* Portfolio Grid */
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-3);
+}
+.portfolio-item {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg);
+}
+.portfolio-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.portfolio-item:hover img {
+  transform: scale(1.05);
+}
+.portfolio-item__remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  border: none;
+  border-radius: var(--radius-full);
+  color: #fff;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.portfolio-item:hover .portfolio-item__remove {
+  opacity: 1;
+}
+.portfolio-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  aspect-ratio: 4 / 3;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  transition: all 0.2s ease;
+}
+.portfolio-add:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-50);
+}
+.portfolio-add--loading {
+  opacity: 0.5;
+  pointer-events: none;
 }
 </style>

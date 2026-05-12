@@ -222,4 +222,103 @@ router.post('/identity', authenticate, uploadIdentity.single('document'), async 
   }
 });
 
+// ==========================================
+// 5. Portafolio Visual (hasta 5 imágenes)
+// ==========================================
+const portfolioFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Solo se permiten imágenes (JPG, PNG, WebP).'));
+  }
+};
+const uploadPortfolio = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: portfolioFilter });
+
+router.post('/portfolio', authenticate, uploadPortfolio.single('image'), async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ message: 'No se ha subido ninguna imagen' });
+      return;
+    }
+
+    // Get current portfolio
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('portfolio_images')
+      .eq('id', req.userId!)
+      .single();
+
+    const current: string[] = Array.isArray(profile?.portfolio_images) ? profile.portfolio_images : [];
+
+    if (current.length >= 5) {
+      res.status(400).json({ message: 'Máximo 5 imágenes en el portafolio' });
+      return;
+    }
+
+    const fileExt = req.file.originalname.split('.').pop() || 'jpg';
+    const fileName = `${req.userId}-${Date.now()}.${fileExt}`;
+    const filePath = `portfolio/${fileName}`;
+
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('uploads')
+      .upload(filePath, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      throw new AppError('Error al subir imagen', 500);
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage.from('uploads').getPublicUrl(filePath);
+    const newImages = [...current, publicUrlData.publicUrl];
+
+    await supabaseAdmin
+      .from('profiles')
+      .update({ portfolio_images: newImages })
+      .eq('id', req.userId!);
+
+    res.json({ images: newImages });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/portfolio', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const imageUrl = req.body.image_url as string;
+    if (!imageUrl) {
+      res.status(400).json({ message: 'URL de imagen requerida' });
+      return;
+    }
+
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('portfolio_images')
+      .eq('id', req.userId!)
+      .single();
+
+    const current: string[] = Array.isArray(profile?.portfolio_images) ? profile.portfolio_images : [];
+    const updated = current.filter(img => img !== imageUrl);
+
+    // Delete from storage
+    try {
+      const pathMatch = imageUrl.match(/\/uploads\/(.+)$/);
+      if (pathMatch?.[1]) {
+        await supabaseAdmin.storage.from('uploads').remove([decodeURIComponent(pathMatch[1])]);
+      }
+    } catch { /* best effort */ }
+
+    await supabaseAdmin
+      .from('profiles')
+      .update({ portfolio_images: updated })
+      .eq('id', req.userId!);
+
+    res.json({ images: updated });
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

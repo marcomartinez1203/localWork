@@ -50,6 +50,11 @@
           <span class="worker-card__skill" v-if="w.skills.length > 4">+{{ w.skills.length - 4 }}</span>
         </div>
 
+        <div class="worker-card__portfolio" v-if="w.portfolio_images?.length">
+          <img v-for="(img, pi) in w.portfolio_images.slice(0, 3)" :key="pi" :src="img" alt="" loading="lazy">
+          <span v-if="w.portfolio_images.length > 3" class="worker-card__portfolio-more">+{{ w.portfolio_images.length - 3 }}</span>
+        </div>
+
         <div class="worker-card__footer" v-if="w.availability || w.hourly_rate">
           <span class="worker-card__meta" v-if="w.availability">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg>
@@ -111,6 +116,26 @@
         
         <div v-if="selectedWorker.skills?.length" style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-4);">
           <span class="badge badge--neutral" v-for="s in selectedWorker.skills" :key="s">{{ s }}</span>
+        </div>
+
+        <!-- Portfolio Gallery (read-only) -->
+        <div v-if="selectedWorker.portfolio_images?.length" style="margin-bottom:var(--space-5);">
+          <p class="rep-section__title" style="margin-bottom:var(--space-3);">Portafolio</p>
+          <div class="portfolio-modal-grid">
+            <div
+              v-for="(img, i) in selectedWorker.portfolio_images"
+              :key="i"
+              class="portfolio-modal-item"
+              @click="openLightbox(img)"
+            >
+              <img :src="img" alt="Trabajo previo" loading="lazy">
+            </div>
+          </div>
+        </div>
+
+        <!-- Lightbox -->
+        <div v-if="lightboxImage" class="portfolio-lightbox" @click="lightboxImage = null">
+          <img :src="lightboxImage" alt="Imagen ampliada">
         </div>
         
         <p v-if="selectedWorker.phone" style="font-size:var(--fs-sm);display:flex;align-items:center;gap:var(--space-2);">
@@ -270,6 +295,7 @@ const ratingsList = ref<Rating[]>([])
 const breakdown = ref<{ avg_punctuality: number; avg_quality: number; avg_communication: number; recommend_pct: number }>({ avg_punctuality: 0, avg_quality: 0, avg_communication: 0, recommend_pct: 0 })
 const selectedScore = ref<number>(0)
 const ratingComment = ref<string>('')
+const lightboxImage = ref<string | null>(null)
 
 onMounted(() => {
   currentUser.value = AuthService.getUser()
@@ -354,6 +380,11 @@ const openWorkerModal = async (w: WorkerProfile) => {
 
 const closeWorkerModal = () => {
   isModalOpen.value = false
+  lightboxImage.value = null
+}
+
+const openLightbox = (img: string) => {
+  lightboxImage.value = img
 }
 
 const submitRating = async () => {
@@ -437,6 +468,34 @@ const respondDirectRequest = async (action: 'accepted' | 'rejected') => {
   .workers-grid { grid-template-columns: 1fr; }
 }
 
+/* Worker card portfolio strip */
+.worker-card__portfolio {
+  display: flex;
+  gap: 4px;
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-3);
+}
+.worker-card__portfolio img {
+  width: 48px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border-light);
+}
+.worker-card__portfolio-more {
+  width: 48px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-light);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
 /* Worker detail modal */
 .worker-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); z-index:var(--z-modal); align-items:flex-start; justify-content:center; padding:var(--space-8) var(--space-4); overflow-y:auto; }
 .worker-modal-overlay.open { display:flex; }
@@ -481,4 +540,49 @@ const respondDirectRequest = async (action: 'accepted' | 'rejected') => {
 .rep-review__comment { font-size: var(--fs-sm); color: var(--color-text-secondary); margin: 0; }
 .rep-review__tags { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-top: var(--space-2); }
 .rep-tag { font-family: var(--font-mono); font-size: 10px; background: var(--color-surface-alt); border: 1px solid var(--color-border-light); padding: 2px 8px; border-radius: var(--radius-full); color: var(--color-text-muted); }
+
+/* Portfolio in modal */
+.portfolio-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: var(--space-2);
+}
+.portfolio-modal-item {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border-light);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.portfolio-modal-item:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.portfolio-modal-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.portfolio-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: calc(var(--z-modal) + 10);
+  cursor: zoom-out;
+  animation: fadeIn 0.2s ease;
+}
+.portfolio-lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: var(--radius-lg);
+  object-fit: contain;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 </style>

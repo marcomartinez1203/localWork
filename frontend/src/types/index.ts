@@ -25,6 +25,7 @@ export interface User {
   hourly_rate?: string
   verification_status?: 'unverified' | 'pending' | 'verified' | 'rejected'
   identity_document_url?: string
+  portfolio_images?: string[]
   education: Education[]
   experience: Experience[]
   preferred_mode?: 'jobs' | 'services'
@@ -266,6 +267,7 @@ export interface WorkerProfile {
   hourly_rate?: string
   service_public: boolean
   verification_status?: 'unverified' | 'pending' | 'verified' | 'rejected'
+  portfolio_images?: string[]
   avg_rating?: number
   created_at: string
 }

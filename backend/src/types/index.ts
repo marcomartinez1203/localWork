@@ -46,6 +46,7 @@ export interface Profile {
   hourly_rate: string | null;
   verification_status: 'unverified' | 'pending' | 'verified' | 'rejected';
   identity_document_url: string | null;
+  portfolio_images: string[] | null;
   created_at: string;
   updated_at: string;
 }
