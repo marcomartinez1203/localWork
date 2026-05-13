@@ -82,7 +82,7 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, _from) => {
   // Hack for AuthService due to circular dependency issues if imported top-level
   const isAuth = !!localStorage.getItem('lw_token')
   const userRaw = localStorage.getItem('lw_user')
@@ -93,27 +93,26 @@ router.beforeEach((to, _from, next) => {
 
   if (isPublicRoute) {
     if (isAuth && to.name !== 'index') {
-      const target = user?.role === 'employer' ? '/dashboard' : '/home'
-      return next(target)
+      return user?.role === 'employer' ? '/dashboard' : '/home'
     }
-    return next()
+    return true
   }
 
   // Protected route, must be auth
   if (!isAuth) {
-    return next('/login')
+    return '/login'
   }
 
   // Role guards
   if (to.name === 'admin' && user?.role !== 'admin') {
-    return next('/home')
+    return '/home'
   }
 
   if (to.name === 'dashboard' && user?.role !== 'employer') {
-    return next('/home')
+    return '/home'
   }
 
-  next()
+  return true
 })
 
 export default router
