@@ -13,6 +13,7 @@ Plataforma de empleo local para **Aguachica, Cesar** — conecta buscadores de e
 | **Autenticación** | Supabase Auth |
 | **Tiempo real** | Supabase Realtime (WebSockets) para Chat y Notificaciones |
 | **Frontend SPA**| Vue 3 · TypeScript · Vite · Vue Router · Chart.js |
+| **Inteligencia Artificial**| HuggingFace Inference API (`all-MiniLM-L6-v2`) + Supabase `pgvector` |
 | **Landing Page**| Astro · Tailwind CSS |
 | **Seguridad** | Helmet · CORS estricto · express-rate-limit · Zod (Anti-Mass Assignment) |
 | **Subida de archivos** | Multer (MIME-Type filters estrictos) + Supabase Storage |
@@ -109,6 +110,7 @@ localWork/
 ### Para buscadores de empleo
 - Registro y login con rol de buscador
 - Explorar y filtrar ofertas (modalidad, zona, categoría, búsqueda de texto)
+- **Motor de Recomendación con IA**: Sugerencias de empleo basadas en *Matchmaking Semántico* (distancia del coseno) de tu perfil con la descripción de los trabajos, sin depender de palabras clave exactas.
 - Búsqueda sin acentos (PostgreSQL `unaccent`)
 - Ver detalle completo de cada oferta
 - Postularse con carta de presentación y **subida de CV** (PDF/Word, máx 5 MB)
@@ -200,7 +202,8 @@ Ejecuta en el **SQL Editor de Supabase**, en este orden:
 8. database/migrations/add_chat_requests_direct.sql      # Solicitudes de chat directo
 9. database/migrations/add_map_barrios.sql               # Barrios para mapa
 10. database/migrations/add_post_service_ratings.sql     # Calificaciones post-servicio + completed status
-11. database/seed.sql                                    # Datos de prueba (opcional)
+11. database/migrations/add_pgvector_ai.sql              # Extensión vector, columnas embedding e índices HNSW
+12. database/seed.sql                                    # Datos de prueba (opcional)
 ```
 
 ### 4. Supabase Storage
@@ -255,6 +258,7 @@ POST   /api/auth/reset-password    Solicitar restablecimiento de contraseña
 
 ```
 GET    /api/jobs                   Listar empleos (filtros: category, modality, location, search, sort)
+GET    /api/jobs/recommended       Recomendaciones basadas en IA (Match Semántico)
 GET    /api/jobs/:id               Detalle de un empleo
 GET    /api/jobs/mine              Mis ofertas publicadas (empleador)
 GET    /api/jobs/categories        Categorías disponibles
