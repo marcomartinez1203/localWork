@@ -152,6 +152,13 @@ export class JobsController {
     } catch (err) { next(err); }
   }
 
+  static async getEmployerAnalytics(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const analytics = await JobsService.getEmployerAnalytics(req.userId!);
+      res.json(analytics);
+    } catch (err) { next(err); }
+  }
+
   static async getStats(_req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       const stats = await JobsService.getStats();
