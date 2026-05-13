@@ -52,6 +52,7 @@
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-2xl);
   padding: var(--space-8);
+  box-shadow: var(--shadow);
   animation: scaleIn var(--transition-slow) forwards;
 }
 
@@ -124,6 +125,8 @@
 
 .job-detail__info-item:hover {
   border-color: var(--color-primary-200);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
 }
 
 .job-detail__info-icon {
@@ -205,6 +208,7 @@
   padding: var(--space-6);
   position: sticky;
   top: calc(var(--navbar-height) + var(--space-6));
+  box-shadow: var(--shadow-md);
   animation: fadeIn var(--transition-slow) 0.2s forwards;
   opacity: 0;
 }
@@ -282,6 +286,7 @@
   padding: var(--space-8);
   width: 100%;
   max-width: 520px;
+  box-shadow: var(--shadow-xl);
   animation: scaleIn var(--transition) forwards;
 }
 
