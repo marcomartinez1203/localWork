@@ -146,7 +146,7 @@ let presenceChannel: any = null
 const knownMessageIds = new Set<string>()
 
 const initRealtime = () => {
-  const token = sessionStorage.getItem('lw_token')
+  const token = localStorage.getItem('lw_token')
   if (!token || !window.supabase || !SUPABASE_URL) return
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
     global: { headers: { Authorization: `Bearer ${token}` } },

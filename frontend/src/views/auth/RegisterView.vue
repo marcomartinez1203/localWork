@@ -259,7 +259,7 @@ const handleRegister = async () => {
     const registeredUser = AuthService.getUser()
     if (registeredUser) {
       registeredUser.preferred_mode = selectedRole.value === 'employer' ? employerIntent.value : 'jobs'
-      sessionStorage.setItem('lw_user', JSON.stringify(registeredUser))
+      localStorage.setItem('lw_user', JSON.stringify(registeredUser))
     }
 
     if (selectedRole.value === 'employer') {

@@ -690,7 +690,7 @@ const handlePortfolioUpload = async (e: Event) => {
 
 const removePortfolioImage = async (imageUrl: string) => {
   try {
-    const token = sessionStorage.getItem('lw_token')
+    const token = localStorage.getItem('lw_token')
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
     const resp = await fetch(`${apiUrl}/upload/portfolio`, {
       method: 'DELETE',

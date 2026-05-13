@@ -14,7 +14,7 @@ interface ApiOptions {
 }
 
 async function apiFetch<T = unknown>(endpoint: string, options: ApiOptions = {}): Promise<T> {
-  const token = sessionStorage.getItem('lw_token');
+  const token = localStorage.getItem('lw_token');
 
   const config: RequestInit = {
     method: options.method,
@@ -43,8 +43,8 @@ async function apiFetch<T = unknown>(endpoint: string, options: ApiOptions = {})
     endpoint.startsWith('/auth/reset-password');
 
   if (response.status === 401 && !isAuthEndpoint) {
-    sessionStorage.removeItem('lw_token');
-    sessionStorage.removeItem('lw_user');
+    localStorage.removeItem('lw_token');
+    localStorage.removeItem('lw_user');
     window.location.href = '/login';
     return new Promise(() => {}); // never resolves — page is navigating
   }

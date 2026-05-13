@@ -40,8 +40,8 @@ const AuthService = {
     });
 
     if (data.token) {
-      sessionStorage.setItem('lw_token', data.token);
-      sessionStorage.setItem('lw_user', JSON.stringify(data.user));
+      localStorage.setItem('lw_token', data.token);
+      localStorage.setItem('lw_user', JSON.stringify(data.user));
     }
 
     return data;
@@ -51,16 +51,16 @@ const AuthService = {
     const data = await api.post<AuthResponse>('/auth/login', payload);
 
     if (data.token) {
-      sessionStorage.setItem('lw_token', data.token);
-      sessionStorage.setItem('lw_user', JSON.stringify(data.user));
+      localStorage.setItem('lw_token', data.token);
+      localStorage.setItem('lw_user', JSON.stringify(data.user));
     }
 
     return data;
   },
 
   async logout(): Promise<void> {
-    sessionStorage.removeItem('lw_token');
-    sessionStorage.removeItem('lw_user');
+    localStorage.removeItem('lw_token');
+    localStorage.removeItem('lw_user');
     try { await api.post('/auth/logout'); } catch { /* silent */ }
     window.location.href = '/login';
   },
@@ -75,7 +75,7 @@ const AuthService = {
     const nextUser = data.user
       ? { ...currentUser, ...data.user }
       : { ...currentUser, ...updates };
-    sessionStorage.setItem('lw_user', JSON.stringify(nextUser));
+    localStorage.setItem('lw_user', JSON.stringify(nextUser));
     return data;
   },
 
@@ -84,12 +84,12 @@ const AuthService = {
   },
 
   getUser(): User | null {
-    const stored = sessionStorage.getItem('lw_user');
+    const stored = localStorage.getItem('lw_user');
     return stored ? (JSON.parse(stored) as User) : null;
   },
 
   getToken(): string | null {
-    return sessionStorage.getItem('lw_token');
+    return localStorage.getItem('lw_token');
   },
 
   isAuthenticated(): boolean {

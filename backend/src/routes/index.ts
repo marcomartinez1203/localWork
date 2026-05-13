@@ -11,6 +11,7 @@ import workersRoutes from './workers.routes';
 import companiesRoutes from './companies.routes';
 import ratingsRoutes from './ratings.routes';
 import chatRoutes from './chat.routes';
+import adminRoutes from './admin.routes';
 
 const router = Router();
 
@@ -23,7 +24,30 @@ router.use('/workers',       workersRoutes);
 router.use('/companies',     companiesRoutes);
 router.use('/ratings',       ratingsRoutes);
 router.use('/chat',          chatRoutes);
+router.use('/admin',         adminRoutes);
 
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Verifica el estado de salud del API
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "ok"
+ *                 timestamp:
+ *                   type: string
+ *                 service:
+ *                   type: string
+ */
 // Health check
 router.get('/health', (_req, res) => {
   res.json({

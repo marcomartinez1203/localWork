@@ -53,6 +53,9 @@ CREATE TABLE profiles (
   resume_url   TEXT,         -- URL del CV en Supabase Storage
   education    JSONB         DEFAULT '[]'::jsonb,  -- historial educativo
   experience   JSONB         DEFAULT '[]'::jsonb,  -- experiencia laboral
+  verification_status TEXT   DEFAULT 'unverified',
+  identity_document_url TEXT,
+  portfolio_images text[]    DEFAULT '{}',
   created_at   TIMESTAMPTZ   NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ   NOT NULL DEFAULT now()
 );
@@ -426,6 +429,8 @@ SELECT
   skills,
   work_type,
   service_public,
+  verification_status,
+  portfolio_images,
   availability,
   hourly_rate,
   role,

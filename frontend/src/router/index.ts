@@ -53,6 +53,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/MapView.vue')
   },
   {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/AdminView.vue')
+  },
+  {
     path: '/login',
     name: 'login',
     component: () => import('../views/auth/LoginView.vue'),
@@ -75,6 +80,40 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
+})
+
+router.beforeEach((to, _from, next) => {
+  // Hack for AuthService due to circular dependency issues if imported top-level
+  const isAuth = !!localStorage.getItem('lw_token')
+  const userRaw = localStorage.getItem('lw_user')
+  const user = userRaw ? JSON.parse(userRaw) : null
+
+  const publicRoutes = ['login', 'register', 'reset-password', 'index']
+  const isPublicRoute = publicRoutes.includes(to.name as string)
+
+  if (isPublicRoute) {
+    if (isAuth && to.name !== 'index') {
+      const target = user?.role === 'employer' ? '/dashboard' : '/home'
+      return next(target)
+    }
+    return next()
+  }
+
+  // Protected route, must be auth
+  if (!isAuth) {
+    return next('/login')
+  }
+
+  // Role guards
+  if (to.name === 'admin' && user?.role !== 'admin') {
+    return next('/home')
+  }
+
+  if (to.name === 'dashboard' && user?.role !== 'employer') {
+    return next('/home')
+  }
+
+  next()
 })
 
 export default router

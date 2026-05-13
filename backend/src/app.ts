@@ -9,6 +9,8 @@ import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import routes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 
 const app = express();
 
@@ -57,6 +59,11 @@ if (env.isDev) {
   app.use(morgan('dev'));
 } else {
   app.use(morgan('combined'));
+}
+
+// ── Swagger Docs ──
+if (env.isDev) {
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
 
 // ── Rutas ──
