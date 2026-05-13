@@ -56,6 +56,7 @@ CREATE TABLE profiles (
   verification_status TEXT   DEFAULT 'unverified',
   identity_document_url TEXT,
   portfolio_images text[]    DEFAULT '{}',
+  embedding    vector(384),
   created_at   TIMESTAMPTZ   NOT NULL DEFAULT now(),
   updated_at   TIMESTAMPTZ   NOT NULL DEFAULT now()
 );
@@ -131,6 +132,7 @@ CREATE TABLE jobs (
   barrio_id    UUID          REFERENCES barrios(id) ON DELETE SET NULL,
   location_lat DECIMAL(10, 6),
   location_lng DECIMAL(10, 6),
+  embedding    vector(384),
 
   CONSTRAINT chk_salary_range CHECK (salary_min IS NULL OR salary_max IS NULL OR salary_min <= salary_max),
   created_at   TIMESTAMPTZ   NOT NULL DEFAULT now(),

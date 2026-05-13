@@ -113,6 +113,45 @@ export class JobsService {
     return data as JobWithDetails;
   }
 
+  static async getRecommended(userId: string): Promise<Job[]> {
+    // 1. Obtener perfil del buscador
+    const { data: profile, error: pError } = await supabaseAdmin.from('profiles').select('embedding').eq('id', userId).single();
+    if (pError || !profile) throw new AppError('Perfil no encontrado', 404);
+
+    // 2. Si el perfil no tiene embedding (nuevo usuario o no completado), retornamos ofertas recientes
+    if (!profile.embedding) {
+      const { data } = await supabaseAdmin.from('jobs').select('*, companies(*)').eq('status', 'active').order('created_at', { ascending: false }).limit(5);
+      return data as Job[] || [];
+    }
+
+    // 3. Ejecutar búsqueda semántica con pgvector mediante función RPC
+    // match_threshold: 0.5 (se puede ajustar para ser más o menos estricto)
+    // match_count: 5 (top 5 resultados)
+    const { data: matches, error: rpcError } = await supabaseAdmin.rpc('match_jobs', {
+      query_embedding: profile.embedding,
+      match_threshold: 0.3,
+      match_count: 5
+    });
+
+    if (rpcError) {
+      console.error('[JobsService.getRecommended] RPC Error:', rpcError);
+      return [];
+    }
+
+    if (!matches || matches.length === 0) return [];
+
+    // 4. Obtener los detalles completos de los trabajos coincidentes
+    const jobIds = matches.map((m: any) => m.id);
+    const { data: fullJobs } = await supabaseAdmin.from('jobs').select('*, companies(*)').in('id', jobIds);
+
+    // Ordenarlos por la misma similitud devuelta por match_jobs
+    return (fullJobs as Job[] || []).sort((a, b) => {
+      const idxA = matches.findIndex((m: any) => m.id === a.id);
+      const idxB = matches.findIndex((m: any) => m.id === b.id);
+      return idxA - idxB;
+    });
+  }
+
   static async getEmployerAnalytics(userId: string): Promise<any> {
     const { data, error } = await supabaseAdmin.rpc('get_employer_analytics', { p_owner_id: userId });
     if (error) {
@@ -168,6 +207,8 @@ export class JobsService {
         console.error('[JobsService.create] new_job_match error', err)
       );
     }
+
+    this._generateEmbedding(data as Job).catch(e => console.error(e));
 
     return data as Job;
   }
@@ -237,6 +278,11 @@ export class JobsService {
       .single();
 
     if (error) { console.error('[JobsService.update]', error); throw new AppError('Error al actualizar la oferta', 500); }
+    
+    if ('title' in cleanUpdates || 'description' in cleanUpdates || 'requirements' in cleanUpdates) {
+      this._generateEmbedding(data as Job).catch(e => console.error(e));
+    }
+    
     return data as Job;
   }
 
@@ -248,8 +294,19 @@ export class JobsService {
       .delete()
       .eq('id', jobId);
 
-    if (error) { console.error('[JobsService.delete]', error); throw new AppError('Error al eliminar la oferta', 500); }
+    if (error) { console.error('[JobsService.delete]', error); throw new AppError('Error al eliminar', 500); }
   }
+
+  private static async _generateEmbedding(job: Job): Promise<void> {
+    const AIService = (await import('./ai.service')).AIService;
+    const textToEmbed = AIService.buildJobText(job as any);
+    const embedding = await AIService.generateEmbedding(textToEmbed);
+    if (embedding) {
+      await supabaseAdmin.from('jobs').update({ embedding: `[${embedding.join(',')}]` }).eq('id', job.id);
+    }
+  }
+
+
 
   static async getByCompanyOwner(userId: string, filters: JobFilters): Promise<PaginatedResponse<Job>> {
     const page = filters.page || 1;

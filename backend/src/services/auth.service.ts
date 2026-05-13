@@ -145,6 +145,20 @@ export class AuthService {
 
     if (error) { console.error('[AuthService.updateProfile]', error); throw new AppError('Error al actualizar el perfil', 500); }
 
+    // Actualizar embedding de IA silenciosamente en background si cambiaron campos relevantes
+    if ('bio' in cleanUpdates || 'skills' in cleanUpdates || 'experience' in cleanUpdates) {
+      setTimeout(async () => {
+        try {
+          const AIService = (await import('./ai.service')).AIService;
+          const textToEmbed = AIService.buildProfileText(data as any);
+          const embedding = await AIService.generateEmbedding(textToEmbed);
+          if (embedding) {
+            await supabaseAdmin.from('profiles').update({ embedding: `[${embedding.join(',')}]` }).eq('id', userId);
+          }
+        } catch (e) { console.error('Error actualizando embedding de perfil:', e); }
+      }, 0);
+    }
+
     return data as Profile;
   }
 

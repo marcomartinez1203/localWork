@@ -11,6 +11,11 @@ const router = Router();
 router.get('/categories',      JobsController.getCategories);
 router.get('/barrios',         JobsController.getBarrios);
 router.get('/nearby',          JobsController.getNearby);
+router.get('/employer-analytics', authenticate, requireRole('employer'), JobsController.getEmployerAnalytics);
+
+// Recomendar empleos con IA (pgvector)
+router.get('/recommended', authenticate, requireRole('seeker'), JobsController.getRecommended);
+
 router.get('/employer-stats',  authenticate, requireRole('employer'), JobsController.getEmployerStats);
 router.get('/stats',           JobsController.getStats);
 router.get('/',           JobsController.list);

@@ -28,6 +28,10 @@ const JobsService = {
     return api.get<JobsListResponse>(`/jobs?${params.toString()}`);
   },
 
+  async getRecommended(): Promise<Job[]> {
+    return api.get<Job[]>('/jobs/recommended');
+  },
+
   async getById(jobId: string): Promise<Job> {
     return api.get<Job>(`/jobs/${jobId}`);
   },

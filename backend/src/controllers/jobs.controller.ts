@@ -50,6 +50,14 @@ export class JobsController {
     } catch (err) { next(err); }
   }
 
+  static async getRecommended(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId!;
+      const jobs = await JobsService.getRecommended(userId);
+      res.json(jobs);
+    } catch (err) { next(err); }
+  }
+
   static async create(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
       if (req.body.barrio_id && req.userRole !== 'employer') {

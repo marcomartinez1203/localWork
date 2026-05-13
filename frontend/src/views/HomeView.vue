@@ -133,6 +133,21 @@
       <p class="results-info__count" v-html="resultsText"></p>
     </div>
 
+    <!-- Recommended Jobs (AI) -->
+    <div v-if="recommendedJobs.length > 0 && !searchQuery" class="recommended-section">
+      <div class="recommended-header">
+        <h2 class="recommended-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/></svg>
+          Recomendados para ti
+        </h2>
+        <p class="recommended-subtitle">Match semántico basado en tu perfil</p>
+      </div>
+      <div class="recommended-grid">
+        <JobCard v-for="(job, index) in recommendedJobs" :key="'rec-'+job.id" :job="job" :style="`--i:${index}`" class="card-enter recommended-card" />
+      </div>
+      <hr class="section-divider" />
+    </div>
+
     <!-- Job Cards Grid -->
     <div v-if="isLoading" class="jobs-grid">
       <div v-for="i in 3" :key="i" class="skeleton" style="height:280px;border-radius:var(--radius-lg);"></div>
@@ -182,6 +197,7 @@ const router = useRouter()
 const user = ref<User | null>(null)
 const stats = ref<Record<string, unknown>>({})
 const jobs = ref<Job[]>([])
+const recommendedJobs = ref<Job[]>([])
 const totalJobs = ref(0)
 const totalPages = ref(1)
 const currentPage = ref(1)
@@ -225,8 +241,17 @@ onMounted(async () => {
     console.warn('Stats error:', e)
   }
 
+  fetchRecommended()
   fetchJobs()
 })
+
+const fetchRecommended = async () => {
+  try {
+    recommendedJobs.value = await JobsService.getRecommended()
+  } catch (err) {
+    console.error('Error loading recommendations:', err)
+  }
+}
 
 const fetchJobs = async () => {
   isLoading.value = true
@@ -290,4 +315,38 @@ const clearSearch = () => {
 
 <style scoped>
 @import '@/assets/css/pages/home.css';
+
+.recommended-section {
+  margin-bottom: var(--space-8);
+}
+.recommended-header {
+  margin-bottom: var(--space-4);
+}
+.recommended-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+.recommended-subtitle {
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+}
+.recommended-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+.recommended-card {
+  border: 2px solid var(--color-primary-light);
+  box-shadow: 0 8px 24px rgba(0, 114, 0, 0.08);
+}
+.section-divider {
+  margin-top: var(--space-8);
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
 </style>

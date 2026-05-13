@@ -28,6 +28,7 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY es requerida'),
   FRONTEND_URL: z.string().optional().default('http://localhost:5500'),
   CORS_ORIGINS: z.string().optional(),
+  HF_API_KEY: z.string().optional(),
 });
 
 const parseResult = envSchema.safeParse(process.env);
@@ -56,4 +57,5 @@ export const env = {
     ? raw.CORS_ORIGINS.split(',').map((o: string) => o.trim())
     : (raw.NODE_ENV === 'production' ? productionCorsOrigins : defaultCorsOrigins),
   isDev: raw.NODE_ENV !== 'production',
+  hfApiKey: raw.HF_API_KEY,
 };
