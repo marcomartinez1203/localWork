@@ -1,11 +1,11 @@
 <template>
   <div class="main-layout">
     <Navbar />
-    
+
     <main id="main-content">
       <router-view />
     </main>
-    
+
     <Footer />
   </div>
 </template>
@@ -22,6 +22,7 @@ import Footer from '@/components/layout/Footer.vue'
   flex-direction: column;
 }
 #main-content {
-  flex: 1; /* Para que el footer se quede abajo si la página es muy corta */
+  flex: 1;
+  padding-top: var(--navbar-height);
 }
 </style>

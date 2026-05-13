@@ -1,39 +1,39 @@
 /* ============================================
-   LocalWork — Design System v3
-   Swiss Design / Bento Grid — Elevated Edition
-   Dual Light + Dark Theme
+   LocalWork — Design System v4
+   Dark Mode Técnico / Supabase Aesthetic
+   Solid, Flat, Clean. Zero gradients.
    ============================================ */
 
 /* ── Fonts ── */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ══════════════════════════════════════════════
-   LIGHT MODE (default)
+   DARK MODE (default) — Técnico y sobrio
    ══════════════════════════════════════════════ */
 :root {
-  /* Brand — Clean Professional Green */
-  --color-primary:       #16a34a;
-  --color-primary-dark:  #15803d;
-  --color-primary-light: #22c55e;
-  --color-primary-50:    rgba(22,163,74,0.06);
-  --color-primary-100:   rgba(22,163,74,0.10);
-  --color-primary-200:   rgba(22,163,74,0.18);
+  /* Brand — Emerald corporativo, elegante */
+  --color-primary:       #059669;
+  --color-primary-dark:  #047857;
+  --color-primary-light: #10b981;
+  --color-primary-50:    rgba(5,150,105,0.06);
+  --color-primary-100:   rgba(5,150,105,0.10);
+  --color-primary-200:   rgba(5,150,105,0.18);
 
   /* Accent */
-  --color-accent:        #22c55e;
-  --color-accent-dark:   #16a34a;
-  --color-accent-light:  #86efac;
-  --color-accent-50:     rgba(34,197,94,0.06);
+  --color-accent:        #0d9488;
+  --color-accent-dark:   #0f766e;
+  --color-accent-light:  #14b8a6;
+  --color-accent-50:     rgba(13,148,136,0.06);
 
-  /* Neutrals — Zinc scale for Swiss precision */
-  --color-bg:            #f8f8f7;
-  --color-surface:       #ffffff;
-  --color-surface-alt:   #f2f2f0;
-  --color-text:          #09090b;
-  --color-text-secondary:#3f3f46;
-  --color-text-muted:    #71717a;
-  --color-border:        #d4d4d8;
-  --color-border-light:  #e4e4e7;
+  /* Neutrals — Gray scale técnico */
+  --color-bg:            #030712;
+  --color-surface:       #111827;
+  --color-surface-alt:   #1f2937;
+  --color-text:          #f9fafb;
+  --color-text-secondary:#9ca3af;
+  --color-text-muted:    #6b7280;
+  --color-border:        #1f2937;
+  --color-border-light:  #374151;
 
   /* Semantic */
   --color-danger:        #ef4444;
@@ -42,20 +42,20 @@
   --color-info:          #3b82f6;
   --color-success:       #10b981;
 
-  /* Typography — DM Sans replaces Inter for character */
+  /* Typography */
   --font-heading:  'Sora', system-ui, sans-serif;
   --font-body:     'DM Sans', system-ui, sans-serif;
   --font-mono:     'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 
-  --fs-xs:    0.75rem;     /* 12px */
-  --fs-sm:    0.8125rem;   /* 13px */
-  --fs-base:  0.875rem;    /* 14px */
-  --fs-md:    1rem;        /* 16px */
-  --fs-lg:    1.125rem;    /* 18px */
-  --fs-xl:    1.25rem;     /* 20px */
-  --fs-2xl:   1.5rem;      /* 24px */
-  --fs-3xl:   1.875rem;    /* 30px */
-  --fs-4xl:   2.25rem;     /* 36px */
+  --fs-xs:    0.75rem;
+  --fs-sm:    0.8125rem;
+  --fs-base:  0.875rem;
+  --fs-md:    1rem;
+  --fs-lg:    1.125rem;
+  --fs-xl:    1.25rem;
+  --fs-2xl:   1.5rem;
+  --fs-3xl:   1.875rem;
+  --fs-4xl:   2.25rem;
 
   --fw-regular:  400;
   --fw-medium:   500;
@@ -67,7 +67,7 @@
   --lh-normal:   1.5;
   --lh-relaxed:  1.7;
 
-  /* Spacing scale */
+  /* Spacing */
   --space-1:  0.25rem;
   --space-2:  0.5rem;
   --space-3:  0.75rem;
@@ -89,22 +89,16 @@
   --radius-2xl:  18px;
   --radius-full: 9999px;
 
-  /* Shadows — Layered for depth and realism */
-  --shadow-xs:   0 1px 2px rgba(0,0,0,0.04);
-  --shadow-sm:   0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow:      0 2px 8px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
-  --shadow-md:   0 4px 16px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
-  --shadow-lg:   0 8px 30px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.04);
-  --shadow-xl:   0 16px 48px rgba(0,0,0,0.10), 0 8px 16px rgba(0,0,0,0.04);
-  --shadow-glow: 0 0 24px rgba(22,163,74,0.15), 0 4px 12px rgba(22,163,74,0.08);
+  /* Shadows — Mínimos, solo para separación sutil */
+  --shadow-xs:   0 1px 2px rgba(0,0,0,0.20);
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.30);
 
-  /* Transitions — Spring-like easing */
+  /* Transitions */
   --transition-fast:   150ms cubic-bezier(0.22,1,0.36,1);
   --transition:        300ms cubic-bezier(0.22,1,0.36,1);
   --transition-slow:   500ms cubic-bezier(0.22,1,0.36,1);
-  --transition-spring: 500ms cubic-bezier(0.34,1.56,0.64,1);
 
-  /* Z-index scale */
+  /* Z-index */
   --z-dropdown:  100;
   --z-sticky:    200;
   --z-navbar:    300;
@@ -115,60 +109,23 @@
   /* Layout */
   --container-max: 1280px;
   --container-sm:  720px;
-  --navbar-height: 72px;
-
-  /* Background texture */
-  --noise-opacity: 0.025;
-  --dot-color: rgba(0,0,0,0.04);
-
-  color-scheme: light;
-}
-
-
-/* ══════════════════════════════════════════════
-   DARK MODE
-   ══════════════════════════════════════════════ */
-[data-theme="dark"] {
-  /* Matte deep backgrounds */
-  --color-bg:            #111110;
-  --color-surface:       #191918;
-  --color-surface-alt:   #222221;
-  
-  /* Matte text */
-  --color-text:          #ededed;
-  --color-text-secondary:#9a9a9a;
-  --color-text-muted:    #5e5e5e;
-  
-  /* Crisp, subtle borders */
-  --color-border:        #2e2e2e;
-  --color-border-light:  rgba(255,255,255,0.06);
-
-  /* Brand — Clean Green (brighter for dark backgrounds) */
-  --color-primary:       #4ade80;
-  --color-primary-50:    rgba(74,222,128,0.06);
-  --color-primary-100:   rgba(74,222,128,0.10);
-  --color-primary-200:   rgba(74,222,128,0.16);
-  --color-primary-dark:  #22c55e;
-  --color-primary-light: #86efac;
-
-  --color-accent-50:     rgba(74,222,128,0.06);
-
-  /* Shadows — Darker, more dramatic */
-  --shadow-xs:   0 1px 2px rgba(0,0,0,0.20);
-  --shadow-sm:   0 1px 3px rgba(0,0,0,0.30), 0 1px 2px rgba(0,0,0,0.20);
-  --shadow:      0 2px 8px rgba(0,0,0,0.30), 0 1px 3px rgba(0,0,0,0.20);
-  --shadow-md:   0 4px 16px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.20);
-  --shadow-lg:   0 8px 30px rgba(0,0,0,0.40), 0 4px 8px rgba(0,0,0,0.20);
-  --shadow-xl:   0 16px 48px rgba(0,0,0,0.50), 0 8px 16px rgba(0,0,0,0.25);
-  --shadow-glow: 0 0 24px rgba(74,222,128,0.12), 0 4px 12px rgba(74,222,128,0.06);
-
-  /* Texture */
-  --noise-opacity: 0.03;
-  --dot-color: rgba(255,255,255,0.03);
+  --navbar-height: 64px;
 
   color-scheme: dark;
 }
 
+/* Light mode override (si alguien lo fuerza) */
+[data-theme="light"] {
+  --color-bg:            #f8f8f7;
+  --color-surface:       #ffffff;
+  --color-surface-alt:   #f2f2f0;
+  --color-text:          #09090b;
+  --color-text-secondary:#3f3f46;
+  --color-text-muted:    #71717a;
+  --color-border:        #d4d4d8;
+  --color-border-light:  #e4e4e7;
+  color-scheme: light;
+}
 
 /* ══════════════════════════════════════════════
    CSS RESET
@@ -201,25 +158,6 @@ body {
   letter-spacing: -0.011em;
 }
 
-/* Subtle noise texture on body for atmosphere */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: var(--noise-opacity);
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
-}
-
-@media (min-width: 768px) {
-  body:has(.navbar--sidebar) {
-    padding-left: 64px;
-  }
-}
-
 img, picture, video, canvas, svg {
   display: block;
   max-width: 100%;
@@ -244,7 +182,7 @@ a {
 }
 
 a:hover {
-  color: var(--color-primary-dark);
+  color: var(--color-primary-light);
 }
 
 a.btn:hover {
@@ -254,7 +192,6 @@ a.btn:hover {
 ul, ol { list-style: none; }
 table { border-collapse: collapse; width: 100%; }
 fieldset { border: none; }
-
 
 /* ══════════════════════════════════════════════
    TYPOGRAPHY
@@ -293,7 +230,6 @@ strong { font-weight: var(--fw-semibold); }
   h3 { font-size: var(--fs-2xl); }
 }
 
-/* Monospaced metadata label — THE signature of Swiss Design */
 .mono-label {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -309,7 +245,6 @@ strong { font-weight: var(--fw-semibold); }
   font-weight: 600;
   letter-spacing: 0.02em;
 }
-
 
 /* ══════════════════════════════════════════════
    LAYOUT UTILITIES
@@ -354,28 +289,17 @@ strong { font-weight: var(--fw-semibold); }
   }
 }
 
-/* Bento Card — the core building block */
+/* Bento Card — plano, sólido, sin sombras */
 .bento-card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-2xl);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   padding: var(--space-6);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition);
+  transition: border-color var(--transition-fast);
 }
 
 .bento-card:hover {
-  border-color: var(--color-primary-200);
-  box-shadow: var(--shadow-glow);
-  transform: translateY(-3px);
-}
-
-[data-theme="dark"] .bento-card {
-  border-color: rgba(255,255,255,0.05);
-}
-
-[data-theme="dark"] .bento-card:hover {
-  border-color: rgba(52,211,153,0.3);
+  border-color: var(--color-border-light);
 }
 
 .flex { display: flex; }
@@ -397,7 +321,6 @@ strong { font-weight: var(--fw-semibold); }
 
 .section    { padding-block: var(--space-16); }
 .section--sm { padding-block: var(--space-8); }
-
 
 /* ══════════════════════════════════════════════
    ACCESSIBILITY
@@ -427,7 +350,6 @@ strong { font-weight: var(--fw-semibold); }
 
 .skip-link:focus { top: var(--space-4); }
 
-
 /* ══════════════════════════════════════════════
    SCROLLBAR
    ══════════════════════════════════════════════ */
@@ -437,12 +359,7 @@ strong { font-weight: var(--fw-semibold); }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
 
 ::selection {
-  background: var(--color-primary-200);
-  color: var(--color-text);
-}
-
-[data-theme="dark"] ::selection {
-  background: rgba(52,211,153,0.3);
+  background: rgba(5,150,105,0.30);
   color: #fff;
 }
 
@@ -450,7 +367,6 @@ strong { font-weight: var(--fw-semibold); }
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
-
 
 /* ══════════════════════════════════════════════
    PAGE WRAPPER
@@ -460,11 +376,8 @@ strong { font-weight: var(--fw-semibold); }
   min-height: 100vh;
 }
 
-/* Page loaded — body is visible by default now (Vue handles mount) */
-
-
 /* ══════════════════════════════════════════════
-   ANIMATIONS — Spring Physics & Orchestrated Reveals
+   ANIMATIONS
    ══════════════════════════════════════════════ */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
@@ -491,106 +404,33 @@ strong { font-weight: var(--fw-semibold); }
   to   { opacity: 1; transform: scale(1); }
 }
 
-@keyframes shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.4; }
-}
-
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* Bento card staggered entrance — bouncy spring */
 @keyframes bentoEnter {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.97);
-  }
-  60% {
-    opacity: 1;
-    transform: translateY(-4px) scale(1.005);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Orchestrated page reveal */
-@keyframes revealSection {
-  from {
-    opacity: 0;
-    transform: translateY(32px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Glow pulse for emphasis */
-@keyframes glowPulse {
-  0%, 100% { box-shadow: var(--shadow-sm); }
-  50% { box-shadow: var(--shadow-glow); }
+  0%  { opacity: 0; transform: translateY(12px); }
+  100%{ opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in     { animation: fadeIn var(--transition) forwards; }
 .animate-fade-in-up  { animation: fadeInUp var(--transition-slow) forwards; }
 .animate-slide-down  { animation: slideDown var(--transition) forwards; }
 
-/* Staggered card entrance — set --i via JS or nth-child */
 .card-enter {
   opacity: 0;
-  animation: bentoEnter 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
-  animation-delay: calc(var(--i, 0) * 80ms);
+  animation: bentoEnter 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
+  animation-delay: calc(var(--i, 0) * 60ms);
 }
 
-/* Page section reveal stagger */
-.reveal-section {
-  opacity: 0;
-  animation: revealSection 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
-}
-
-.reveal-section:nth-child(1) { animation-delay: 0ms; }
-.reveal-section:nth-child(2) { animation-delay: 100ms; }
-.reveal-section:nth-child(3) { animation-delay: 200ms; }
-.reveal-section:nth-child(4) { animation-delay: 300ms; }
-
-/* Skeleton shimmer — upgraded with gradient sweep */
+/* Skeleton — solid color, NO gradient */
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--color-border-light) 0%,
-    var(--color-surface) 40%,
-    var(--color-border-light) 80%
-  );
-  background-size: 800px 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
+  background: var(--color-surface-alt);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   border-radius: var(--radius-lg);
 }
 
-[data-theme="dark"] .skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--color-surface-alt) 0%,
-    var(--color-surface) 40%,
-    var(--color-surface-alt) 80%
-  );
-  background-size: 800px 100%;
-}
-
-
-/* ══════════════════════════════════════════════
-   DECORATIVE UTILITIES
-   ══════════════════════════════════════════════ */
-
-/* Dot grid pattern background — use on sections */
-.dot-grid-bg {
-  background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
-  background-size: 24px 24px;
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
 }
