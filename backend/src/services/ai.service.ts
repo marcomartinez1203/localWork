@@ -72,7 +72,7 @@ export class AIService {
    * Genera una carta de presentación para un empleo específico usando OpenRouter.
    */
   static async generateCoverLetter(profile: any, job: any): Promise<string> {
-    if (!env.OPENROUTER_API_KEY) {
+    if (!env.openRouterApiKey) {
       throw new Error('OPENROUTER_API_KEY no configurada');
     }
 
@@ -95,7 +95,7 @@ No agregues placeholders como [Nombre de la Empresa], adapta lo que puedas con l
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
+          'Authorization': `Bearer ${env.openRouterApiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -106,7 +106,7 @@ No agregues placeholders como [Nombre de la Empresa], adapta lo que puedas con l
 
       if (!response.ok) throw new Error('Error de OpenRouter: ' + response.statusText);
       
-      const data = await response.json();
+      const data = (await response.json()) as any;
       return data.choices?.[0]?.message?.content || 'No se pudo generar la carta.';
     } catch (err) {
       logger.error('Error generando carta de presentación', { error: err });
@@ -118,7 +118,7 @@ No agregues placeholders como [Nombre de la Empresa], adapta lo que puedas con l
    * Sugiere mejoras al perfil de un usuario para hacerlo más atractivo.
    */
   static async suggestProfileImprovements(profile: any): Promise<string> {
-    if (!env.OPENROUTER_API_KEY) {
+    if (!env.openRouterApiKey) {
       throw new Error('OPENROUTER_API_KEY no configurada');
     }
 
@@ -136,7 +136,7 @@ Tipo de trabajo deseado: ${profile.work_type || '(Vacío)'}`;
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
+          'Authorization': `Bearer ${env.openRouterApiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -147,7 +147,7 @@ Tipo de trabajo deseado: ${profile.work_type || '(Vacío)'}`;
 
       if (!response.ok) throw new Error('Error de OpenRouter: ' + response.statusText);
       
-      const data = await response.json();
+      const data = (await response.json()) as any;
       return data.choices?.[0]?.message?.content || 'No se pudieron generar sugerencias.';
     } catch (err) {
       logger.error('Error sugiriendo mejoras de perfil', { error: err });

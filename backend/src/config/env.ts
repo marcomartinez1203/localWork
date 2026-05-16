@@ -58,6 +58,7 @@ export const env = {
     : (raw.NODE_ENV === 'production' ? productionCorsOrigins : defaultCorsOrigins),
   isDev: raw.NODE_ENV !== 'production',
   hfApiKey: process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY,
+  openRouterApiKey: process.env.OPENROUTER_API_KEY,
   vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
   vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
 };
