@@ -46,6 +46,7 @@ localWork/
 │       │   ├── ratings.routes.ts
 │       │   └── upload.routes.ts
 │       ├── services/               # Lógica de negocio
+│       │   ├── ai.service.ts         # Embeddings HuggingFace (all-MiniLM-L6-v2)
 │       │   ├── auth.service.ts
 │       │   ├── jobs.service.ts
 │       │   ├── applications.service.ts
@@ -100,7 +101,8 @@ localWork/
         ├── add_chat_requests_direct.sql
         ├── add_map_barrios.sql
         ├── db_integrity_fixes.sql
-        └── performance_fixes.sql
+        ├── performance_fixes.sql
+        └── add_pgvector_ai.sql          # pgvector, columnas embedding, índices HNSW, RPC match_jobs
 ```
 
 ---
