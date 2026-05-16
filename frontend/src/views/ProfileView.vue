@@ -752,7 +752,7 @@ const saveSkillsSection = async () => {
       skills: skillsList.value,
       work_type: skillsForm.value.work_type,
       availability: skillsForm.value.availability,
-      hourly_rate: skillsForm.value.hourly_rate
+      hourly_rate: skillsForm.value.hourly_rate ? Number(skillsForm.value.hourly_rate) : null
     }
     if (Object.prototype.hasOwnProperty.call(user.value, 'service_public')) {
       updatePayload.service_public = shouldPublish
