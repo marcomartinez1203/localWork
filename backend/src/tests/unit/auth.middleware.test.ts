@@ -104,7 +104,7 @@ describe('Auth Middleware', () => {
     it('Debe poblar req si token válido', async () => {
       const mock = getGlobalMock()!;
       mock.supabaseAdmin.auth.getUser.mockResolvedValue({
-        data: { user: { id: 'u1' } }, error: null,
+        data: { user: { id: 'u1', email: 'test@test.com' } } as any, error: null as any,
       });
       mock.getBuilder('profiles').setResult({ data: { role: 'seeker' }, error: null });
 

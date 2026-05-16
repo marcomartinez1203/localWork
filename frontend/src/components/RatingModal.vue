@@ -3,7 +3,7 @@
     <div class="rating-modal">
       <div class="rating-modal__header">
         <h2 class="rating-modal__title">Calificar a {{ targetName }}</h2>
-        <button class="modal__close" @click="close">
+        <button class="modal__close" @click="close" aria-label="Cerrar modal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 18 6M6 6l12 12"/></svg>
         </button>
       </div>

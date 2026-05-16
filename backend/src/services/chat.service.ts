@@ -5,6 +5,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
 import { AuthenticatedRequest, ChatRequest, Conversation, Message } from '../types';
 import { NotificationsService } from './notifications.service';
+import { logger } from '../utils/logger';
 
 type StartConversationResult = {
   conversation_id: string;
@@ -110,7 +111,7 @@ export class ChatService {
           return { conversation_id: conflict.id, created: false };
         }
       }
-      console.error('[ChatService.startConversation]', error);
+      logger.error('ChatService.startConversation failed', { error });
       throw new AppError('No se pudo iniciar la conversación', 500);
     }
 
@@ -168,7 +169,7 @@ export class ChatService {
       .single();
 
     if (error) {
-      console.error('[ChatService.createDirectRequest]', error);
+      logger.error('ChatService.createDirectRequest failed', { error });
       throw new AppError('No se pudo crear la solicitud de chat', 500);
     }
 
@@ -178,7 +179,7 @@ export class ChatService {
       'Nueva solicitud de chat',
       'Tienes una nueva solicitud de conversación',
       { kind: 'chat_request', request_id: data.id, sender_id: senderId }
-    ).catch(err => console.error('[ChatService.createDirectRequest.notification]', err));
+    ).catch(err => logger.error('ChatService.createDirectRequest notification error', { error: err }));
 
     return { request_id: data.id, status: 'pending' };
   }
@@ -446,7 +447,7 @@ export class ChatService {
       'Nuevo mensaje',
       preview,
       { conversation_id: conversationId, application_id: conversation.application_id, kind: 'chat_message' }
-    ).catch(err => console.error('[ChatService.sendMessage.notification]', err));
+    ).catch(err => logger.error('ChatService.sendMessage notification error', { error: err }));
 
     return data as Message;
   }

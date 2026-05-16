@@ -43,7 +43,7 @@ describe('Companies API', () => {
 
   it('GET /api/companies/mine/analytics debe retornar analytics', async () => {
     getGlobalMock()!.getBuilder('profiles').setResult({ data: { role: 'employer' }, error: null });
-    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data: { total_jobs:5 }, error: null });
+    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data: { total_jobs:5 }, error: null } as any);
     const app = await importApp();
     const res = await request(app).get('/api/companies/mine/analytics').set(authHeader());
     expect(res.status).toBe(200);

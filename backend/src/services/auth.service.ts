@@ -3,6 +3,7 @@
 // ============================================
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
+import { logger } from '../utils/logger';
 import { RegisterRequest, LoginRequest, AuthResponse, Profile } from '../types';
 
 export class AuthService {
@@ -21,7 +22,7 @@ export class AuthService {
     });
 
     if (authError) {
-      console.error('🔴 Supabase createUser error:', JSON.stringify(authError, null, 2));
+      logger.error('Supabase createUser error', { authError });
       if (authError.message.includes('already registered')) {
         throw new AppError('Este correo ya está registrado', 409);
       }
@@ -39,7 +40,7 @@ export class AuthService {
     });
 
     if (profileError) {
-      console.error('🔴 Profile creation error:', profileError);
+      logger.error('Profile creation error', { profileError });
     }
 
     // 3. Si es empleador y tiene empresa, crearla
@@ -59,7 +60,7 @@ export class AuthService {
       });
 
     if (loginErr || !loginData.session) {
-      if (loginErr) console.error('[AuthService.register]', loginErr);
+      if (loginErr) logger.error('AuthService.register login error', { loginErr });
       throw new AppError('Error al crear la sesión', 500);
     }
 
@@ -143,7 +144,7 @@ export class AuthService {
       ({ data, error } = await executeUpdate(fallbackUpdates));
     }
 
-    if (error) { console.error('[AuthService.updateProfile]', error); throw new AppError('Error al actualizar el perfil', 500); }
+    if (error) { logger.error('AuthService.updateProfile failed', { error }); throw new AppError('Error al actualizar el perfil', 500); }
 
     // Actualizar embedding de IA silenciosamente en background si cambiaron campos relevantes
     if ('bio' in cleanUpdates || 'skills' in cleanUpdates || 'experience' in cleanUpdates) {
@@ -155,7 +156,7 @@ export class AuthService {
           if (embedding) {
             await supabaseAdmin.from('profiles').update({ embedding: `[${embedding.join(',')}]` }).eq('id', userId);
           }
-        } catch (e) { console.error('Error actualizando embedding de perfil:', e); }
+        } catch (e) { logger.error('Error actualizando embedding de perfil', { error: e }); }
       }, 0);
     }
 
@@ -164,6 +165,6 @@ export class AuthService {
 
   static async resetPassword(email: string): Promise<void> {
     const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email);
-    if (error) { console.error('[AuthService.resetPassword]', error); throw new AppError('Error al enviar el correo de recuperación', 500); }
+    if (error) { logger.error('AuthService.resetPassword failed', { error }); throw new AppError('Error al enviar el correo de recuperación', 500); }
   }
 }

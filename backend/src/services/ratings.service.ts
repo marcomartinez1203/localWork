@@ -3,6 +3,7 @@
 // ============================================
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
+import { logger } from '../utils/logger';
 import { NotificationsService } from './notifications.service';
 
 export interface RatingInput {
@@ -77,7 +78,7 @@ export class RatingsService {
     if (error) {
       if (error.code === '23505') throw new AppError('Ya calificaste a esta persona', 409);
       if (error.code === '23503') throw new AppError('Usuario no encontrado', 404);
-      console.error('[RatingsService.create]', error);
+      logger.error('RatingsService.create failed', { error });
       throw new AppError('Error al crear la calificación', 500);
     }
 
@@ -154,7 +155,7 @@ export class RatingsService {
 
     if (error) {
       if (error.code === '23505') throw new AppError('Ya calificaste esta postulación', 409);
-      console.error('[RatingsService.createPostService]', error);
+      logger.error('RatingsService.createPostService failed', { error });
       throw new AppError('Error al crear la calificación', 500);
     }
 
@@ -171,7 +172,7 @@ export class RatingsService {
       'Nueva calificación recibida',
       `${raterProfile?.full_name ?? 'Alguien'} te calificó con ${input.score} estrella${input.score > 1 ? 's' : ''}.`,
       { rating_id: (data as { id: string }).id, score: input.score }
-    ).catch(err => console.error('[RatingsService.createPostService] notification error', err));
+    ).catch(err => logger.error('RatingsService.createPostService notification error', { error: err }));
 
     return data;
   }
@@ -209,7 +210,7 @@ export class RatingsService {
       .range(from, to);
 
     if (error) {
-      console.error('[RatingsService.getForUser]', error);
+      logger.error('RatingsService.getForUser failed', { error });
       throw new AppError('Error al obtener calificaciones', 500);
     }
 
@@ -250,7 +251,7 @@ export class RatingsService {
       .eq('rater_id', raterId);
 
     if (error) {
-      console.error('[RatingsService.delete]', error);
+      logger.error('RatingsService.delete failed', { error });
       throw new AppError('Error al eliminar la calificación', 500);
     }
   }

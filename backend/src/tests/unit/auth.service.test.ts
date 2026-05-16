@@ -42,8 +42,8 @@ describe('AuthService', () => {
     it('Debe lanzar error si el correo ya existe', async () => {
       const mock = getGlobalMock()!;
       mock.supabaseAdmin.auth.admin.createUser.mockResolvedValue({
-        data: null,
-        error: { message: 'User already registered' },
+        data: null as any,
+        error: { message: 'User already registered' } as any,
       });
 
       await expect(AuthService.register({
@@ -70,7 +70,7 @@ describe('AuthService', () => {
     it('Debe lanzar error 401 si credenciales son inválidas', async () => {
       const mock = getGlobalMock()!;
       mock.supabaseAdmin.auth.signInWithPassword.mockResolvedValue({
-        data: null, error: { message: 'Invalid login' },
+        data: null as any, error: { message: 'Invalid login' } as any,
       });
 
       await expect(AuthService.login({ email: 'x@y.com', password: 'bad' }))

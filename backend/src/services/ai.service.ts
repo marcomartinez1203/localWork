@@ -3,6 +3,7 @@
 // ============================================
 import { HfInference } from '@huggingface/inference';
 import { env } from '../config/env';
+import { logger } from '../utils/logger';
 
 // Cliente de HuggingFace. Si no hay API key (ej. desarrollo local sin key),
 // la generación de embeddings simplemente retornará un array vacío silenciosamente.
@@ -33,7 +34,7 @@ export class AIService {
       const embedding = Array.isArray(output[0]) ? output[0] : output;
       return embedding as number[];
     } catch (err) {
-      console.error('❌ Error generando embedding con HuggingFace:', err);
+      logger.error('Error generando embedding con HuggingFace', { error: err });
       return null;
     }
   }

@@ -232,7 +232,7 @@
         <div v-if="isEmployer && !isMe" style="border-top:1px solid var(--color-border-light);padding-top:var(--space-4);margin-top:var(--space-4);">
           <p style="font-weight:var(--fw-semibold);font-size:var(--fs-sm);margin-bottom:var(--space-2);">Calificar trabajador</p>
           <div class="rating-stars">
-            <button type="button" v-for="i in 5" :key="i" :class="{ active: i <= selectedScore }" @click="selectedScore = i">
+            <button type="button" v-for="i in 5" :key="i" :class="{ active: i <= selectedScore }" @click="selectedScore = i" :aria-label="'Calificar ' + i + ' estrellas'">
               {{ i <= selectedScore ? '★' : '☆' }}
             </button>
           </div>

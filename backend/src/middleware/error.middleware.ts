@@ -1,6 +1,7 @@
 // ============================================
 // LocalWork — Error Handling Middleware
 // ============================================
+import { logger } from '../utils/logger';
 import { Request, Response, NextFunction } from 'express';
 
 export class AppError extends Error {
@@ -25,7 +26,7 @@ export function errorHandler(
   const message = err.message || 'Error interno del servidor';
 
   // Siempre loguear errores en el servidor (nunca exponerlos al cliente)
-  console.error('❌ Error:', {
+  logger.error('Unhandled error', {
     message: err.message,
     stack: err.stack,
     ...(err instanceof AppError ? { details: err.details } : {}),

@@ -55,19 +55,19 @@ describe('JobsService', () => {
 
   it('getRecommended con embedding vacío', async () => {
     getGlobalMock()!.getBuilder('profiles').setResult({ data:{ embedding:[0.1] }, error:null });
-    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:[], error:null });
+    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:[], error:null } as any);
     const jobs = await JobsService.getRecommended('u1');
     expect(jobs).toEqual([]);
   });
 
   it('getNearby ok', async () => {
-    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:[{id:'j6',title:'Near'}], error:null });
+    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:[{id:'j6',title:'Near'}], error:null } as any);
     const jobs = await JobsService.getNearby({ lat:10, lng:-70, radius:5 });
     expect(jobs).toHaveLength(1);
   });
 
   it('getNearby error', async () => {
-    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:null, error:{message:'fail'} });
+    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:null, error:{message:'fail'} } as any);
     await expect(JobsService.getNearby({ lat:10, lng:-70, radius:5 })).rejects.toThrow('Error al obtener empleos cercanos');
   });
 
@@ -161,18 +161,18 @@ describe('JobsService', () => {
   });
 
   it('getEmployerStats', async () => {
-    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:{ total_jobs:5 }, error:null });
+    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:{ total_jobs:5 }, error:null } as any);
     const s = await JobsService.getEmployerStats('u1');
     expect(s.total_jobs).toBe(5);
   });
 
   it('getEmployerStats 404', async () => {
-    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:null, error:{ message:'fail' } });
+    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:null, error:{ message:'fail' } } as any);
     await expect(JobsService.getEmployerStats('u1')).rejects.toThrow('No tienes una empresa registrada');
   });
 
   it('getEmployerAnalytics', async () => {
-    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:{ total_jobs:5 }, error:null });
+    getGlobalMock()!.supabaseAdmin.rpc.mockResolvedValue({ data:{ total_jobs:5 }, error:null } as any);
     const s = await JobsService.getEmployerAnalytics('u1');
     expect(s.total_jobs).toBe(5);
   });

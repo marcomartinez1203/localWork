@@ -4,6 +4,8 @@
 import { Router } from 'express';
 import { WorkersController } from '../controllers/workers.controller';
 import { optionalAuth } from '../middleware/auth.middleware';
+import { validateQuery } from '../middleware/validation.middleware';
+import { workersQuerySchema } from '../middleware/validation.middleware';
 
 const router = Router();
 
@@ -47,7 +49,7 @@ const router = Router();
  *                       items:
  *                         $ref: '#/components/schemas/Profile'
  */
-router.get('/', WorkersController.list);
+router.get('/', validateQuery(workersQuerySchema), WorkersController.list);
 
 /**
  * @swagger

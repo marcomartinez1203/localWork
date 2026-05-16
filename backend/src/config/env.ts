@@ -37,9 +37,9 @@ if (!parseResult.success) {
   const issues = parseResult.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('\n  - ');
 
   if (process.env.NODE_ENV === 'test') {
-    console.warn(`⚠️  Variables de entorno inválidas (modo test):\n  - ${issues}`);
+    console.warn(`⚠️ Variables de entorno inválidas (modo test):\n  - ${issues}`);
   } else {
-    console.error(`❌ Variables de entorno inválidas:\n  - ${issues}`);
+    throw new Error(`Variables de entorno inválidas:\n  - ${issues}`);
     process.exit(1);
   }
 }

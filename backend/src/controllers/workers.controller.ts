@@ -4,6 +4,7 @@
 import { Response, NextFunction } from 'express';
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
+import { logger } from '../utils/logger';
 import { removeAccents } from '../utils/string';
 import { AuthenticatedRequest } from '../types';
 import { NotificationsService } from '../services/notifications.service';
@@ -56,7 +57,7 @@ export class WorkersController {
         ({ data, error, count } = await buildQuery(false));
       }
 
-      if (error) { console.error('[WorkersController.list]', error); throw new AppError('Error al obtener trabajadores', 500); }
+      if (error) { logger.error('WorkersController.list failed', { error }); throw new AppError('Error al obtener trabajadores', 500); }
 
       res.json({
         data,
@@ -76,7 +77,7 @@ export class WorkersController {
         .eq('id', req.params.id)
         .single();
 
-      if (error) { console.error('[WorkersController.getOne]', error); throw new AppError('Trabajador no encontrado', 404); }
+      if (error) { logger.error('WorkersController.getOne failed', { error }); throw new AppError('Trabajador no encontrado', 404); }
       if (!data) throw new AppError('Trabajador no encontrado', 404);
 
       // Notificar al trabajador si un empleador autenticado visita su perfil
@@ -86,7 +87,7 @@ export class WorkersController {
           'profile_viewed',
           'Alguien vio tu perfil',
           'Un empleador ha visitado tu perfil.'
-        ).catch(err => console.error('[WorkersController.getOne] profile_viewed error', err));
+        ).catch(err => logger.error('WorkersController.getOne profile_viewed error', { error: err }));
       }
 
       res.json(data);

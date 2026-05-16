@@ -16,7 +16,7 @@
           <p>Ingresa tus credenciales para continuar</p>
         </div>
 
-        <div class="lw-alert" :class="{ show: errorMessage }">{{ errorMessage }}</div>
+        <div class="lw-alert" :class="{ show: errorMessage }" role="alert" aria-live="assertive">{{ errorMessage }}</div>
 
         <form class="lw-form" @submit.prevent="handleLogin" novalidate>
 

@@ -3,6 +3,7 @@
 // ============================================
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
+import { logger } from '../utils/logger';
 import { Notification, NotificationType, PaginatedResponse } from '../types';
 
 export class NotificationsService {
@@ -29,7 +30,7 @@ export class NotificationsService {
     query = query.range(from, to);
 
     const { data, count, error } = await query;
-    if (error) { console.error('[NotificationsService.list]', error); throw new AppError('Error al obtener notificaciones', 500); }
+    if (error) { logger.error('NotificationsService.list failed', { error }); throw new AppError('Error al obtener notificaciones', 500); }
 
     return {
       data: (data || []) as Notification[],
@@ -47,7 +48,7 @@ export class NotificationsService {
       .eq('id', notificationId)
       .eq('user_id', userId);
 
-    if (error) { console.error('[NotificationsService.markAsRead]', error); throw new AppError('Error al marcar como leída', 500); }
+    if (error) { logger.error('NotificationsService.markAsRead failed', { error }); throw new AppError('Error al marcar como leída', 500); }
   }
 
   static async markAllAsRead(userId: string): Promise<void> {
@@ -57,7 +58,7 @@ export class NotificationsService {
       .eq('user_id', userId)
       .eq('read', false);
 
-    if (error) { console.error('[NotificationsService.markAllAsRead]', error); throw new AppError('Error al marcar todas como leídas', 500); }
+    if (error) { logger.error('NotificationsService.markAllAsRead failed', { error }); throw new AppError('Error al marcar todas como leídas', 500); }
   }
 
   static async getUnreadCount(userId: string): Promise<number> {
@@ -67,7 +68,7 @@ export class NotificationsService {
       .eq('user_id', userId)
       .eq('read', false);
 
-    if (error) { console.error('[NotificationsService.getUnreadCount]', error); throw new AppError('Error al contar notificaciones', 500); }
+    if (error) { logger.error('NotificationsService.getUnreadCount failed', { error }); throw new AppError('Error al contar notificaciones', 500); }
     return count || 0;
   }
 
@@ -82,7 +83,7 @@ export class NotificationsService {
       .from('notifications')
       .insert({ user_id: userId, type, title, message, data: data ?? null });
 
-    if (error) { console.error('[NotificationsService.create]', error); throw new AppError('Error al crear notificación', 500); }
+    if (error) { logger.error('NotificationsService.create failed', { error }); throw new AppError('Error al crear notificación', 500); }
   }
 
   static async createBulk(
@@ -106,7 +107,7 @@ export class NotificationsService {
         data: n.data ?? null,
       })));
 
-    if (error) { console.error('[NotificationsService.createBulk]', error); }
+    if (error) { logger.error('NotificationsService.createBulk failed', { error }); }
     // No lanzar error: las notificaciones son no-críticas
   }
 }

@@ -5,6 +5,8 @@ import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
 import { Job, JobWithDetails, JobFilters, PaginatedResponse, Category } from '../types';
 import { removeAccents } from '../utils/string';
+import { cache } from '../utils/cache';
+import { logger } from '../utils/logger';
 import { NotificationsService } from './notifications.service';
 
 export class JobsService {
@@ -60,7 +62,7 @@ export class JobsService {
     query = query.range(from, to);
 
     const { data, count, error } = await query;
-    if (error) { console.error('[JobsService.list]', error); throw new AppError('Error al obtener los empleos', 500); }
+    if (error) { logger.error('JobsService.list failed', { error }); throw new AppError('Error al obtener los empleos', 500); }
 
     return {
       data: (data || []) as JobWithDetails[],
@@ -91,7 +93,7 @@ export class JobsService {
     });
 
     if (error) { 
-        console.error('[JobsService.getNearby]', error); 
+        logger.error('JobsService.getNearby failed', { error }); 
         throw new AppError('Error al obtener empleos cercanos', 500); 
     }
 
@@ -134,7 +136,7 @@ export class JobsService {
     });
 
     if (rpcError) {
-      console.error('[JobsService.getRecommended] RPC Error:', rpcError);
+      logger.error('JobsService.getRecommended RPC Error', { rpcError });
       return [];
     }
 
@@ -155,7 +157,7 @@ export class JobsService {
   static async getEmployerAnalytics(userId: string): Promise<any> {
     const { data, error } = await supabaseAdmin.rpc('get_employer_analytics', { p_owner_id: userId });
     if (error) {
-      console.error('[JobsService.getEmployerAnalytics]', error);
+      logger.error('JobsService.getEmployerAnalytics failed', { error });
       throw new AppError('Error al obtener analíticas', 500);
     }
     return data;
@@ -198,17 +200,18 @@ export class JobsService {
 
     if (error) {
       if (error.code === '23514') throw new AppError('El salario mínimo no puede ser mayor al máximo', 400);
-      console.error('[JobsService.create]', error); throw new AppError('Error al crear la oferta', 500);
+      logger.error('JobsService.create failed', { error }); throw new AppError('Error al crear la oferta', 500);
     }
 
     // Notificar a seekers disponibles si la oferta se publica activa
     if ((jobData.status ?? 'active') === 'active') {
       this._notifyNewJobMatch(data as Job).catch(err =>
-        console.error('[JobsService.create] new_job_match error', err)
+        logger.error('JobsService.create new_job_match error', { error: err })
       );
     }
 
-    this._generateEmbedding(data as Job).catch(e => console.error(e));
+    cache.delete('platform_stats');
+    this._generateEmbedding(data as Job).catch(e => logger.error('JobsService.create embedding error', { error: e }));
 
     return data as Job;
   }
@@ -277,10 +280,11 @@ export class JobsService {
       .select()
       .single();
 
-    if (error) { console.error('[JobsService.update]', error); throw new AppError('Error al actualizar la oferta', 500); }
+    if (error) { logger.error('JobsService.update failed', { error }); throw new AppError('Error al actualizar la oferta', 500); }
     
     if ('title' in cleanUpdates || 'description' in cleanUpdates || 'requirements' in cleanUpdates) {
-      this._generateEmbedding(data as Job).catch(e => console.error(e));
+      cache.delete('platform_stats');
+      this._generateEmbedding(data as Job).catch(e => logger.error('JobsService.update embedding error', { error: e }));
     }
     
     return data as Job;
@@ -294,7 +298,8 @@ export class JobsService {
       .delete()
       .eq('id', jobId);
 
-    if (error) { console.error('[JobsService.delete]', error); throw new AppError('Error al eliminar', 500); }
+    cache.delete('platform_stats');
+    if (error) { logger.error('JobsService.delete failed', { error }); throw new AppError('Error al eliminar', 500); }
   }
 
   private static async _generateEmbedding(job: Job): Promise<void> {
@@ -336,7 +341,7 @@ export class JobsService {
     query = query.range(from, to);
 
     const { data, count, error } = await query;
-    if (error) { console.error('[JobsService.getByCompanyOwner]', error); throw new AppError('Error al obtener tus ofertas', 500); }
+    if (error) { logger.error('JobsService.getByCompanyOwner failed', { error }); throw new AppError('Error al obtener tus ofertas', 500); }
 
     return {
       data: (data || []) as Job[],
@@ -355,7 +360,7 @@ export class JobsService {
 
     if (error) {
       if (error.code === '23505') throw new AppError('Ya guardaste este empleo', 409);
-      console.error('[JobsService.saveJob]', error); throw new AppError('Error al guardar el empleo', 500);
+      logger.error('JobsService.saveJob failed', { error }); throw new AppError('Error al guardar el empleo', 500);
     }
   }
 
@@ -366,7 +371,7 @@ export class JobsService {
       .eq('user_id', userId)
       .eq('job_id', jobId);
 
-    if (error) { console.error('[JobsService.unsaveJob]', error); throw new AppError('Error al quitar el empleo guardado', 500); }
+    if (error) { logger.error('JobsService.unsaveJob failed', { error }); throw new AppError('Error al quitar el empleo guardado', 500); }
   }
 
   static async getSavedJobs(userId: string): Promise<JobWithDetails[]> {
@@ -390,24 +395,32 @@ export class JobsService {
 
   // ── Categorías ──
   static async getCategories(): Promise<Category[]> {
+    const cached = cache.get<Category[]>('categories');
+    if (cached) return cached;
     const { data, error } = await supabaseAdmin
       .from('categories')
       .select('*')
       .order('sort_order', { ascending: true });
 
-    if (error) { console.error('[JobsService.getCategories]', error); throw new AppError('Error al obtener las categorías', 500); }
-    return (data || []) as Category[];
+    if (error) { logger.error('JobsService.getCategories failed', { error }); throw new AppError('Error al obtener las categorías', 500); }
+    const result = (data || []) as Category[];
+    cache.set('categories', result, 600);
+    return result;
   }
 
   // ── Barrios ──
   static async getBarrios(): Promise<any[]> {
+    const cached = cache.get<any[]>('barrios');
+    if (cached) return cached;
     const { data, error } = await supabaseAdmin
       .from('barrios')
       .select('*')
       .order('nombre', { ascending: true });
 
-    if (error) { console.error('[JobsService.getBarrios]', error); throw new AppError('Error al obtener los barrios', 500); }
-    return data || [];
+    if (error) { logger.error('JobsService.getBarrios failed', { error }); throw new AppError('Error al obtener los barrios', 500); }
+    const result = data || [];
+    cache.set('barrios', result, 600);
+    return result;
   }
 
   // ── Employer Stats ──
@@ -421,13 +434,17 @@ export class JobsService {
 
   // ── Stats ──
   static async getStats(): Promise<Record<string, number>> {
+    const cached = cache.get<Record<string, number>>('platform_stats');
+    if (cached) return cached;
     const { data, error } = await supabaseAdmin
       .from('platform_stats')
       .select('*')
       .single();
 
-    if (error) { console.error('[JobsService.getStats]', error); throw new AppError('Error al obtener estadísticas', 500); }
-    return data as Record<string, number>;
+    if (error) { logger.error('JobsService.getStats failed', { error }); throw new AppError('Error al obtener estadísticas', 500); }
+    const result = data as Record<string, number>;
+    cache.set('platform_stats', result, 300);
+    return result;
   }
 
   // ── Helpers privados ──

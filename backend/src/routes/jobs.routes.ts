@@ -4,6 +4,8 @@
 import { Router } from 'express';
 import { JobsController } from '../controllers/jobs.controller';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
+import { validateQuery } from '../middleware/validation.middleware';
+import { jobsQuerySchema, nearbyQuerySchema } from '../middleware/validation.middleware';
 
 const router = Router();
 
@@ -79,7 +81,7 @@ router.get('/barrios', JobsController.getBarrios);
  *       200:
  *         description: Empleos dentro del radio solicitado
  */
-router.get('/nearby', JobsController.getNearby);
+router.get('/nearby', validateQuery(nearbyQuerySchema), JobsController.getNearby);
 
 /**
  * @swagger
@@ -217,7 +219,7 @@ router.get('/stats', JobsController.getStats);
  *             schema:
  *               $ref: '#/components/schemas/Job'
  */
-router.get('/', JobsController.list);
+router.get('/', validateQuery(jobsQuerySchema), JobsController.list);
 router.post('/', authenticate, requireRole('employer'), JobsController.create);
 
 /**

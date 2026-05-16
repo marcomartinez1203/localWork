@@ -103,7 +103,7 @@
     <div class="create-modal">
       <div class="create-modal__header">
         <h2 class="create-modal__title">{{ editingJobId ? 'Editar oferta de empleo' : 'Nueva oferta de empleo' }}</h2>
-        <button class="modal__close" @click="closeJobModal">
+        <button class="modal__close" @click="closeJobModal" aria-label="Cerrar modal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -188,7 +188,7 @@
     <div class="create-modal">
       <div class="create-modal__header">
         <h2 class="create-modal__title">Datos de mi empresa</h2>
-        <button class="modal__close" @click="closeCompanyModal">
+        <button class="modal__close" @click="closeCompanyModal" aria-label="Cerrar modal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 18 6M6 6l12 12"/></svg>
         </button>
       </div>
@@ -245,7 +245,7 @@
     <div class="create-modal" style="max-width:720px;">
       <div class="create-modal__header">
         <h2 class="create-modal__title">Postulantes — {{ currentJobTitle }}</h2>
-        <button class="modal__close" @click="closeApplicantsModal">
+        <button class="modal__close" @click="closeApplicantsModal" aria-label="Cerrar modal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 18 6M6 6l12 12"/></svg>
         </button>
       </div>

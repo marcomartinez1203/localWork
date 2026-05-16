@@ -5,6 +5,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
 import { Application, ApplicationStatus, PaginatedResponse } from '../types';
 import { NotificationsService } from './notifications.service';
+import { logger } from '../utils/logger';
 
 export class ApplicationsService {
 
@@ -40,7 +41,7 @@ export class ApplicationsService {
       if (error.code === '23505') {
         throw new AppError('Ya te postulaste a esta oferta', 409);
       }
-      console.error('[ApplicationsService.apply]', error); throw new AppError('Error al crear la postulación', 500);
+      logger.error('ApplicationsService.apply failed', { error }); throw new AppError('Error al crear la postulación', 500);
     }
 
     // Notificar al empleador (fire-and-forget)
@@ -61,7 +62,7 @@ export class ApplicationsService {
           );
         }
       } catch (err) {
-        console.error('[ApplicationsService.apply] notification error', err);
+        logger.error('ApplicationsService.apply notification error', { error: err });
       }
     })();
 
@@ -95,7 +96,7 @@ export class ApplicationsService {
     query = query.range(from, to);
 
     const { data, count, error } = await query;
-    if (error) { console.error('[ApplicationsService.getMyApplications]', error); throw new AppError('Error al obtener postulaciones', 500); }
+    if (error) { logger.error('ApplicationsService.getMyApplications failed', { error }); throw new AppError('Error al obtener postulaciones', 500); }
 
     return {
       data: (data || []) as (Application & { job: { title: string; company_name: string } })[],
@@ -118,7 +119,7 @@ export class ApplicationsService {
       .maybeSingle();
 
     if (error) {
-      console.error('[ApplicationsService.getMineForJob]', error);
+      logger.error('ApplicationsService.getMineForJob failed', { error });
       throw new AppError('Error al consultar la postulación', 500);
     }
 
@@ -163,7 +164,7 @@ export class ApplicationsService {
       .order('created_at', { ascending: false })
       .range(from, to);
 
-    if (error) { console.error('[ApplicationsService.getForJob]', error); throw new AppError('Error al obtener postulaciones', 500); }
+    if (error) { logger.error('ApplicationsService.getForJob failed', { error }); throw new AppError('Error al obtener postulaciones', 500); }
 
     return {
       data: (data || []) as (Application & { seeker: { full_name: string; email: string } })[],
@@ -215,7 +216,7 @@ export class ApplicationsService {
       .select()
       .single();
 
-    if (error) { console.error('[ApplicationsService.updateStatus]', error); throw new AppError('Error al actualizar el estado', 500); }
+    if (error) { logger.error('ApplicationsService.updateStatus failed', { error }); throw new AppError('Error al actualizar el estado', 500); }
 
     // Notificar al seeker del cambio de estado
     const STATUS_MESSAGES: Record<ApplicationStatus, string> = {
@@ -234,7 +235,7 @@ export class ApplicationsService {
       'Tu postulación fue actualizada',
       `${STATUS_MESSAGES[status]} — Oferta: "${job?.title ?? ''}"`,
       { job_id: app.job_id, application_id: applicationId, status }
-    ).catch(err => console.error('[ApplicationsService.updateStatus] notification error', err));
+    ).catch(err => logger.error('ApplicationsService.updateStatus notification error', { error: err }));
 
     // Send rating_request notifications when contract is completed
     if (status === 'completed') {
@@ -252,7 +253,7 @@ export class ApplicationsService {
         'Califica tu experiencia',
         `Tu contrato en "${job?.title ?? ''}" ha finalizado. ¡Califica a la empresa!`,
         { application_id: applicationId, job_id: app.job_id }
-      ).catch(err => console.error('[ApplicationsService] rating_request notification error', err));
+      ).catch(err => logger.error('ApplicationsService rating_request notification error', { error: err }));
 
       // Notify employer to rate the worker
       NotificationsService.create(
@@ -261,7 +262,7 @@ export class ApplicationsService {
         'Califica al trabajador',
         `El contrato de ${seekerProfile?.full_name ?? 'el trabajador'} en "${job?.title ?? ''}" finalizó. ¡Califícalo!`,
         { application_id: applicationId, job_id: app.job_id, seeker_id: app.seeker_id }
-      ).catch(err => console.error('[ApplicationsService] rating_request notification error', err));
+      ).catch(err => logger.error('ApplicationsService rating_request notification error', { error: err }));
     }
 
     return data as Application;
@@ -274,6 +275,6 @@ export class ApplicationsService {
       .eq('id', applicationId)
       .eq('seeker_id', seekerId);
 
-    if (error) { console.error('[ApplicationsService.withdraw]', error); throw new AppError('Error al retirar la postulación', 500); }
+    if (error) { logger.error('ApplicationsService.withdraw failed', { error }); throw new AppError('Error al retirar la postulación', 500); }
   }
 }

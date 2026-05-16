@@ -100,8 +100,8 @@ describe('RatingsService', () => {
         error: null, count: 1,
       });
       getGlobalMock()!.supabaseAdmin.rpc
-        .mockResolvedValueOnce({ data: 5, error: null }) // avg_rating
-        .mockResolvedValueOnce({ data: [{ avg_score: 5, total_ratings: 1, recommend_pct: 100 }], error: null }); // rating_breakdown
+        .mockResolvedValueOnce({ data: 5, error: null } as any) // avg_rating
+        .mockResolvedValueOnce({ data: [{ avg_score: 5, total_ratings: 1, recommend_pct: 100 }], error: null } as any); // rating_breakdown
 
       const result = await RatingsService.getForUser('u2');
       expect(result.total).toBe(1);

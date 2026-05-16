@@ -10,9 +10,7 @@ vi.mock('../../config/supabase', async () => {
 describe('ChatService', () => {
   beforeEach(() => { vi.clearAllMocks(); getGlobalMock()?.builders.clear(); });
 
-  const mockProfile = (role: string) => {
-    getGlobalMock()!.getBuilder('profiles').setResult({ data: { role }, error: null });
-  };
+
 
   it('sendMessage ok', async () => {
     getGlobalMock()!.getBuilder('conversations').setResult({ data: { id:'c1', seeker_id:'u1', employer_id:'u2' }, error: null });
