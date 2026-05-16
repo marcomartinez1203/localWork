@@ -15,12 +15,17 @@ describe('JobCard.vue', () => {
     id: '123-abc',
     title: 'Desarrollador Frontend',
     company_name: 'Tech Solutions',
-    modality: 'Remoto',
+    employer_id: 'employer-1',
+    category_id: 'cat-1',
+    status: 'active' as const,
+    updated_at: new Date().toISOString(),
+    modality: 'Remoto' as const,
     location: 'Aguachica, Cesar',
     category_name: 'Tecnología',
     vacancies: 2,
     salary_min: 2000000,
     salary_max: 3000000,
+    salary_text: undefined,
     description: 'Buscamos un desarrollador frontend con experiencia en Vue 3 y TypeScript. ' + 'a'.repeat(100), // > 120 chars
     created_at: new Date().toISOString()
   }

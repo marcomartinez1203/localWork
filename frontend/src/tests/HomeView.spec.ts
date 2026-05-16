@@ -92,7 +92,7 @@ describe('HomeView.vue', () => {
     const techChip = wrapper.findAll('.chip').find(c => c.text() === 'Tecnología')
     await techChip?.trigger('click')
     
-    expect(wrapper.vm.activeCategory).toBe('Tecnología')
+    expect((wrapper.vm as any).activeCategory).toBe('Tecnología')
     
     // Debería llamar de nuevo a list() con la categoría
     expect(JobsService.list).toHaveBeenLastCalledWith(expect.objectContaining({
@@ -107,7 +107,7 @@ describe('HomeView.vue', () => {
     
     expect(wrapper.find('.recommended-section').exists()).toBe(true)
     
-    wrapper.vm.searchQuery = 'Test'
+    ;(wrapper.vm as any).searchQuery = 'Test'
     await wrapper.vm.$nextTick()
     
     // Al haber búsqueda, la sección de IA se oculta

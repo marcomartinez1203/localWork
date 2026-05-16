@@ -47,19 +47,19 @@ describe('RegisterView.vue', () => {
     await wrapper.find('.btn-main').trigger('click')
     
     // Debería mostrar errores y seguir en paso 1
-    expect(wrapper.vm.roleError).toBe(true)
-    expect(wrapper.vm.nameError).toBe(true)
-    expect(wrapper.vm.emailError).toBe(true)
-    expect(wrapper.vm.step).toBe(1)
+    expect((wrapper.vm as any).roleError).toBe(true)
+    expect((wrapper.vm as any).nameError).toBe(true)
+    expect((wrapper.vm as any).emailError).toBe(true)
+    expect((wrapper.vm as any).step).toBe(1)
     
     // Llenar datos correctamente
-    wrapper.vm.selectedRole = 'seeker'
+    ;(wrapper.vm as any).selectedRole = 'seeker'
     await wrapper.find('#fullName').setValue('Juan Perez')
     await wrapper.find('#regEmail').setValue('juan@test.com')
     await wrapper.find('.btn-main').trigger('click')
     
     // Debería pasar al paso 2
-    expect(wrapper.vm.step).toBe(2)
+    expect((wrapper.vm as any).step).toBe(2)
   })
 
   it('shows employer fields when role is employer', async () => {
@@ -68,8 +68,8 @@ describe('RegisterView.vue', () => {
     })
     
     // Forzamos paso 2 como empleador
-    wrapper.vm.step = 2
-    wrapper.vm.selectedRole = 'employer'
+    ;(wrapper.vm as any).step = 2
+    ;(wrapper.vm as any).selectedRole = 'employer'
     await wrapper.vm.$nextTick()
     
     expect(wrapper.find('.intent-box').exists()).toBe(true)
@@ -86,15 +86,15 @@ describe('RegisterView.vue', () => {
     })
     
     // Set datos
-    wrapper.vm.selectedRole = 'seeker'
-    wrapper.vm.fullName = 'Juan Perez'
-    wrapper.vm.email = 'juan@test.com'
-    wrapper.vm.password = 'password123'
-    wrapper.vm.confirmPassword = 'password123'
-    wrapper.vm.terms = true
+    ;(wrapper.vm as any).selectedRole = 'seeker'
+    ;(wrapper.vm as any).fullName = 'Juan Perez'
+    ;(wrapper.vm as any).email = 'juan@test.com'
+    ;(wrapper.vm as any).password = 'password123'
+    ;(wrapper.vm as any).confirmPassword = 'password123'
+    ;(wrapper.vm as any).terms = true
     
     // Forzamos paso 2 y submit
-    wrapper.vm.step = 2
+    ;(wrapper.vm as any).step = 2
     await wrapper.find('form').trigger('submit.prevent')
     
     expect(registerMock).toHaveBeenCalledWith({

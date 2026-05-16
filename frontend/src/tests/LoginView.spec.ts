@@ -37,8 +37,8 @@ describe('LoginView.vue', () => {
     await wrapper.find('form').trigger('submit.prevent')
     
     // Al intentar enviar vacío, las banderas de error deberían activarse
-    expect(wrapper.vm.emailError).toBe(true)
-    expect(wrapper.vm.pwError).toBe(true)
+    expect((wrapper.vm as any).emailError).toBe(true)
+    expect((wrapper.vm as any).pwError).toBe(true)
   })
 
   it('calls AuthService.login with valid data', async () => {
@@ -71,7 +71,7 @@ describe('LoginView.vue', () => {
     // Forzamos la actualización de Vue tras la promesa
     await wrapper.vm.$nextTick()
     
-    expect(wrapper.vm.errorMessage).toBe('Credenciales inválidas')
+    expect((wrapper.vm as any).errorMessage).toBe('Credenciales inválidas')
     expect(wrapper.find('.lw-alert.show').exists()).toBe(true)
     expect(wrapper.find('.lw-alert').text()).toBe('Credenciales inválidas')
   })
