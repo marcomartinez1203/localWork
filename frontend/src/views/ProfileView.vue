@@ -889,9 +889,7 @@ const submitVerification = async () => {
   formData.append('idNumber', verificationForm.value.idNumber)
 
   try {
-    const res = await api.post('/upload/identity', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    const res = await api.upload<{ message: string; status: string }>('/upload/identity', formData)
     showToast(res.message || 'Enviado a revisión', 'success')
     // Update local state temporarily
     if ('verification_status' in user.value) {
