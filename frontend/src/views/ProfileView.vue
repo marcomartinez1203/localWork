@@ -429,11 +429,8 @@ import api from '@/config/api'
 import AuthService from '@/services/auth.service'
 import CompaniesService from '@/services/companies.service'
 import JobsService from '@/services/jobs.service'
-import RatingsService from '@/services/ratings.service'
-import WorkersService from '@/services/workers.service'
 import AIService from '@/services/ai.service'
 import EmployerDashboard from '@/components/EmployerDashboard.vue'
-import RatingModal from '@/components/RatingModal.vue'
 import { showToast } from '@/utils/helpers'
 import { generateCV } from '@/utils/pdf-cv'
 import type { User, Company, Job } from '@/types'
@@ -812,6 +809,20 @@ const downloadCV = async () => {
     showToast('Error al generar el CV', 'error')
   } finally {
     isGeneratingCV.value = false
+  }
+}
+
+// ── AI Generative features ──
+const isSuggestingImprovements = ref(false)
+const suggestBioImprovements = async () => {
+  isSuggestingImprovements.value = true
+  try {
+    const res = await AIService.suggestProfileImprovements()
+    alert("Sugerencias de IA:\n\n" + res)
+  } catch {
+    showToast('Error al generar sugerencias', 'error')
+  } finally {
+    isSuggestingImprovements.value = false
   }
 }
 </script>
