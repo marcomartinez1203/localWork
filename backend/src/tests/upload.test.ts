@@ -84,9 +84,14 @@ describe('Upload API', () => {
     mockStorage();
     localMock.getBuilder('profiles').setResult({ data: { role: 'seeker' }, error: null });
     const app = await importApp();
-    const res = await request(app).post('/api/upload/identity').set(authHeader()).attach('document', Buffer.from('x'), 'id.pdf');
+    const res = await request(app)
+      .post('/api/upload/identity')
+      .set(authHeader())
+      .field('legalName', 'Juan Perez')
+      .field('idNumber', '123456789')
+      .attach('document', Buffer.from('x'), 'id.pdf');
     expect(res.status).toBe(200);
-    expect(res.body.status).toBe('pending');
+    expect(res.body.status).toBe('pending_manual');
   });
 
   it('POST /api/upload/portfolio agrega imagen', async () => {
