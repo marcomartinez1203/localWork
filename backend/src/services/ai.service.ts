@@ -69,11 +69,11 @@ export class AIService {
   // --- Generative AI Features ---
 
   /**
-   * Genera una carta de presentación para un empleo específico usando OpenRouter.
+   * Genera una carta de presentación para un empleo específico usando HuggingFace.
    */
   static async generateCoverLetter(profile: any, job: any): Promise<string> {
-    if (!env.openRouterApiKey) {
-      throw new Error('OPENROUTER_API_KEY no configurada');
+    if (!hf) {
+      throw new Error('HUGGINGFACE_API_KEY no configurada');
     }
 
     const prompt = `Actúa como un candidato profesional aplicando a un empleo.
@@ -92,22 +92,13 @@ La carta debe conectar las habilidades del candidato con los requisitos del empl
 No agregues placeholders como [Nombre de la Empresa], adapta lo que puedas con la info provista.`;
 
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.openRouterApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-pro', // u otro modelo libre disponible en openrouter
-          messages: [{ role: 'user', content: prompt }]
-        })
+      const response = await hf.chatCompletion({
+        model: 'meta-llama/Llama-3.2-3B-Instruct',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 800
       });
 
-      if (!response.ok) throw new Error('Error de OpenRouter: ' + response.statusText);
-      
-      const data = (await response.json()) as any;
-      return data.choices?.[0]?.message?.content || 'No se pudo generar la carta.';
+      return response.choices?.[0]?.message?.content || 'No se pudo generar la carta.';
     } catch (err) {
       logger.error('Error generando carta de presentación', { error: err });
       throw new Error('Error al generar la carta de presentación mediante IA');
@@ -118,8 +109,8 @@ No agregues placeholders como [Nombre de la Empresa], adapta lo que puedas con l
    * Sugiere mejoras al perfil de un usuario para hacerlo más atractivo.
    */
   static async suggestProfileImprovements(profile: any): Promise<string> {
-    if (!env.openRouterApiKey) {
-      throw new Error('OPENROUTER_API_KEY no configurada');
+    if (!hf) {
+      throw new Error('HUGGINGFACE_API_KEY no configurada');
     }
 
     const prompt = `Actúa como un reclutador experto y coach de carrera.
@@ -133,22 +124,13 @@ Disponibilidad: ${profile.availability || '(Vacía)'}
 Tipo de trabajo deseado: ${profile.work_type || '(Vacío)'}`;
 
     try {
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${env.openRouterApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash-pro',
-          messages: [{ role: 'user', content: prompt }]
-        })
+      const response = await hf.chatCompletion({
+        model: 'meta-llama/Llama-3.2-3B-Instruct',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 800
       });
 
-      if (!response.ok) throw new Error('Error de OpenRouter: ' + response.statusText);
-      
-      const data = (await response.json()) as any;
-      return data.choices?.[0]?.message?.content || 'No se pudieron generar sugerencias.';
+      return response.choices?.[0]?.message?.content || 'No se pudieron generar sugerencias.';
     } catch (err) {
       logger.error('Error sugiriendo mejoras de perfil', { error: err });
       throw new Error('Error al analizar el perfil mediante IA');
