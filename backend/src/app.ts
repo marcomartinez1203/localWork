@@ -61,10 +61,11 @@ if (env.isDev) {
   app.use(morgan('combined'));
 }
 
-// ── Swagger Docs ──
-if (env.isDev) {
-  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-}
+// ── Swagger Docs (disponible en todos los entornos) ──
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'LocalWork API Docs',
+  swaggerOptions: { persistAuthorization: true },
+}));
 
 // ── Rutas ──
 app.get('/', (_req, res) => {

@@ -4,14 +4,12 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 
-// Setear variables mínimas antes de importar la app
 beforeAll(() => {
   process.env.SUPABASE_URL = 'http://localhost:54321';
   process.env.SUPABASE_ANON_KEY = 'test-anon-key';
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
 });
 
-// Importar app dinámicamente después de setear env
 const importApp = async () => {
   const { default: app } = await import('../app');
   return app;

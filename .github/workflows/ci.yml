@@ -10,11 +10,19 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'http://localhost:54321' }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY || 'test-anon-key' }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'test-service-key' }}
+      HF_API_KEY: ${{ secrets.HF_API_KEY }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'test-jwt-secret' }}
+      VITE_API_URL: ${{ secrets.VITE_API_URL || 'http://localhost:3000' }}
+
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Use Node.js 20.x
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '20.x'
         cache: 'npm'
@@ -40,12 +48,14 @@ jobs:
 
     - name: Run Backend Tests
       working-directory: ./backend
-      run: npm run test
-      env:
-        SUPABASE_URL: "http://localhost:54321"
-        SUPABASE_ANON_KEY: "test-anon-key"
-        SUPABASE_SERVICE_ROLE_KEY: "test-service-key"
-        JWT_SECRET: "test-jwt-secret"
+      run: npm run test:coverage
+      
+    - name: Upload backend coverage
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: backend-coverage
+        path: backend/coverage/
 
     - name: Run Frontend Tests
       working-directory: ./frontend

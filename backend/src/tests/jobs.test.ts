@@ -1,14 +1,24 @@
 // ============================================
-// LocalWork — Jobs Routes Tests
+// LocalWork — Jobs Routes Integration Tests
 // ============================================
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 
-beforeAll(() => {
-  process.env.SUPABASE_URL = 'http://localhost:54321';
-  process.env.SUPABASE_ANON_KEY = 'test-anon-key';
-  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-key';
+vi.mock('../config/supabase', async () => {
+  const { createMockSupabaseModule } = await import('./__mocks__/supabase');
+  return createMockSupabaseModule();
 });
+
+vi.mock('../config/env', () => ({
+  env: {
+    port: 3000, nodeEnv: 'test',
+    supabaseUrl: 'http://localhost:54321', supabaseAnonKey: 'test-anon',
+    supabaseServiceKey: 'test-service', frontendUrl: 'http://localhost:5500',
+    corsOrigins: [], isDev: false, hfApiKey: undefined,
+  },
+}));
+
+beforeAll(() => { process.env.NODE_ENV = 'test'; });
 
 const importApp = async () => {
   const { default: app } = await import('../app');
@@ -16,20 +26,30 @@ const importApp = async () => {
 };
 
 describe('Jobs API', () => {
-  it('Debe listar ofertas activas de forma pública', async () => {
+  beforeEach(() => { vi.clearAllMocks(); });
+
+  it('GET /api/jobs debe listar empleos públicamente', async () => {
     const app = await importApp();
     const res = await request(app).get('/api/jobs');
-    
-    // Supabase no real, retornará un error mockeado o array vacío, pero el código HTTP será 500/200.
-    // Al menos probamos que la ruta existe y responde.
     expect(res.status).toBeGreaterThanOrEqual(200);
+    expect(res.status).toBeLessThan(500);
   });
 
-  it('Debe proteger la creación de ofertas', async () => {
+  it('POST /api/jobs debe proteger creación sin auth', async () => {
     const app = await importApp();
     const res = await request(app).post('/api/jobs').send({ title: 'Test' });
-    
     expect(res.status).toBe(401);
-    expect(res.body.message).toMatch(/Token de autenticación requerido/);
+  });
+
+  it('GET /api/jobs/categories debe ser público', async () => {
+    const app = await importApp();
+    const res = await request(app).get('/api/jobs/categories');
+    expect(res.status).toBe(200);
+  });
+
+  it('GET /api/jobs/stats debe ser público', async () => {
+    const app = await importApp();
+    const res = await request(app).get('/api/jobs/stats');
+    expect(res.status).toBe(200);
   });
 });

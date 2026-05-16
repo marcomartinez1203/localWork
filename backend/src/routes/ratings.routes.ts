@@ -16,7 +16,39 @@ const publicRatingsLimiter = rateLimit({
   message: { message: 'Demasiadas solicitudes de calificaciones, intenta más tarde' },
 });
 
-// POST /ratings — Create a general rating (from worker directory)
+/**
+ * @swagger
+ * /api/ratings:
+ *   post:
+ *     summary: Crear calificación general (desde directorio de trabajadores)
+ *     tags: [Ratings]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [rated_id, score]
+ *             properties:
+ *               rated_id:
+ *                 type: string
+ *                 format: uuid
+ *               score:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               comment:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Calificación registrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Rating'
+ *       403:
+ *         description: No puedes calificarte a ti mismo
+ */
 router.post('/', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { rated_id, job_id, score, comment } = req.body;
@@ -37,6 +69,50 @@ router.post('/', authenticate, async (req: AuthenticatedRequest, res: Response, 
   } catch (err) { next(err); }
 });
 
+/**
+ * @swagger
+ * /api/ratings/post-service:
+ *   post:
+ *     summary: Crear calificación post-servicio (vinculada a contrato completado)
+ *     tags: [Ratings]
+ *     description: Solo disponible cuando la postulación tiene estado `completed`. Permite calificación bidireccional con desglose por subcategorías.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [application_id, score]
+ *             properties:
+ *               application_id:
+ *                 type: string
+ *                 format: uuid
+ *               score:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               punctuality:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               quality:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               communication:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 5
+ *               would_recommend:
+ *                 type: boolean
+ *               comment:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Calificación post-servicio creada
+ *       403:
+ *         description: Contrato no completado o ya calificado
+ */
 // POST /ratings/post-service — Create a post-service rating (linked to application)
 router.post('/post-service', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -61,6 +137,28 @@ router.post('/post-service', authenticate, async (req: AuthenticatedRequest, res
   } catch (err) { next(err); }
 });
 
+/**
+ * @swagger
+ * /api/ratings/check/{applicationId}:
+ *   get:
+ *     summary: Verificar si ya califiqué esta postulación
+ *     tags: [Ratings]
+ *     parameters:
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Estado de calificación para esta postulación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 rated: { type: boolean }
+ *                 rating: { $ref: '#/components/schemas/Rating', nullable: true }
+ */
 // GET /ratings/check/:applicationId — Check if current user has rated this application
 router.get('/check/:applicationId', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -69,6 +167,28 @@ router.get('/check/:applicationId', authenticate, async (req: AuthenticatedReque
   } catch (err) { next(err); }
 });
 
+/**
+ * @swagger
+ * /api/ratings/user/{userId}:
+ *   get:
+ *     summary: Calificaciones y reputación de un usuario
+ *     tags: [Ratings]
+ *     security: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, default: 1 }
+ *       - in: query
+ *         name: per_page
+ *         schema: { type: integer, default: 10, maximum: 50 }
+ *     responses:
+ *       200:
+ *         description: Promedio general, desglose por categorías, % de recomendación y lista de reviews
+ */
 // GET /ratings/user/:userId — Get ratings for a user (with breakdown)
 router.get('/user/:userId', publicRatingsLimiter, optionalAuth, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -81,6 +201,23 @@ router.get('/user/:userId', publicRatingsLimiter, optionalAuth, async (req: Auth
   } catch (err) { next(err); }
 });
 
+/**
+ * @swagger
+ * /api/ratings/{id}:
+ *   delete:
+ *     summary: Eliminar calificación propia
+ *     tags: [Ratings]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200:
+ *         description: Calificación eliminada
+ *       403:
+ *         description: No eres el autor de esta calificación
+ */
 // DELETE /ratings/:id — Delete own rating
 router.delete('/:id', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
