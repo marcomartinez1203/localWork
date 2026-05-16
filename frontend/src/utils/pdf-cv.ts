@@ -85,10 +85,12 @@ export async function generateCV(data: CVData) {
   }
 
   y = 48;
+  
+  // Reset text color to dark for the rest of the document
+  doc.setTextColor(30, 30, 30);
 
   // Bio
   if (data.bio) {
-    doc.setTextColor(30, 30, 30);
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.text('Perfil', margin, y);
