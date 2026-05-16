@@ -65,4 +65,93 @@ export class AIService {
       job.requirements || ''
     ].join('. ');
   }
+
+  // --- Generative AI Features ---
+
+  /**
+   * Genera una carta de presentación para un empleo específico usando OpenRouter.
+   */
+  static async generateCoverLetter(profile: any, job: any): Promise<string> {
+    if (!env.OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY no configurada');
+    }
+
+    const prompt = `Actúa como un candidato profesional aplicando a un empleo.
+Oferta de empleo:
+Título: ${job.title}
+Descripción: ${job.description}
+Requisitos: ${job.requirements || 'N/A'}
+
+Perfil del candidato:
+Nombre: ${profile.full_name}
+Biografía: ${profile.bio || 'N/A'}
+Habilidades: ${(profile.skills || []).join(', ')}
+
+Escribe una carta de presentación persuasiva, profesional y concisa (máximo 3 párrafos).
+La carta debe conectar las habilidades del candidato con los requisitos del empleo.
+No agregues placeholders como [Nombre de la Empresa], adapta lo que puedas con la info provista.`;
+
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash-pro', // u otro modelo libre disponible en openrouter
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!response.ok) throw new Error('Error de OpenRouter: ' + response.statusText);
+      
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || 'No se pudo generar la carta.';
+    } catch (err) {
+      logger.error('Error generando carta de presentación', { error: err });
+      throw new Error('Error al generar la carta de presentación mediante IA');
+    }
+  }
+
+  /**
+   * Sugiere mejoras al perfil de un usuario para hacerlo más atractivo.
+   */
+  static async suggestProfileImprovements(profile: any): Promise<string> {
+    if (!env.OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY no configurada');
+    }
+
+    const prompt = `Actúa como un reclutador experto y coach de carrera.
+Analiza este perfil de un trabajador y sugiere 3 a 5 puntos de mejora específicos y procesables para hacerlo más atractivo a los empleadores.
+Sé constructivo, amigable y directo. Usa formato Markdown con viñetas.
+
+Perfil:
+Biografía: ${profile.bio || '(Vacío)'}
+Habilidades: ${(profile.skills || []).join(', ') || '(Vacío)'}
+Disponibilidad: ${profile.availability || '(Vacía)'}
+Tipo de trabajo deseado: ${profile.work_type || '(Vacío)'}`;
+
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.OPENROUTER_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash-pro',
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!response.ok) throw new Error('Error de OpenRouter: ' + response.statusText);
+      
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || 'No se pudieron generar sugerencias.';
+    } catch (err) {
+      logger.error('Error sugiriendo mejoras de perfil', { error: err });
+      throw new Error('Error al analizar el perfil mediante IA');
+    }
+  }
 }

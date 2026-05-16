@@ -12,6 +12,7 @@ import companiesRoutes from './companies.routes';
 import ratingsRoutes from './ratings.routes';
 import chatRoutes from './chat.routes';
 import adminRoutes from './admin.routes';
+import aiRoutes from './ai.routes';
 
 const router = Router();
 
@@ -25,6 +26,7 @@ router.use('/companies',     companiesRoutes);
 router.use('/ratings',       ratingsRoutes);
 router.use('/chat',          chatRoutes);
 router.use('/admin',         adminRoutes);
+router.use('/ai',            aiRoutes);
 
 /**
  * @swagger

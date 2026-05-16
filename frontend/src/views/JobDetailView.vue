@@ -138,7 +138,13 @@
       </div>
       <form @submit.prevent="submitApplication">
         <div class="form-group" style="margin-bottom:var(--space-5);">
-          <label class="form-label">Carta de presentación (opcional)</label>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <label class="form-label">Carta de presentación (opcional)</label>
+            <button type="button" class="btn btn--outline btn--sm" @click="generateCoverLetter" :disabled="isGeneratingLetter" style="border-color:#14b8a6; color:#0f766e;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4M3 5h4"/></svg>
+              {{ isGeneratingLetter ? 'Escribiendo...' : 'Generar con IA' }}
+            </button>
+          </div>
           <textarea class="form-textarea" v-model="coverLetter" rows="5" placeholder="Cuéntale al empleador por qué eres ideal para este cargo..."></textarea>
         </div>
         <div class="form-group" style="margin-bottom:var(--space-5);">
@@ -161,6 +167,7 @@ import { useRoute, useRouter } from 'vue-router'
 import JobsService from '@/services/jobs.service'
 import ApplicationsService from '@/services/applications.service'
 import ChatService from '@/services/chat.service'
+import AIService from '@/services/ai.service'
 import type { Job } from '@/types'
 
 const route = useRoute()
@@ -276,20 +283,32 @@ const toggleSave = async () => {
   }
 }
 
-const shareJob = async () => {
-  const url = window.location.href
-  const title = job.value ? job.value.title : 'Oferta de empleo'
-  const text = `¡Mira esta oferta en LocalWork! — ${title}`
-
+const shareJob = () => {
   if (navigator.share) {
-    try { await navigator.share({ title, text, url }) } catch(e){}
+    navigator.share({
+      title: job.value?.title,
+      text: 'Mira esta oferta de empleo en LocalWork',
+      url: window.location.href,
+    }).catch(console.error)
   } else {
-    try {
-      await navigator.clipboard.writeText(url)
-      showToast('Enlace copiado al portapapeles', 'success')
-    } catch(e) {
-      prompt('Copia este enlace:', url)
-    }
+    navigator.clipboard.writeText(window.location.href)
+    showToast('Enlace copiado al portapapeles', 'success')
+  }
+}
+
+// ── AI Generative ──
+const isGeneratingLetter = ref(false)
+const generateCoverLetter = async () => {
+  if (!jobId) return
+  isGeneratingLetter.value = true
+  try {
+    const res = await AIService.generateCoverLetter(jobId)
+    coverLetter.value = res
+    showToast('Carta generada con IA. Recuerda revisarla.', 'success')
+  } catch {
+    showToast('No se pudo generar la carta con IA', 'error')
+  } finally {
+    isGeneratingLetter.value = false
   }
 }
 

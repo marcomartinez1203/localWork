@@ -61,7 +61,13 @@
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Bio / Acerca de mí</label>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+            <label class="form-label">Bio / Acerca de mí</label>
+            <button type="button" class="btn btn--outline btn--sm" @click="suggestBioImprovements" :disabled="isSuggestingImprovements" style="border-color:#14b8a6; color:#0f766e;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4M3 5h4"/></svg>
+              {{ isSuggestingImprovements ? 'Analizando...' : 'Mejorar con IA' }}
+            </button>
+          </div>
           <textarea class="form-textarea" v-model="profileForm.bio" rows="4" placeholder="Cuéntanos sobre ti, tu experiencia y lo que buscas..."></textarea>
         </div>
         <button type="submit" class="btn btn--primary btn--lg" :class="{ 'btn--loading': isSavingProfile }" :disabled="isSavingProfile" style="align-self:flex-start;">
@@ -423,7 +429,11 @@ import api from '@/config/api'
 import AuthService from '@/services/auth.service'
 import CompaniesService from '@/services/companies.service'
 import JobsService from '@/services/jobs.service'
+import RatingsService from '@/services/ratings.service'
+import WorkersService from '@/services/workers.service'
+import AIService from '@/services/ai.service'
 import EmployerDashboard from '@/components/EmployerDashboard.vue'
+import RatingModal from '@/components/RatingModal.vue'
 import { showToast } from '@/utils/helpers'
 import { generateCV } from '@/utils/pdf-cv'
 import type { User, Company, Job } from '@/types'
