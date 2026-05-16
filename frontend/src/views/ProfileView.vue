@@ -410,6 +410,48 @@
       </div>
     </template>
 
+    <!-- Verificación de Identidad -->
+    <div class="profile-card">
+      <div class="profile-card__title">
+        <span>🛡️ Verificación de Identidad</span>
+        <span v-if="user.verification_status === 'verified'" class="profile-badge" style="background:#dcfce7;color:#166534;border-color:#bbf7d0;">Verificado</span>
+        <span v-else-if="user.verification_status === 'pending_manual'" class="profile-badge" style="background:#fef08a;color:#854d0e;border-color:#fde047;">En revisión manual</span>
+        <span v-else-if="user.verification_status === 'pending'" class="profile-badge" style="background:#fef08a;color:#854d0e;border-color:#fde047;">Procesando...</span>
+        <span v-else class="profile-badge" style="background:#fee2e2;color:#991b1b;border-color:#fecaca;">No verificado</span>
+      </div>
+      
+      <div v-if="user.verification_status === 'verified'">
+        <p style="font-size:var(--fs-sm);color:var(--color-text-secondary);">Tu identidad ha sido verificada. Tienes la insignia de confianza activa.</p>
+      </div>
+      <div v-else-if="user.verification_status === 'pending' || user.verification_status === 'pending_manual'">
+        <p style="font-size:var(--fs-sm);color:var(--color-text-secondary);">Tu documento está siendo procesado por nuestro equipo de confianza. Te notificaremos cuando haya una resolución.</p>
+      </div>
+      <div v-else>
+        <p style="font-size:var(--fs-sm);color:var(--color-text-secondary);margin-bottom:var(--space-4);">
+          Obtén la insignia de verificado para generar más confianza. Sube una foto clara de tu documento de identidad (Cédula).
+        </p>
+        <form @submit.prevent="submitVerification" style="display:flex;flex-direction:column;gap:var(--space-4);">
+          <div class="profile-form__row">
+            <div class="form-group">
+              <label class="form-label">Nombre EXACTO como aparece en el documento</label>
+              <input type="text" class="form-input" v-model="verificationForm.legalName" required placeholder="Ej: Juan Carlos Pérez Gómez">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Número de documento</label>
+              <input type="text" class="form-input" v-model="verificationForm.idNumber" required placeholder="Ej: 1098765432">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Foto del documento (Frente)</label>
+            <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" @change="handleIdentityFile" class="form-input" required>
+          </div>
+          <button type="submit" class="btn btn--primary btn--sm" :disabled="isVerifying" style="align-self:flex-start;">
+            {{ isVerifying ? 'Verificando con IA...' : 'Enviar documento' }}
+          </button>
+        </form>
+      </div>
+    </div>
+
     <!-- Danger Zone -->
     <div class="profile-card" style="border-color:var(--color-danger);">
       <div class="profile-card__title" style="color:var(--color-danger);">Zona de peligro</div>
@@ -448,6 +490,10 @@ const profileForm = ref({ full_name: '', phone: '', location: '', bio: '' })
 const isSavingProfile = ref(false)
 
 const employerCompany = ref<Company | null>(null)
+
+// Verification Form
+const verificationForm = ref({ legalName: '', idNumber: '', file: null as File | null })
+const isVerifying = ref(false)
 const employerForm = ref({ name: '', nit: '', phone: '', website: '', location: '', address: '', description: '', employer_type: 'company', hiring_model: 'direct' })
 const isSavingEmployer = ref(false)
 
@@ -823,6 +869,38 @@ const suggestBioImprovements = async () => {
     showToast('Error al generar sugerencias', 'error')
   } finally {
     isSuggestingImprovements.value = false
+  }
+}
+
+// ── Identity Verification ──
+const handleIdentityFile = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  if (target.files && target.files.length > 0) {
+    verificationForm.value.file = target.files[0]
+  }
+}
+
+const submitVerification = async () => {
+  if (!verificationForm.value.file) return
+  isVerifying.value = true
+  const formData = new FormData()
+  formData.append('document', verificationForm.value.file)
+  formData.append('legalName', verificationForm.value.legalName)
+  formData.append('idNumber', verificationForm.value.idNumber)
+
+  try {
+    const res = await api.post('/upload/identity', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    showToast(res.message || 'Enviado a revisión', 'success')
+    // Update local state temporarily
+    if ('verification_status' in user.value) {
+      (user.value as any).verification_status = res.status
+    }
+  } catch (err: any) {
+    showToast(err.response?.data?.message || 'Error al procesar verificación', 'error')
+  } finally {
+    isVerifying.value = false
   }
 }
 </script>

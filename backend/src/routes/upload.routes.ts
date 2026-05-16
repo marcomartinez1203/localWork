@@ -190,6 +190,12 @@ router.post('/identity', authenticate, uploadIdentity.single('document'), async 
       return;
     }
 
+    const { legalName, idNumber } = req.body;
+    if (!legalName || !idNumber) {
+      res.status(400).json({ message: 'Nombre legal y número de documento son requeridos' });
+      return;
+    }
+
     const fileExt = req.file.originalname.split('.').pop() || 'pdf';
     const fileName = `${req.userId}-${Date.now()}.${fileExt}`;
     const filePath = `identity_docs/${fileName}`;
@@ -207,16 +213,32 @@ router.post('/identity', authenticate, uploadIdentity.single('document'), async 
 
     const { data: publicUrlData } = supabaseAdmin.storage.from('uploads').getPublicUrl(filePath);
 
-    // Update profile verification status to pending
-    await supabaseAdmin
-      .from('profiles')
-      .update({
-        identity_document_url: publicUrlData.publicUrl,
-        verification_status: 'pending'
-      })
-      .eq('id', req.userId!);
+    // AI Verification
+    let status = 'pending_manual';
+    let message = 'Documento subido en formato PDF. Esperando revisión manual.';
 
-    res.json({ message: 'Documento subido. En revisión.', status: 'pending' });
+    // Guardar imagen temporalmente
+    await supabaseAdmin.from('profiles').update({
+      identity_document_url: publicUrlData.publicUrl,
+      legal_name: legalName,
+      id_number: idNumber
+    }).eq('id', req.userId!);
+
+    if (fileExt.toLowerCase() !== 'pdf') {
+      const { VerificationService } = await import('../services/verification.service');
+      const verifyResult = await VerificationService.processIdentityVerification(
+        req.userId!, 
+        legalName, 
+        idNumber, 
+        req.file.buffer
+      );
+      status = verifyResult.status;
+      message = verifyResult.reason || 'Proceso de IA terminado.';
+    } else {
+      await supabaseAdmin.from('profiles').update({ verification_status: status }).eq('id', req.userId!);
+    }
+
+    res.json({ message, status });
   } catch (err) {
     next(err);
   }

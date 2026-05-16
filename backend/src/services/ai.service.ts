@@ -136,4 +136,43 @@ Tipo de trabajo deseado: ${profile.work_type || '(Vacío)'}`;
       throw new Error('Error al analizar el perfil mediante IA');
     }
   }
+
+  /**
+   * Verifica si un nombre legal y cédula coinciden con el texto extraído (OCR) del documento de identidad.
+   */
+  static async verifyIdentityMatch(legalName: string, idNumber: string, ocrText: string): Promise<boolean> {
+    if (!hf) {
+      throw new Error('HUGGINGFACE_API_KEY no configurada');
+    }
+
+    const prompt = `Eres un experto analista de documentos de identidad de Colombia.
+Tu tarea es verificar si la identidad provista por el usuario coincide con el texto sucio extraído mediante OCR de su foto de la cédula.
+Debes ser tolerante a errores de lectura OCR (por ejemplo, '0' en vez de 'O', ruido, caracteres especiales) y nombres invertidos o incompletos, pero estrictamente debes poder confirmar que se trata de la misma persona.
+
+Datos del usuario:
+- Nombre Legal: ${legalName}
+- Cédula: ${idNumber}
+
+Texto extraído por OCR del documento:
+"""
+${ocrText}
+"""
+
+Responde ÚNICAMENTE con la palabra "SI" si estás seguro de que el documento pertenece a esa persona, o "NO" si no hay coincidencia o es dudoso. No añadas ninguna otra explicación.`;
+
+    try {
+      const response = await hf.chatCompletion({
+        model: 'meta-llama/Llama-3.2-3B-Instruct',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 10,
+        temperature: 0.1
+      });
+
+      const reply = (response.choices?.[0]?.message?.content || '').trim().toUpperCase();
+      return reply.startsWith('SI');
+    } catch (err) {
+      logger.error('Error en verifyIdentityMatch', { error: err });
+      return false; // Fallback to manual if AI fails
+    }
+  }
 }
