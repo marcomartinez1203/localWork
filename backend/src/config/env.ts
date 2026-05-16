@@ -57,5 +57,7 @@ export const env = {
     ? raw.CORS_ORIGINS.split(',').map((o: string) => o.trim())
     : (raw.NODE_ENV === 'production' ? productionCorsOrigins : defaultCorsOrigins),
   isDev: raw.NODE_ENV !== 'production',
-  hfApiKey: raw.HF_API_KEY,
+  hfApiKey: process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY,
+  vapidPublicKey: process.env.VAPID_PUBLIC_KEY,
+  vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
 };

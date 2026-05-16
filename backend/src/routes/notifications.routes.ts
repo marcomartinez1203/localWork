@@ -73,4 +73,50 @@ router.patch('/read-all', authenticate, NotificationsController.markAllAsRead);
  */
 router.patch('/:id/read', authenticate, NotificationsController.markAsRead);
 
+/**
+ * @swagger
+ * /api/notifications/subscribe:
+ *   post:
+ *     summary: Suscribir a notificaciones push (Web Push API)
+ *     tags: [Notifications]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               endpoint:
+ *                 type: string
+ *               keys:
+ *                 type: object
+ *                 properties:
+ *                   p256dh:
+ *                     type: string
+ *                   auth:
+ *                     type: string
+ *     responses:
+ *       201:
+ *         description: Suscripción exitosa
+ *       401:
+ *         description: No autorizado
+ */
+router.post('/subscribe', authenticate, NotificationsController.subscribe);
+
+/**
+ * @swagger
+ * /api/notifications/vapid-key:
+ *   get:
+ *     summary: Obtener clave pública VAPID para suscripción push
+ *     tags: [Notifications]
+ *     responses:
+ *       200:
+ *         description: Clave pública devuelta exitosamente
+ */
+router.get('/vapid-key', (_req, res) => {
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
+});
+
 export default router;

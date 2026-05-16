@@ -291,7 +291,11 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
               Calificado
             </span>
-            <a v-if="app.resume_url" :href="app.resume_url" target="_blank" class="btn btn--ghost btn--sm" style="font-size:var(--fs-xs);">CV</a>
+            <button class="btn btn--ghost btn--sm" @click="downloadApplicantCV(app)" title="Descargar CV" :disabled="downloadingCVId === app.id">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M3 21h18"/></svg>
+              {{ downloadingCVId === app.id ? '...' : 'CV' }}
+            </button>
+            <a v-if="app.resume_url" :href="app.resume_url" target="_blank" class="btn btn--ghost btn--sm" style="font-size:var(--fs-xs);">Ver PDF</a>
           </div>
         </div>
 
@@ -320,7 +324,9 @@ import CompaniesService from '@/services/companies.service'
 import ApplicationsService from '@/services/applications.service'
 import ChatService from '@/services/chat.service'
 import RatingsService from '@/services/ratings.service'
+import WorkersService from '@/services/workers.service'
 import RatingModal from '@/components/RatingModal.vue'
+import { generateCV } from '@/utils/pdf-cv'
 import type { Job, Application, Category, Barrio } from '@/types'
 
 interface JobForm {
@@ -623,6 +629,32 @@ const ratedApplicants = ref<Set<string>>(new Set())
 const isRatingModalOpen = ref(false)
 const ratingAppId = ref('')
 const ratingTargetName = ref('')
+const downloadingCVId = ref<string | null>(null)
+
+const downloadApplicantCV = async (app: Application) => {
+  downloadingCVId.value = app.id
+  try {
+    const profile = await WorkersService.getOne(app.seeker_id)
+    await generateCV({
+      full_name: profile.full_name,
+      email: profile.email,
+      phone: profile.phone,
+      location: profile.location,
+      bio: profile.bio,
+      skills: profile.skills,
+      availability: profile.availability,
+      hourly_rate: profile.hourly_rate,
+      education: (profile as any).education,
+      experience: (profile as any).experience,
+      portfolio_images: profile.portfolio_images,
+      avatar_url: profile.avatar_url,
+    })
+  } catch {
+    showToast('Error al generar CV del postulante', 'error')
+  } finally {
+    downloadingCVId.value = null
+  }
+}
 
 const openRatingForApplicant = (app: Application) => {
   ratingAppId.value = app.id

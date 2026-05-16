@@ -5,6 +5,8 @@ import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
 import { logger } from '../utils/logger';
 import { Notification, NotificationType, PaginatedResponse } from '../types';
+import webpush from '../utils/web-push';
+import { env } from '../config/env';
 
 export class NotificationsService {
 
@@ -84,6 +86,11 @@ export class NotificationsService {
       .insert({ user_id: userId, type, title, message, data: data ?? null });
 
     if (error) { logger.error('NotificationsService.create failed', { error }); throw new AppError('Error al crear notificación', 500); }
+    
+    // Disparar push en background
+    NotificationsService.sendPushNotification(userId, { title, body: message, type, data }).catch(err => {
+      logger.error('Error sending push notification', { error: err });
+    });
   }
 
   static async createBulk(
@@ -109,5 +116,71 @@ export class NotificationsService {
 
     if (error) { logger.error('NotificationsService.createBulk failed', { error }); }
     // No lanzar error: las notificaciones son no-críticas
+    
+    // Opcionalmente: Disparar push notif para todas en bulk (aquí solo disparamos si hace falta)
+    notifications.forEach(n => {
+       NotificationsService.sendPushNotification(n.user_id, { title: n.title, body: n.message, type: n.type, data: n.data }).catch(() => {});
+    });
+  }
+
+  // Web Push API
+  static async subscribe(userId: string, subscription: any): Promise<void> {
+    const { endpoint, keys } = subscription;
+    if (!endpoint || !keys || !keys.p256dh || !keys.auth) throw new AppError('Suscripción inválida', 400);
+
+    const { error } = await supabaseAdmin
+      .from('push_subscriptions')
+      .upsert({
+        user_id: userId,
+        endpoint: endpoint,
+        p256dh: keys.p256dh,
+        auth: keys.auth
+      }, { onConflict: 'user_id, endpoint' });
+
+    if (error) { logger.error('NotificationsService.subscribe failed', { error }); throw new AppError('Error al guardar suscripción push', 500); }
+  }
+
+  static async sendPushNotification(userId: string, payload: any): Promise<void> {
+    if (!env.vapidPublicKey || !env.vapidPrivateKey) return;
+
+    const { data: subs, error } = await supabaseAdmin
+      .from('push_subscriptions')
+      .select('*')
+      .eq('user_id', userId);
+      
+    if (error || !subs || subs.length === 0) return;
+
+    const payloadString = JSON.stringify({
+      notification: {
+        title: payload.title,
+        body: payload.body,
+        icon: '/pwa-192x192.png',
+        badge: '/pwa-192x192.png',
+        data: {
+          url: payload.type === 'chat' ? '/messages' : payload.type === 'application' ? '/dashboard' : '/',
+          ...payload.data
+        }
+      }
+    });
+
+    for (const sub of subs) {
+      const pushSubscription = {
+        endpoint: sub.endpoint,
+        keys: {
+          p256dh: sub.p256dh,
+          auth: sub.auth
+        }
+      };
+      try {
+        await webpush.sendNotification(pushSubscription, payloadString);
+      } catch (err: any) {
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          // El usuario ha revocado el permiso o la suscripción expiró, borrar de la bd
+          await supabaseAdmin.from('push_subscriptions').delete().eq('id', sub.id);
+        } else {
+          logger.error('Failed to send push notification', { error: err });
+        }
+      }
+    }
   }
 }

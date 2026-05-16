@@ -39,4 +39,11 @@ export class NotificationsController {
       res.json({ count });
     } catch (err) { next(err); }
   }
+
+  static async subscribe(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      await NotificationsService.subscribe(req.userId!, req.body);
+      res.status(201).json({ message: 'Suscrito a notificaciones push exitosamente' });
+    } catch (err) { next(err); }
+  }
 }

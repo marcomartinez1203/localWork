@@ -22,6 +22,10 @@
         <p v-if="employerCompany?.name" style="font-size:var(--fs-sm);color:var(--color-primary);font-weight:var(--fw-semibold);margin:var(--space-1) 0 0;">
           🏢 {{ employerCompany.name }}
         </p>
+        <button type="button" class="btn btn--outline btn--sm" style="margin-top:var(--space-2);" @click="downloadCV" :disabled="isGeneratingCV">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:text-bottom;margin-right:4px;"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M3 21h18"/></svg>
+          {{ isGeneratingCV ? 'Generando...' : 'Descargar mi CV' }}
+        </button>
       </div>
     </div>
 
@@ -421,6 +425,7 @@ import CompaniesService from '@/services/companies.service'
 import JobsService from '@/services/jobs.service'
 import EmployerDashboard from '@/components/EmployerDashboard.vue'
 import { showToast } from '@/utils/helpers'
+import { generateCV } from '@/utils/pdf-cv'
 import type { User, Company, Job } from '@/types'
 
 const router = useRouter()
@@ -457,6 +462,7 @@ const idDocInput = ref<HTMLInputElement | null>(null)
 const isUploadingIdentity = ref(false)
 const portfolioImages = ref<string[]>([])
 const isUploadingPortfolio = ref(false)
+const isGeneratingCV = ref(false)
 
 // Computed
 const initials = computed(() => {
@@ -772,6 +778,31 @@ const unsaveJob = async (jobId: string) => {
 
 const logout = () => {
   AuthService.logout()
+}
+
+const downloadCV = async () => {
+  isGeneratingCV.value = true
+  try {
+    const u = user.value as Record<string, any>
+    await generateCV({
+      full_name: u.full_name,
+      email: u.email,
+      phone: u.phone,
+      location: u.location,
+      bio: u.bio,
+      skills: skillsList.value,
+      availability: skillsForm.value.availability,
+      hourly_rate: skillsForm.value.hourly_rate,
+      education: educationList.value,
+      experience: experienceList.value,
+      portfolio_images: portfolioImages.value,
+      avatar_url: u.avatar_url,
+    })
+  } catch {
+    showToast('Error al generar el CV', 'error')
+  } finally {
+    isGeneratingCV.value = false
+  }
 }
 </script>
 

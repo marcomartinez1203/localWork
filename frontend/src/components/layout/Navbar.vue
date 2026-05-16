@@ -54,7 +54,10 @@
             <div class="notif-preview" :class="{'open': isNotifOpen}" id="notifPreview">
               <div class="notif-preview__header">
                 <span>Notificaciones</span>
-                <button class="notif-preview__mark-all" @click="markAllAsRead">Marcar leídas</button>
+                <div style="display:flex;gap:12px;align-items:center;">
+                  <button class="notif-preview__mark-all" @click="enablePushNotifs">🔔 Activar Push</button>
+                  <button class="notif-preview__mark-all" @click="markAllAsRead">Marcar leídas</button>
+                </div>
               </div>
               <div class="notif-preview__list">
                 <div v-if="notifications.length === 0" class="notif-preview__empty">Sin notificaciones nuevas</div>
@@ -230,6 +233,15 @@ const markAllAsRead = async () => {
   notifications.value.forEach(n => n.read = true)
   unreadNotifCount.value = 0
   try { await NotificationsService.markAllAsRead() } catch { /* silent */ }
+}
+
+const enablePushNotifs = async () => {
+  try {
+    await NotificationsService.subscribeToPushNotifications()
+    // optionally show a toast
+  } catch (err) {
+    console.error('Push error', err)
+  }
 }
 
 const toggleTheme = () => {
