@@ -95,7 +95,11 @@
             </div>
             <textarea class="form-textarea" v-model="messageText" maxlength="500" placeholder="Escribe un mensaje..." :disabled="!activeConversation" @keydown.enter.exact.prevent="sendMessage"></textarea>
           </div>
-          <button class="btn btn--primary btn--sm" type="submit" :class="{ 'btn--loading': isSending }" :disabled="!activeConversation || isSending">Enviar</button>
+          <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+            <button class="btn btn--primary btn--sm" type="submit" :class="{ 'btn--loading': isSending }" :disabled="!activeConversation || isSending">Enviar</button>
+            <span v-if="isAiLoading" style="font-size:10px;color:var(--color-text-muted);font-family:var(--font-mono);" title="El escudo de IA se está descargando en tu navegador.">🤖 Escudo IA: Cargando...</span>
+            <span v-else-if="classifier" style="font-size:10px;color:#16a34a;font-family:var(--font-mono);" title="Los mensajes son analizados localmente en tu dispositivo.">🤖 Escudo IA: Activo</span>
+          </div>
         </form>
       </section>
     </div>
@@ -137,6 +141,10 @@ const attachmentInput = ref<HTMLInputElement | null>(null)
 const isSending = ref(false)
 const messagesPanel = ref<HTMLElement | null>(null)
 
+// AI Edge Shield
+const isAiLoading = ref(false)
+const classifier = ref<any>(null)
+
 import { SUPABASE_URL, SUPABASE_ANON } from '@/config/api'
 
 // Supabase Realtime State
@@ -168,6 +176,9 @@ onMounted(async () => {
   if (activeConversationId.value) {
     openConversation(activeConversationId.value)
   }
+
+  // Cargar modelo de IA en background
+  initAIExtension()
 })
 
 onUnmounted(() => {
@@ -232,6 +243,21 @@ const sendMessage = async () => {
   const txt = messageText.value.trim()
   const file = selectedAttachment.value
   if (!txt && !file) return
+
+  // 1. Edge AI Toxicity Check
+  if (txt && classifier.value) {
+    try {
+      const results = await classifier.value(txt)
+      // toxic-bert returns labels like 'toxic', 'severe_toxic', 'obscene', 'threat', 'insult', 'identity_hate'
+      const isToxic = results.some((r: any) => r.label === 'toxic' && r.score > 0.8)
+      if (isToxic) {
+        showToast('El mensaje ha sido bloqueado porque incumple las normas de convivencia.', 'error')
+        return // Bloqueamos el envío
+      }
+    } catch (err) {
+      console.warn('Error al verificar toxicidad', err)
+    }
+  }
 
   isSending.value = true
   try {
@@ -317,6 +343,22 @@ const scrollToBottom = () => {
       messagesPanel.value.scrollTop = messagesPanel.value.scrollHeight
     }
   })
+}
+
+const initAIExtension = async () => {
+  isAiLoading.value = true
+  try {
+    // Importamos Transformers.js de forma dinámica vía CDN para no engordar el bundle principal
+    // @ts-ignore
+    const module = await import(/* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js')
+    module.env.allowLocalModels = false // Forzamos carga desde HF Hub
+    // xenova/toxic-bert analiza toxicidad, insultos, y amenazas
+    classifier.value = await module.pipeline('text-classification', 'Xenova/toxic-bert', { topk: null })
+  } catch (err) {
+    console.error('No se pudo inicializar la IA local', err)
+  } finally {
+    isAiLoading.value = false
+  }
 }
 
 // Formatters
