@@ -53,7 +53,7 @@ export async function generateCV(data: CVData) {
   let y = 16;
 
   // Header color band
-  doc.setFillColor(22, 163, 74); // emerald-600
+  doc.setFillColor(31, 41, 55); // gray-800
   doc.rect(0, 0, pageW, 40, 'F');
 
   // Avatar
@@ -147,8 +147,8 @@ export async function generateCV(data: CVData) {
         String(e.year_start || '-'),
         String(e.year_end || '-'),
       ]),
-      theme: 'striped',
-      headStyles: { fillColor: [22, 163, 74], textColor: 255, fontStyle: 'bold' },
+      theme: 'grid',
+      headStyles: { fillColor: [31, 41, 55], textColor: 255, fontStyle: 'bold' },
       styles: { fontSize: 9, cellPadding: 2 },
     });
     y = (doc as any).lastAutoTable.finalY + 6;
@@ -170,8 +170,8 @@ export async function generateCV(data: CVData) {
         `${e.year_start || ''} – ${e.current ? 'Actual' : (e.year_end || '')}`,
         e.description || '-',
       ]),
-      theme: 'striped',
-      headStyles: { fillColor: [22, 163, 74], textColor: 255, fontStyle: 'bold' },
+      theme: 'grid',
+      headStyles: { fillColor: [31, 41, 55], textColor: 255, fontStyle: 'bold' },
       styles: { fontSize: 9, cellPadding: 2 },
       columnStyles: { 3: { cellWidth: 'auto' } },
     });
