@@ -1,4 +1,7 @@
-# LocalWork
+# LocalWork 🚀
+[![CI](https://github.com/marcomartinez1203/localWork/actions/workflows/ci.yml/badge.svg)](https://github.com/marcomartinez1203/localWork/actions/workflows/ci.yml)
+[![Coverage (Backend)](https://img.shields.io/badge/Coverage%20(Backend)-73%25-brightgreen)](https://github.com/marcomartinez1203/localWork)
+[![Coverage (Frontend)](https://img.shields.io/badge/Coverage%20(Frontend)-69%25-brightgreen)](https://github.com/marcomartinez1203/localWork)
 
 Plataforma de empleo local para **Aguachica, Cesar** — conecta buscadores de empleo, trabajadores independientes y empleadores del municipio.
 
