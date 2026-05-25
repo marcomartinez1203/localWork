@@ -44,6 +44,13 @@ const RatingsService = {
     return api.get<{ rated: boolean; rating_id?: string }>(`/ratings/check/${applicationId}`);
   },
 
+  // Batch check — una sola query en lugar de N requests
+  async checkBatch(applicationIds: string[]): Promise<Record<string, boolean>> {
+    if (!applicationIds.length) return {};
+    const ids = applicationIds.join(',');
+    return api.get<Record<string, boolean>>(`/ratings/check-batch?ids=${encodeURIComponent(ids)}`);
+  },
+
   // Get ratings for a user (with breakdown)
   async getForUser(userId: string, filters: { page?: number; perPage?: number } = {}): Promise<RatingSummary> {
     const { page = 1, perPage = 10 } = filters;

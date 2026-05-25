@@ -267,7 +267,7 @@
           </div>
           <div class="applicant-row__info">
             <p class="applicant-row__name">{{ app.seeker_name || 'Sin nombre' }}</p>
-            <p class="applicant-row__email">{{ app.seeker_name }}</p>
+            <p class="applicant-row__email">{{ app.seeker_email || app.seeker_name }}</p>
             <p v-if="app.cover_letter" class="applicant-row__cover">"{{ app.cover_letter }}"</p>
           </div>
           <div class="applicant-row__actions">
@@ -311,6 +311,17 @@
     @rated="onApplicantRated"
   />
 
+  <!-- Confirm Modal -->
+  <ConfirmModal
+    v-model="isConfirmOpen"
+    :title="confirmTitle"
+    :message="confirmMessage"
+    :confirm-label="confirmLabel"
+    :loading="isConfirmLoading"
+    variant="danger"
+    @confirm="onConfirmAction"
+  />
+
 </template>
 
 <script setup lang="ts">
@@ -326,6 +337,7 @@ import ChatService from '@/services/chat.service'
 import RatingsService from '@/services/ratings.service'
 import WorkersService from '@/services/workers.service'
 import RatingModal from '@/components/RatingModal.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
 import { generateCV } from '@/utils/pdf-cv'
 import type { Job, Application, Category, Barrio } from '@/types'
 
@@ -471,14 +483,16 @@ const toggleJobStatus = async (job: Job) => {
 }
 
 const deleteJob = async (id: string) => {
-  if (!confirm('¿Seguro que deseas eliminar esta oferta?')) return
-  try {
-    await JobsService.delete(id)
-    fetchJobs()
-    fetchStatsAndData()
-  } catch {
-    showToast('Error al eliminar', 'error')
-  }
+  openConfirm(
+    'Eliminar oferta',
+    '¿Seguro que deseas eliminar esta oferta? Esta acción no se puede deshacer.',
+    'Eliminar',
+    async () => {
+      await JobsService.delete(id)
+      fetchJobs()
+      fetchStatsAndData()
+    }
+  )
 }
 
 const openCreateModal = () => {
@@ -612,15 +626,44 @@ const openApplicantChat = async (id: string) => {
   }
 }
 
-// ── Contract finalization ──
 const finalizeContract = async (app: Application) => {
-  if (!confirm(`¿Confirmas que el contrato con ${app.seeker_name || 'este trabajador'} ha finalizado?`)) return
+  openConfirm(
+    'Finalizar contrato',
+    `¿Confirmas que el contrato con ${app.seeker_name || 'este trabajador'} ha finalizado?`,
+    'Finalizar',
+    async () => {
+      await ApplicationsService.updateStatus(app.id, 'completed')
+      app.status = 'completed' as Application['status']
+      showToast('Contrato finalizado. ¡Ahora puedes calificar!', 'success')
+    }
+  )
+}
+
+// ── Confirm Modal ──
+const isConfirmOpen = ref(false)
+const isConfirmLoading = ref(false)
+const confirmTitle = ref('')
+const confirmMessage = ref('')
+const confirmLabel = ref('Confirmar')
+let _confirmCallback: (() => Promise<void>) | null = null
+
+const openConfirm = (title: string, message: string, label: string, cb: () => Promise<void>) => {
+  confirmTitle.value = title
+  confirmMessage.value = message
+  confirmLabel.value = label
+  _confirmCallback = cb
+  isConfirmOpen.value = true
+}
+
+const onConfirmAction = async () => {
+  if (!_confirmCallback) return
+  isConfirmLoading.value = true
   try {
-    await ApplicationsService.updateStatus(app.id, 'completed')
-    app.status = 'completed' as Application['status']
-    showToast('Contrato finalizado. ¡Ahora puedes calificar!', 'success')
-  } catch {
-    showToast('Error al finalizar contrato', 'error')
+    await _confirmCallback()
+  } finally {
+    isConfirmLoading.value = false
+    isConfirmOpen.value = false
+    _confirmCallback = null
   }
 }
 
@@ -666,16 +709,13 @@ const onApplicantRated = () => {
   ratedApplicants.value.add(ratingAppId.value)
 }
 
-// Check rated status for completed applications
+// Check rated status for completed applications (batch — una sola query)
 const checkApplicantRatings = async () => {
   const finalized = applicants.value.filter(a => a.status === 'completed')
-  const results = await Promise.allSettled(
-    finalized.map(a => RatingsService.checkForApplication(a.id))
-  )
-  results.forEach((r, i) => {
-    if (r.status === 'fulfilled' && r.value.rated) {
-      ratedApplicants.value.add(finalized[i].id)
-    }
+  if (!finalized.length) return
+  const result = await RatingsService.checkBatch(finalized.map(a => a.id))
+  finalized.forEach(a => {
+    if (result[a.id]) ratedApplicants.value.add(a.id)
   })
 }
 </script>

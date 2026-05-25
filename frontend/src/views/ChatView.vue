@@ -48,7 +48,11 @@
             <div>
               <h2>{{ activeConversation.other_user?.full_name }}</h2>
               <div class="chat-main__meta">
-                <template v-if="isOnline">
+                <template v-if="isTyping">
+                  <span class="chat-main__meta-dot chat-main__meta-dot--typing"></span>
+                  <span class="chat-typing">escribiendo<span class="chat-typing__dots"><span>.</span><span>.</span><span>.</span></span></span>
+                </template>
+                <template v-else-if="isOnline">
                   <span class="chat-main__meta-dot"></span><span>En línea</span>
                 </template>
                 <template v-else>
@@ -93,7 +97,7 @@
             <div class="chat-attachment-chip" style="display:inline-flex;" v-if="selectedAttachment">
               Adjunto: {{ selectedAttachment.name }}
             </div>
-            <textarea class="form-textarea" v-model="messageText" maxlength="500" placeholder="Escribe un mensaje..." :disabled="!activeConversation" @keydown.enter.exact.prevent="sendMessage"></textarea>
+            <textarea class="form-textarea" v-model="messageText" maxlength="500" placeholder="Escribe un mensaje..." :disabled="!activeConversation" @keydown.enter.exact.prevent="sendMessage" @input="onTyping"></textarea>
           </div>
           <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
             <button class="btn btn--primary btn--sm" type="submit" :class="{ 'btn--loading': isSending }" :disabled="!activeConversation || isSending">Enviar</button>
@@ -134,10 +138,22 @@ const activeConversationId = ref<string | null>(null)
 const activeConversation = computed(() => conversations.value.find(c => c.id === activeConversationId.value) || null)
 const messages = ref<Message[]>([])
 const isOnline = ref(false)
+const isTyping = ref(false)
 
 const messageText = ref('')
 const selectedAttachment = ref<File | null>(null)
 const attachmentInput = ref<HTMLInputElement | null>(null)
+let _typingTimeout: ReturnType<typeof setTimeout> | null = null
+
+const onTyping = () => {
+  if (!presenceChannel) return
+  presenceChannel.track({ user_id: user.value?.id, at: new Date().toISOString(), typing: true })
+  if (_typingTimeout) clearTimeout(_typingTimeout)
+  _typingTimeout = setTimeout(() => {
+    presenceChannel?.track({ user_id: user.value?.id, at: new Date().toISOString(), typing: false })
+  }, 2000)
+}
+
 const isSending = ref(false)
 const messagesPanel = ref<HTMLElement | null>(null)
 
@@ -329,10 +345,12 @@ const subscribeToPresence = (conversation: ConversationItem) => {
   presenceChannel.on('presence', { event: 'sync' }, () => {
     const state = presenceChannel.presenceState()
     const otherId = conversation.other_user?.id
+    const otherState = state[otherId]?.[0] as { typing?: boolean } | undefined
     isOnline.value = Boolean(state[otherId]?.length)
+    isTyping.value = Boolean(otherState?.typing)
   }).subscribe(async (status: string) => {
     if (status === 'SUBSCRIBED') {
-      await presenceChannel.track({ user_id: user.value?.id, at: new Date().toISOString() })
+      await presenceChannel.track({ user_id: user.value?.id, at: new Date().toISOString(), typing: false })
     }
   })
 }
@@ -409,6 +427,43 @@ const getLastText = (c: ConversationItem) => {
 .chat-bubble-wrap { display: flex; margin-bottom: var(--space-2); }
 .chat-bubble-wrap.mine { justify-content: flex-end; }
 .chat-bubble { max-width: min(78%, 620px); border-radius: var(--radius-lg); padding: var(--space-2) var(--space-3); background: #1f2937; color: #f9fafb; border: 1px solid transparent; }
+
+.chat-typing {
+  font-style: italic;
+  color: var(--color-text-muted);
+  font-size: var(--fs-xs);
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.chat-typing__dots {
+  display: inline-flex;
+  gap: 1px;
+}
+
+.chat-typing__dots span {
+  animation: blink 1.2s infinite;
+  opacity: 0;
+}
+
+.chat-typing__dots span:nth-child(2) { animation-delay: 0.2s; }
+.chat-typing__dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}
+
+.chat-main__meta-dot--typing {
+  background: var(--color-primary) !important;
+  animation: pulse-dot 1s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
 .chat-bubble-wrap.mine .chat-bubble { background: #007200; color: #fff; }
 .chat-bubble__text { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: var(--fs-sm); }
 .chat-bubble__attachment { margin-top: var(--space-2); display: inline-flex; gap: var(--space-2); align-items: center; font-size: var(--fs-xs); color: inherit; text-decoration: underline; }

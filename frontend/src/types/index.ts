@@ -152,6 +152,7 @@ export interface Application {
   job_title?: string
   company_name?: string
   seeker_name?: string
+  seeker_email?: string
   seeker_avatar?: string
 }
 

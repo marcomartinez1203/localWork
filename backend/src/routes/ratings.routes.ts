@@ -159,6 +159,17 @@ router.post('/post-service', authenticate, async (req: AuthenticatedRequest, res
  *                 rated: { type: boolean }
  *                 rating: { $ref: '#/components/schemas/Rating', nullable: true }
  */
+// GET /ratings/check-batch?ids=id1,id2,id3 — Batch check (single DB query en lugar de N)
+router.get('/check-batch', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  try {
+    const ids = req.query.ids as string;
+    if (!ids) { res.status(400).json({ message: 'ids es requerido' }); return; }
+    const applicationIds = ids.split(',').map(s => s.trim()).filter(Boolean).slice(0, 50);
+    const result = await RatingsService.checkBatch(applicationIds, req.userId!);
+    res.json(result);
+  } catch (err) { next(err); }
+});
+
 // GET /ratings/check/:applicationId — Check if current user has rated this application
 router.get('/check/:applicationId', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {

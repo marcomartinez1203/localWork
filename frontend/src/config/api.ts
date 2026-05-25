@@ -11,6 +11,7 @@ interface ApiOptions {
   headers?: Record<string, string>;
   body?: unknown;
   method?: string;
+  signal?: AbortSignal;
 }
 
 async function apiFetch<T = unknown>(endpoint: string, options: ApiOptions = {}): Promise<T> {
@@ -35,7 +36,10 @@ async function apiFetch<T = unknown>(endpoint: string, options: ApiOptions = {})
     delete hdrs['Content-Type'];
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...config,
+    signal: options.signal,
+  });
 
   const isAuthEndpoint =
     endpoint.startsWith('/auth/login') ||
@@ -59,12 +63,12 @@ async function apiFetch<T = unknown>(endpoint: string, options: ApiOptions = {})
 }
 
 const api = {
-  get:    <T = unknown>(endpoint: string)                       => apiFetch<T>(endpoint, { method: 'GET' }),
-  post:   <T = unknown>(endpoint: string, body?: unknown)       => apiFetch<T>(endpoint, { method: 'POST', body }),
-  put:    <T = unknown>(endpoint: string, body?: unknown)       => apiFetch<T>(endpoint, { method: 'PUT', body }),
-  patch:  <T = unknown>(endpoint: string, body?: unknown)       => apiFetch<T>(endpoint, { method: 'PATCH', body }),
-  delete: <T = unknown>(endpoint: string)                       => apiFetch<T>(endpoint, { method: 'DELETE' }),
-  upload: <T = unknown>(endpoint: string, formData: FormData)   => apiFetch<T>(endpoint, { method: 'POST', body: formData }),
+  get:    <T = unknown>(endpoint: string, signal?: AbortSignal)          => apiFetch<T>(endpoint, { method: 'GET', signal }),
+  post:   <T = unknown>(endpoint: string, body?: unknown)                => apiFetch<T>(endpoint, { method: 'POST', body }),
+  put:    <T = unknown>(endpoint: string, body?: unknown)                => apiFetch<T>(endpoint, { method: 'PUT', body }),
+  patch:  <T = unknown>(endpoint: string, body?: unknown)                => apiFetch<T>(endpoint, { method: 'PATCH', body }),
+  delete: <T = unknown>(endpoint: string)                                => apiFetch<T>(endpoint, { method: 'DELETE' }),
+  upload: <T = unknown>(endpoint: string, formData: FormData)            => apiFetch<T>(endpoint, { method: 'POST', body: formData }),
 };
 
 export default api;

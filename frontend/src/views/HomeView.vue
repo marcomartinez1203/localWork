@@ -103,9 +103,10 @@
           <button class="pagination__btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
           </button>
-          <button v-for="page in totalPages" :key="page" class="pagination__btn" :class="{ active: page === currentPage }" @click="goToPage(page)">
-            {{ page }}
-          </button>
+          <template v-for="page in pages" :key="page">
+            <span v-if="page === '...'" class="pagination__ellipsis">...</span>
+            <button v-else class="pagination__btn" :class="{ active: page === currentPage }" @click="goToPage(page as number)">{{ page }}</button>
+          </template>
           <button class="pagination__btn" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
           </button>
@@ -130,6 +131,7 @@ import JobsService from '@/services/jobs.service'
 import JobCard from '@/components/JobCard.vue'
 import ProfileSidebar from '@/components/ProfileSidebar.vue'
 import RightSidebar from '@/components/RightSidebar.vue'
+import { usePagination } from '@/utils/pagination'
 import type { User, Job } from '@/types'
 
 const router = useRouter()
@@ -151,6 +153,9 @@ const searchHint = ref('')
 
 const ITEMS_PER_PAGE = 10
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
+let _searchAbort: AbortController | null = null
+
+const { pages } = usePagination(currentPage, totalPages)
 
 const resultsText = computed(() => {
   if (jobs.value.length === 0) return 'Mostrando <strong>0</strong> ofertas'
@@ -183,6 +188,11 @@ const fetchRecommended = async () => {
 }
 
 const fetchJobs = async () => {
+  // Cancela el request anterior si sigue en vuelo
+  if (_searchAbort) _searchAbort.abort()
+  _searchAbort = new AbortController()
+  const signal = _searchAbort.signal
+
   isLoading.value = true
   try {
     const result = await JobsService.list({
@@ -193,12 +203,13 @@ const fetchJobs = async () => {
       location: activeLocation.value !== 'all' ? activeLocation.value : undefined,
       sort: activeSort.value,
       search: searchQuery.value || undefined,
-    })
+    }, signal)
 
     jobs.value = result.data || []
     totalJobs.value = result.total || 0
     totalPages.value = result.total_pages || 1
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.name === 'AbortError') return // request cancelado — ignorar
     console.error('Error loading jobs:', err)
     jobs.value = []
   } finally {
@@ -274,5 +285,17 @@ const clearSearch = () => {
   margin: var(--space-8) 0;
   border: 0;
   border-top: 1px solid var(--color-border);
+}
+
+.pagination__ellipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  user-select: none;
 }
 </style>

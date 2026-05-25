@@ -134,9 +134,10 @@
       <button class="pagination__btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
       </button>
-      <button v-for="i in totalPages" :key="i" class="pagination__btn" :class="{ active: i === currentPage }" @click="goToPage(i)">
-        {{ i }}
-      </button>
+      <template v-for="page in pages" :key="page">
+        <span v-if="page === '...'" class="pagination__ellipsis">...</span>
+        <button v-else class="pagination__btn" :class="{ active: page === currentPage }" @click="goToPage(page as number)">{{ page }}</button>
+      </template>
       <button class="pagination__btn" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
       </button>
@@ -148,6 +149,17 @@
       :application-id="ratingAppId"
       :target-name="ratingTargetName"
       @rated="onRated"
+    />
+
+    <!-- Confirm Modal (withdraw) -->
+    <ConfirmModal
+      v-model="isConfirmOpen"
+      title="Retirar postulación"
+      message="¿Seguro que deseas retirar esta postulación? Esta acción no se puede deshacer."
+      confirm-label="Retirar"
+      :loading="isConfirmLoading"
+      variant="danger"
+      @confirm="onWithdrawConfirm"
     />
   </div>
 </template>
@@ -161,6 +173,8 @@ import ApplicationsService from '@/services/applications.service'
 import ChatService from '@/services/chat.service'
 import RatingsService from '@/services/ratings.service'
 import RatingModal from '@/components/RatingModal.vue'
+import ConfirmModal from '@/components/ConfirmModal.vue'
+import { usePagination } from '@/utils/pagination'
 import type { Application, ApplicationStatus } from '@/types'
 
 const router = useRouter()
@@ -169,7 +183,10 @@ const applications = ref<Application[]>([])
 const isLoading = ref(true)
 const currentPage = ref(1)
 const totalPages = ref(1)
+const totalApplications = ref(0)
 const activeStatus = ref<ApplicationStatus | undefined>(undefined)
+
+const { pages } = usePagination(currentPage, totalPages)
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'Pendiente', reviewed: 'Revisada', shortlisted: 'Preseleccionado',
@@ -182,6 +199,7 @@ const PIPELINE_STEPS = [
   { key: 'reviewed', label: 'Revisado' },
   { key: 'interview', label: 'Entrevista' },
   { key: 'accepted', label: 'Contratado' },
+  { key: 'completed', label: 'Finalizado' },
 ]
 
 const PIPELINE_ORDER = ['pending', 'reviewed', 'shortlisted', 'interview', 'accepted', 'completed']
@@ -203,7 +221,7 @@ const timeAgo = (dateStr: string) => {
 }
 
 const stats = computed(() => {
-  const s = { total: applications.value.length, pending: 0, interview: 0, accepted: 0, completed: 0 }
+  const s = { total: totalApplications.value, pending: 0, interview: 0, accepted: 0, completed: 0 }
   applications.value.forEach(a => {
     if (a.status === 'pending') s.pending++
     if (a.status === 'interview') s.interview++
@@ -228,6 +246,7 @@ const loadApplications = async () => {
     })
     applications.value = res.data || []
     totalPages.value = res.total_pages || 1
+    totalApplications.value = res.total || 0
     await checkRatings()
   } catch (e) {
     applications.value = []
@@ -247,14 +266,27 @@ const goToPage = (p: number) => {
   loadApplications()
 }
 
-const withdrawApp = async (id: string) => {
-  if (!confirm('¿Seguro que deseas retirar esta postulación?')) return
+// ── Confirm modal ──
+const isConfirmOpen = ref(false)
+const isConfirmLoading = ref(false)
+let _withdrawId = ''
+
+const withdrawApp = (id: string) => {
+  _withdrawId = id
+  isConfirmOpen.value = true
+}
+
+const onWithdrawConfirm = async () => {
+  isConfirmLoading.value = true
   try {
-    await ApplicationsService.withdraw(id)
+    await ApplicationsService.withdraw(_withdrawId)
     showToast('Postulación retirada', 'success')
     loadApplications()
-  } catch {
-    showToast('Error al retirar', 'error')
+  } catch (e: any) {
+    showToast(e?.message || 'Error al retirar', 'error')
+  } finally {
+    isConfirmLoading.value = false
+    isConfirmOpen.value = false
   }
 }
 
@@ -277,13 +309,10 @@ const isRatable = (app: Application) => app.status === 'completed'
 
 const checkRatings = async () => {
   const ratableApps = applications.value.filter(isRatable)
-  const results = await Promise.allSettled(
-    ratableApps.map(app => RatingsService.checkForApplication(app.id))
-  )
-  results.forEach((r, i) => {
-    if (r.status === 'fulfilled' && r.value.rated) {
-      ratedApps.value.add(ratableApps[i].id)
-    }
+  if (!ratableApps.length) return
+  const result = await RatingsService.checkBatch(ratableApps.map(a => a.id))
+  ratableApps.forEach(app => {
+    if (result[app.id]) ratedApps.value.add(app.id)
   })
 }
 
@@ -755,5 +784,17 @@ const onRated = () => {
   .pipeline-step:not(:last-child)::after {
     top: 4px;
   }
+}
+
+.pagination__ellipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  user-select: none;
 }
 </style>

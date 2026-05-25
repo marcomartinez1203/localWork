@@ -269,6 +269,24 @@ export class ApplicationsService {
   }
 
   static async withdraw(applicationId: string, seekerId: string): Promise<void> {
+    // Verificar que la postulación existe y pertenece al seeker
+    const { data: app } = await supabaseAdmin
+      .from('applications')
+      .select('status, seeker_id')
+      .eq('id', applicationId)
+      .eq('seeker_id', seekerId)
+      .single();
+
+    if (!app) throw new AppError('Postulación no encontrada', 404);
+
+    const LOCKED_STATUSES: ApplicationStatus[] = ['accepted', 'completed'];
+    if (LOCKED_STATUSES.includes(app.status as ApplicationStatus)) {
+      throw new AppError(
+        `No puedes retirar una postulación en estado "${app.status}". Contacta al empleador.`,
+        409
+      );
+    }
+
     const { error } = await supabaseAdmin
       .from('applications')
       .delete()

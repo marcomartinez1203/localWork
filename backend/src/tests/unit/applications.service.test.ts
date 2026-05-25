@@ -123,9 +123,26 @@ describe('ApplicationsService', () => {
   });
 
   describe('withdraw', () => {
-    it('Debe retirar una postulación', async () => {
-      getGlobalMock()!.getBuilder('applications').setResult({ data: null, error: null });
+    it('Debe retirar una postulación en estado pending', async () => {
+      // Primera llamada: SELECT para verificar que existe y obtener el estado
+      getGlobalMock()!.getBuilder('applications').setResult({
+        data: { status: 'pending', seeker_id: 'u1' }, error: null,
+      });
       await expect(ApplicationsService.withdraw('a6', 'u1')).resolves.toBeUndefined();
+    });
+
+    it('Debe lanzar 409 si intenta retirar una postulación aceptada', async () => {
+      getGlobalMock()!.getBuilder('applications').setResult({
+        data: { status: 'accepted', seeker_id: 'u1' }, error: null,
+      });
+      await expect(ApplicationsService.withdraw('a7', 'u1'))
+        .rejects.toThrow('No puedes retirar una postulación en estado');
+    });
+
+    it('Debe lanzar 404 si la postulación no existe', async () => {
+      getGlobalMock()!.getBuilder('applications').setResult({ data: null, error: null });
+      await expect(ApplicationsService.withdraw('a8', 'u1'))
+        .rejects.toThrow('Postulación no encontrada');
     });
   });
 });

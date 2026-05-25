@@ -189,6 +189,23 @@ export class RatingsService {
     return { rated: !!data, rating_id: data?.id };
   }
 
+  // ── Check batch (multiple application IDs at once) ──
+  static async checkBatch(
+    applicationIds: string[],
+    userId: string
+  ): Promise<Record<string, boolean>> {
+    if (!applicationIds.length) return {};
+
+    const { data } = await supabaseAdmin
+      .from('ratings')
+      .select('application_id')
+      .in('application_id', applicationIds)
+      .eq('rater_id', userId);
+
+    const rated = new Set((data || []).map((r: { application_id: string }) => r.application_id));
+    return Object.fromEntries(applicationIds.map(id => [id, rated.has(id)]));
+  }
+
   // ── Get ratings for user ──
   static async getForUser(
     userId: string,

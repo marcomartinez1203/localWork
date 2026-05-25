@@ -14,7 +14,7 @@ export interface JobsListResponse {
 
 const JobsService = {
 
-  async list(filters: JobFilters = {}): Promise<JobsListResponse> {
+  async list(filters: JobFilters = {}, signal?: AbortSignal): Promise<JobsListResponse> {
     const { page = 1, perPage = 9, category, modality, location, sort, search } = filters;
     const params = new URLSearchParams();
     params.set('page', String(page));
@@ -25,7 +25,7 @@ const JobsService = {
     if (sort) params.set('sort', sort);
     if (search) params.set('search', search);
 
-    return api.get<JobsListResponse>(`/jobs?${params.toString()}`);
+    return api.get<JobsListResponse>(`/jobs?${params.toString()}`, signal);
   },
 
   async getRecommended(): Promise<Job[]> {

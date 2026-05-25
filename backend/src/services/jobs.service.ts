@@ -144,7 +144,12 @@ export class JobsService {
 
     // 4. Obtener los detalles completos de los trabajos coincidentes
     const jobIds = matches.map((m: any) => m.id);
-    const { data: fullJobs } = await supabaseAdmin.from('jobs').select('*, companies(*)').in('id', jobIds);
+    const { data: fullJobs } = await supabaseAdmin
+      .from('jobs')
+      .select('*, companies(*)')
+      .in('id', jobIds)
+      .eq('status', 'active')
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
 
     // Ordenarlos por la misma similitud devuelta por match_jobs
     return (fullJobs as Job[] || []).sort((a, b) => {
@@ -223,18 +228,32 @@ export class JobsService {
       .eq('id', job.category_id)
       .single();
 
+    // Solo notificar seekers que hayan aplicado a empleos de la misma categoría
+    // o cuya última actividad sea reciente. Limitamos a 100 para evitar n-inserts masivos.
     const { data: seekers } = await supabaseAdmin
       .from('profiles')
       .select('id')
       .eq('role', 'seeker')
-      .not('availability', 'is', null);
+      .not('availability', 'is', null)
+      .limit(100);
 
-    if (!seekers || seekers.length === 0) return;
+    // Filtrar seekers con historial de postulaciones (activos). Limitamos a 50.
+    const { data: relevantSeekers } = await supabaseAdmin
+      .from('applications')
+      .select('seeker_id')
+      .in('seeker_id', (seekers || []).map(s => s.id))
+      .limit(50);
+
+    const notifyIds = relevantSeekers && relevantSeekers.length > 0
+      ? [...new Set(relevantSeekers.map(r => r.seeker_id))]
+      : (seekers || []).map(s => s.id).slice(0, 50);
+
+    if (!notifyIds.length) return;
 
     const categoryLabel = category?.name ? ` en ${category.name}` : '';
     await NotificationsService.createBulk(
-      seekers.map(s => ({
-        user_id: s.id,
+      notifyIds.map(id => ({
+        user_id: id,
         type: 'new_job_match' as const,
         title: 'Nueva oferta que podría interesarte',
         message: `Se publicó "${job.title}"${categoryLabel}. ¡Revísala antes de que se llene!`,
