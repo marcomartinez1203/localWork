@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">64.38% </span>
+                <span class="strong">67.08% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>47/73</span>
+                <span class='fraction'>53/79</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">63.23% </span>
+                <span class="strong">65.27% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>43/68</span>
+                <span class='fraction'>47/72</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">77.04% </span>
+                <span class="strong">78.78% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>47/61</span>
+                <span class='fraction'>52/66</span>
             </div>
         
             
@@ -342,7 +342,27 @@
 <a name='L277'></a><a href='#L277'>277</a>
 <a name='L278'></a><a href='#L278'>278</a>
 <a name='L279'></a><a href='#L279'>279</a>
-<a name='L280'></a><a href='#L280'>280</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L280'></a><a href='#L280'>280</a>
+<a name='L281'></a><a href='#L281'>281</a>
+<a name='L282'></a><a href='#L282'>282</a>
+<a name='L283'></a><a href='#L283'>283</a>
+<a name='L284'></a><a href='#L284'>284</a>
+<a name='L285'></a><a href='#L285'>285</a>
+<a name='L286'></a><a href='#L286'>286</a>
+<a name='L287'></a><a href='#L287'>287</a>
+<a name='L288'></a><a href='#L288'>288</a>
+<a name='L289'></a><a href='#L289'>289</a>
+<a name='L290'></a><a href='#L290'>290</a>
+<a name='L291'></a><a href='#L291'>291</a>
+<a name='L292'></a><a href='#L292'>292</a>
+<a name='L293'></a><a href='#L293'>293</a>
+<a name='L294'></a><a href='#L294'>294</a>
+<a name='L295'></a><a href='#L295'>295</a>
+<a name='L296'></a><a href='#L296'>296</a>
+<a name='L297'></a><a href='#L297'>297</a>
+<a name='L298'></a><a href='#L298'>298</a>
+<a name='L299'></a><a href='#L299'>299</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -609,6 +629,24 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -628,6 +666,7 @@ import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
 import { Application, ApplicationStatus, PaginatedResponse } from '../types';
 import { NotificationsService } from './notifications.service';
+import { logger } from '../utils/logger';
 &nbsp;
 export class ApplicationsService {
 &nbsp;
@@ -663,7 +702,7 @@ export class ApplicationsService {
       <span class="missing-if-branch" title="else path not taken" >E</span>if (error.code === '23505') {
         throw new AppError('Ya te postulaste a esta oferta', 409);
       }
-<span class="cstat-no" title="statement not covered" >      console.error('[ApplicationsService.apply]', error); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al crear la postulación', 500);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('ApplicationsService.apply failed', { error }); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al crear la postulación', 500);</span>
     }
 &nbsp;
     // Notificar al empleador (fire-and-forget)
@@ -684,7 +723,7 @@ export class ApplicationsService {
           );
         }
       } catch (err) {
-<span class="cstat-no" title="statement not covered" >        console.error('[ApplicationsService.apply] notification error', err);</span>
+<span class="cstat-no" title="statement not covered" >        logger.error('ApplicationsService.apply notification error', { error: err });</span>
       }
     })();
 &nbsp;
@@ -718,7 +757,7 @@ export class ApplicationsService {
     query = query.range(from, to);
 &nbsp;
     const { data, count, error } = await query;
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >console.error('[ApplicationsService.getMyApplications]', error); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al obtener postulaciones', 500); }</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >logger.error('ApplicationsService.getMyApplications failed', { error }); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al obtener postulaciones', 500); }</span>
 &nbsp;
     return {
       data: (data || <span class="branch-1 cbranch-no" title="branch not covered" >[])</span> as (Application &amp; { job: { title: string; company_name: string } })[],
@@ -741,7 +780,7 @@ export class ApplicationsService {
       .maybeSingle();
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    if (error) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('[ApplicationsService.getMineForJob]', error);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('ApplicationsService.getMineForJob failed', { error });</span>
 <span class="cstat-no" title="statement not covered" >      throw new AppError('Error al consultar la postulación', 500);</span>
     }
 &nbsp;
@@ -786,7 +825,7 @@ export class ApplicationsService {
       .order('created_at', { ascending: false })
       .range(from, to);
 &nbsp;
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >console.error('[ApplicationsService.getForJob]', error); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al obtener postulaciones', 500); }</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >logger.error('ApplicationsService.getForJob failed', { error }); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al obtener postulaciones', 500); }</span>
 &nbsp;
     return {
       data: (data || <span class="branch-1 cbranch-no" title="branch not covered" >[])</span> as (Application &amp; { seeker: { full_name: string; email: string } })[],
@@ -838,7 +877,7 @@ export class ApplicationsService {
       .select()
       .single();
 &nbsp;
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >console.error('[ApplicationsService.updateStatus]', error); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al actualizar el estado', 500); }</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >logger.error('ApplicationsService.updateStatus failed', { error }); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al actualizar el estado', 500); }</span>
 &nbsp;
     // Notificar al seeker del cambio de estado
     const STATUS_MESSAGES: Record&lt;ApplicationStatus, string&gt; = {
@@ -857,7 +896,7 @@ export class ApplicationsService {
       'Tu postulación fue actualizada',
       `${STATUS_MESSAGES[status]} — Oferta: "${job?.title ?? <span class="branch-1 cbranch-no" title="branch not covered" >''}"</span>`,
       { job_id: app.job_id, application_id: applicationId, status }
-    ).<span class="fstat-no" title="function not covered" >catch(e</span>rr =&gt; <span class="cstat-no" title="statement not covered" >console.error('[ApplicationsService.updateStatus] notification error', err))</span>;
+    ).<span class="fstat-no" title="function not covered" >catch(e</span>rr =&gt; <span class="cstat-no" title="statement not covered" >logger.error('ApplicationsService.updateStatus notification error', { error: err }))</span>;
 &nbsp;
     // Send rating_request notifications when contract is completed
     <span class="missing-if-branch" title="if path not taken" >I</span>if (status === 'completed') {
@@ -875,7 +914,7 @@ export class ApplicationsService {
         'Califica tu experiencia',
         `Tu contrato en "${job?.title ?? ''}" ha finalizado. ¡Califica a la empresa!`,
         { application_id: applicationId, job_id: app.job_id }
-      ).<span class="fstat-no" title="function not covered" >catch(e</span>rr =&gt; <span class="cstat-no" title="statement not covered" >console.error('[ApplicationsService] rating_request notification error', err))</span>;
+      ).<span class="fstat-no" title="function not covered" >catch(e</span>rr =&gt; <span class="cstat-no" title="statement not covered" >logger.error('ApplicationsService rating_request notification error', { error: err }))</span>;
 &nbsp;
       // Notify employer to rate the worker
 <span class="cstat-no" title="statement not covered" >      NotificationsService.create(</span>
@@ -884,20 +923,38 @@ export class ApplicationsService {
         'Califica al trabajador',
         `El contrato de ${seekerProfile?.full_name ?? 'el trabajador'} en "${job?.title ?? ''}" finalizó. ¡Califícalo!`,
         { application_id: applicationId, job_id: app.job_id, seeker_id: app.seeker_id }
-      ).<span class="fstat-no" title="function not covered" >catch(e</span>rr =&gt; <span class="cstat-no" title="statement not covered" >console.error('[ApplicationsService] rating_request notification error', err))</span>;
+      ).<span class="fstat-no" title="function not covered" >catch(e</span>rr =&gt; <span class="cstat-no" title="statement not covered" >logger.error('ApplicationsService rating_request notification error', { error: err }))</span>;
     }
 &nbsp;
     return data as Application;
   }
 &nbsp;
   static async withdraw(applicationId: string, seekerId: string): Promise&lt;void&gt; {
+    // Verificar que la postulación existe y pertenece al seeker
+    const { data: app } = await supabaseAdmin
+      .from('applications')
+      .select('status, seeker_id')
+      .eq('id', applicationId)
+      .eq('seeker_id', seekerId)
+      .single();
+&nbsp;
+    if (!app) throw new AppError('Postulación no encontrada', 404);
+&nbsp;
+    const LOCKED_STATUSES: ApplicationStatus[] = ['accepted', 'completed'];
+    if (LOCKED_STATUSES.includes(app.status as ApplicationStatus)) {
+      throw new AppError(
+        `No puedes retirar una postulación en estado "${app.status}". Contacta al empleador.`,
+        409
+      );
+    }
+&nbsp;
     const { error } = await supabaseAdmin
       .from('applications')
       .delete()
       .eq('id', applicationId)
       .eq('seeker_id', seekerId);
 &nbsp;
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >console.error('[ApplicationsService.withdraw]', error); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al retirar la postulación', 500); }</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >logger.error('ApplicationsService.withdraw failed', { error }); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al retirar la postulación', 500); }</span>
   }
 }
 &nbsp;</pre></td></tr></table></pre>
@@ -907,7 +964,7 @@ export class ApplicationsService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-16T19:40:54.331Z
+                at 2026-05-25T22:19:19.520Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

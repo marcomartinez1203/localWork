@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.07% </span>
+                <span class="strong">58.73% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>37/56</span>
+                <span class='fraction'>37/63</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">72.72% </span>
+                <span class="strong">68.57% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>48/66</span>
+                <span class='fraction'>48/70</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">83.33% </span>
+                <span class="strong">66.66% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>5/6</span>
+                <span class='fraction'>6/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">67.92% </span>
+                <span class="strong">63.15% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>36/53</span>
+                <span class='fraction'>36/57</span>
             </div>
         
             
@@ -320,7 +320,26 @@
 <a name='L255'></a><a href='#L255'>255</a>
 <a name='L256'></a><a href='#L256'>256</a>
 <a name='L257'></a><a href='#L257'>257</a>
-<a name='L258'></a><a href='#L258'>258</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L258'></a><a href='#L258'>258</a>
+<a name='L259'></a><a href='#L259'>259</a>
+<a name='L260'></a><a href='#L260'>260</a>
+<a name='L261'></a><a href='#L261'>261</a>
+<a name='L262'></a><a href='#L262'>262</a>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a>
+<a name='L269'></a><a href='#L269'>269</a>
+<a name='L270'></a><a href='#L270'>270</a>
+<a name='L271'></a><a href='#L271'>271</a>
+<a name='L272'></a><a href='#L272'>272</a>
+<a name='L273'></a><a href='#L273'>273</a>
+<a name='L274'></a><a href='#L274'>274</a>
+<a name='L275'></a><a href='#L275'>275</a>
+<a name='L276'></a><a href='#L276'>276</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -515,6 +534,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
@@ -582,6 +618,7 @@
 // ============================================
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
+import { logger } from '../utils/logger';
 import { NotificationsService } from './notifications.service';
 &nbsp;
 export interface RatingInput {
@@ -656,7 +693,7 @@ export class RatingsService {
     if (error) {
       <span class="missing-if-branch" title="else path not taken" >E</span>if (error.code === '23505') throw new AppError('Ya calificaste a esta persona', 409);
 <span class="cstat-no" title="statement not covered" >      if (error.code === '23503') <span class="cstat-no" title="statement not covered" >throw new AppError('Usuario no encontrado', 404);</span></span>
-<span class="cstat-no" title="statement not covered" >      console.error('[RatingsService.create]', error);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('RatingsService.create failed', { error });</span>
 <span class="cstat-no" title="statement not covered" >      throw new AppError('Error al crear la calificación', 500);</span>
     }
 &nbsp;
@@ -733,7 +770,7 @@ export class RatingsService {
 &nbsp;
     <span class="missing-if-branch" title="if path not taken" >I</span>if (error) {
 <span class="cstat-no" title="statement not covered" >      if (error.code === '23505') <span class="cstat-no" title="statement not covered" >throw new AppError('Ya calificaste esta postulación', 409);</span></span>
-<span class="cstat-no" title="statement not covered" >      console.error('[RatingsService.createPostService]', error);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('RatingsService.createPostService failed', { error });</span>
 <span class="cstat-no" title="statement not covered" >      throw new AppError('Error al crear la calificación', 500);</span>
     }
 &nbsp;
@@ -750,7 +787,7 @@ export class RatingsService {
       'Nueva calificación recibida',
       `${raterProfile?.full_name ?? <span class="branch-1 cbranch-no" title="branch not covered" >'Alguien'} </span>te calificó con ${input.score} estrella${input.score &gt; 1 ? 's' : <span class="branch-1 cbranch-no" title="branch not covered" >''}.</span>`,
       { rating_id: (data as { id: string }).id, score: input.score }
-    ).<span class="fstat-no" title="function not covered" >catch(e</span>rr =&gt; <span class="cstat-no" title="statement not covered" >console.error('[RatingsService.createPostService] notification error', err))</span>;
+    ).<span class="fstat-no" title="function not covered" >catch(e</span>rr =&gt; <span class="cstat-no" title="statement not covered" >logger.error('RatingsService.createPostService notification error', { error: err }))</span>;
 &nbsp;
     return data;
   }
@@ -765,6 +802,23 @@ export class RatingsService {
       .maybeSingle();
 &nbsp;
 <span class="cstat-no" title="statement not covered" >    return { rated: !!data, rating_id: data?.id };</span>
+  }
+&nbsp;
+  // ── Check batch (multiple application IDs at once) ──
+  static async checkBatch(
+    applicationIds: string[],
+    userId: string
+  ): Promise&lt;Record&lt;string, boolean&gt;&gt; {
+<span class="cstat-no" title="statement not covered" >    if (!applicationIds.length) <span class="cstat-no" title="statement not covered" >return {};</span></span>
+&nbsp;
+    const { data } = <span class="cstat-no" title="statement not covered" >await supabaseAdmin</span>
+      .from('ratings')
+      .select('application_id')
+      .in('application_id', applicationIds)
+      .eq('rater_id', userId);
+&nbsp;
+    const rated = <span class="cstat-no" title="statement not covered" >new Set((data || []).<span class="fstat-no" title="function not covered" >map((r</span>: { application_id: string }) =&gt; <span class="cstat-no" title="statement not covered" >r.application_id))</span>;</span>
+<span class="cstat-no" title="statement not covered" >    return Object.fromEntries(applicationIds.<span class="fstat-no" title="function not covered" >map(i</span>d =&gt; <span class="cstat-no" title="statement not covered" >[id, rated.has(id)])</span>);</span>
   }
 &nbsp;
   // ── Get ratings for user ──
@@ -788,7 +842,7 @@ export class RatingsService {
       .range(from, to);
 &nbsp;
     <span class="missing-if-branch" title="if path not taken" >I</span>if (error) {
-<span class="cstat-no" title="statement not covered" >      console.error('[RatingsService.getForUser]', error);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('RatingsService.getForUser failed', { error });</span>
 <span class="cstat-no" title="statement not covered" >      throw new AppError('Error al obtener calificaciones', 500);</span>
     }
 &nbsp;
@@ -829,7 +883,7 @@ export class RatingsService {
       .eq('rater_id', raterId);
 &nbsp;
     <span class="missing-if-branch" title="if path not taken" >I</span>if (error) {
-<span class="cstat-no" title="statement not covered" >      console.error('[RatingsService.delete]', error);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('RatingsService.delete failed', { error });</span>
 <span class="cstat-no" title="statement not covered" >      throw new AppError('Error al eliminar la calificación', 500);</span>
     }
   }
@@ -841,7 +895,7 @@ export class RatingsService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-16T19:40:54.331Z
+                at 2026-05-25T22:19:19.520Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

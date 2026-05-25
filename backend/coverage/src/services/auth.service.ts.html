@@ -232,7 +232,9 @@
 <a name='L167'></a><a href='#L167'>167</a>
 <a name='L168'></a><a href='#L168'>168</a>
 <a name='L169'></a><a href='#L169'>169</a>
-<a name='L170'></a><a href='#L170'>170</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L170'></a><a href='#L170'>170</a>
+<a name='L171'></a><a href='#L171'>171</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -406,6 +408,7 @@
 // ============================================
 import { supabaseAdmin } from '../config/supabase';
 import { AppError } from '../middleware/error.middleware';
+import { logger } from '../utils/logger';
 import { RegisterRequest, LoginRequest, AuthResponse, Profile } from '../types';
 &nbsp;
 export class AuthService {
@@ -424,7 +427,7 @@ export class AuthService {
     });
 &nbsp;
     if (authError) {
-      console.error('🔴 Supabase createUser error:', JSON.stringify(authError, null, 2));
+      logger.error('Supabase createUser error', { authError });
       <span class="missing-if-branch" title="else path not taken" >E</span>if (authError.message.includes('already registered')) {
         throw new AppError('Este correo ya está registrado', 409);
       }
@@ -442,7 +445,7 @@ export class AuthService {
     });
 &nbsp;
     <span class="missing-if-branch" title="if path not taken" >I</span>if (profileError) {
-<span class="cstat-no" title="statement not covered" >      console.error('🔴 Profile creation error:', profileError);</span>
+<span class="cstat-no" title="statement not covered" >      logger.error('Profile creation error', { profileError });</span>
     }
 &nbsp;
     // 3. Si es empleador y tiene empresa, crearla
@@ -462,7 +465,7 @@ export class AuthService {
       });
 &nbsp;
     <span class="missing-if-branch" title="if path not taken" >I</span>if (loginErr || !loginData.session) {
-<span class="cstat-no" title="statement not covered" >      if (loginErr) <span class="cstat-no" title="statement not covered" >console.error('[AuthService.register]', loginErr);</span></span>
+<span class="cstat-no" title="statement not covered" >      if (loginErr) <span class="cstat-no" title="statement not covered" >logger.error('AuthService.register login error', { loginErr });</span></span>
 <span class="cstat-no" title="statement not covered" >      throw new AppError('Error al crear la sesión', 500);</span>
     }
 &nbsp;
@@ -546,7 +549,7 @@ export class AuthService {
 <span class="cstat-no" title="statement not covered" >      ({ data, error } = await executeUpdate(fallbackUpdates));</span>
     }
 &nbsp;
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >console.error('[AuthService.updateProfile]', error); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al actualizar el perfil', 500); }</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >logger.error('AuthService.updateProfile failed', { error }); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al actualizar el perfil', 500); }</span>
 &nbsp;
     // Actualizar embedding de IA silenciosamente en background si cambiaron campos relevantes
     if ('bio' in cleanUpdates || 'skills' in cleanUpdates || 'experience' in cleanUpdates) {
@@ -558,7 +561,7 @@ export class AuthService {
 <span class="cstat-no" title="statement not covered" >          if (embedding) {</span>
 <span class="cstat-no" title="statement not covered" >            await supabaseAdmin.from('profiles').update({ embedding: `[${embedding.join(',')}]` }).eq('id', userId);</span>
           }
-        } catch (e) { <span class="cstat-no" title="statement not covered" >console.error('Error actualizando embedding de perfil:', e); }</span>
+        } catch (e) { <span class="cstat-no" title="statement not covered" >logger.error('Error actualizando embedding de perfil', { error: e }); }</span>
       }, 0);
     }
 &nbsp;
@@ -567,7 +570,7 @@ export class AuthService {
 &nbsp;
   static async resetPassword(email: string): Promise&lt;void&gt; {
     const { error } = await supabaseAdmin.auth.resetPasswordForEmail(email);
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >console.error('[AuthService.resetPassword]', error); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al enviar el correo de recuperación', 500); }</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (error) { <span class="cstat-no" title="statement not covered" >logger.error('AuthService.resetPassword failed', { error }); <span class="cstat-no" title="statement not covered" >t</span>hrow new AppError('Error al enviar el correo de recuperación', 500); }</span>
   }
 }
 &nbsp;</pre></td></tr></table></pre>
@@ -577,7 +580,7 @@ export class AuthService {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-16T19:40:54.331Z
+                at 2026-05-25T22:19:19.520Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

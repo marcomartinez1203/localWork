@@ -246,6 +246,26 @@ El proyecto está preparado para desplegarse como monorepo en Vercel.
 - Este archivo enruta la carpeta `frontend/` mediante `@vercel/static-build` para construir la SPA de Vue y redirigir correctamente las rutas de `vue-router`.
 - Para evitar conflictos de dependencias en Vercel con Vite, se incluyó el archivo `frontend/.npmrc` con `legacy-peer-deps=true`.
 
+### 8. Pruebas (Testing)
+
+El proyecto cuenta con un conjunto de pruebas robusto que cubre la lógica del backend y los flujos críticos del frontend.
+
+#### Pruebas Unitarias y de Integración (Backend)
+Usamos **Vitest** y **Supertest** para probar los servicios y los endpoints HTTP.
+```bash
+cd backend
+npm run test
+```
+*Cobertura actual: 194 pruebas (servicios, rutas, middleware y validación Zod).*
+
+#### Pruebas E2E (Frontend)
+Usamos **Playwright** para simular la interacción real de un usuario en el navegador (flujos de Auth y Búsqueda).
+```bash
+cd frontend
+npx playwright test
+```
+*Las pruebas E2E levantarán el frontend automáticamente en `localhost:5173`.*
+
 ## API — Referencia completa
 
 ### Autenticación

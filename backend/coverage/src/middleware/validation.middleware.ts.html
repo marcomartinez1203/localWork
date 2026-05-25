@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/controllers/notifications.controller.ts</title>
+    <title>Code coverage report for src/middleware/validation.middleware.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/controllers</a> notifications.controller.ts</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/middleware</a> validation.middleware.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60% </span>
+                <span class="strong">53.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>12/20</span>
+                <span class='fraction'>8/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">25% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>1/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>5/5</span>
+                <span class='fraction'>2/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">60% </span>
+                <span class="strong">53.33% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>12/20</span>
+                <span class='fraction'>8/15</span>
             </div>
         
             
@@ -112,46 +112,23 @@
 <a name='L47'></a><a href='#L47'>47</a>
 <a name='L48'></a><a href='#L48'>48</a>
 <a name='L49'></a><a href='#L49'>49</a>
-<a name='L50'></a><a href='#L50'>50</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">33x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -160,56 +137,91 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// ============================================
-// LocalWork — Notifications Controller
-// ============================================
-import { Response, NextFunction } from 'express';
-import { NotificationsService } from '../services/notifications.service';
-import { AuthenticatedRequest } from '../types';
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Request, Response, NextFunction } from 'express';
+import { z, ZodSchema } from 'zod';
+import { AppError } from './error.middleware';
 &nbsp;
-export class NotificationsController {
-&nbsp;
-  static async list(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-    try {
-      const result = await NotificationsService.list(
-        req.userId!,
-        parseInt(req.query.page as string) || 1,
-        Math.min(parseInt(req.query.per_page as string) || 20, 50),
-        req.query.unread === 'true'
-      );
-      res.json(result);
-    } catch (err) { <span class="cstat-no" title="statement not covered" >next(err); }</span>
-  }
-&nbsp;
-  static async markAsRead(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-    try {
-      await NotificationsService.markAsRead(req.params.id, req.userId!);
-      res.json({ message: 'Notificación marcada como leída' });
-    } catch (err) { <span class="cstat-no" title="statement not covered" >next(err); }</span>
-  }
-&nbsp;
-  static async markAllAsRead(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-    try {
-      await NotificationsService.markAllAsRead(req.userId!);
-      res.json({ message: 'Todas las notificaciones marcadas como leídas' });
-    } catch (err) { <span class="cstat-no" title="statement not covered" >next(err); }</span>
-  }
-&nbsp;
-  static async getUnreadCount(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-    try {
-      const count = await NotificationsService.getUnreadCount(req.userId!);
-      res.json({ count });
-    } catch (err) { <span class="cstat-no" title="statement not covered" >next(err); }</span>
-  }
-&nbsp;
-  static async subscribe(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      await NotificationsService.subscribe(req.userId!, req.body);</span>
-<span class="cstat-no" title="statement not covered" >      res.status(201).json({ message: 'Suscrito a notificaciones push exitosamente' });</span>
-    } catch (err) { <span class="cstat-no" title="statement not covered" >next(err); }</span>
-  }
+export function validateQuery(schema: ZodSchema) {
+  return (req: Request, _res: Response, next: NextFunction) =&gt; {
+    const parsed = schema.safeParse(req.query);
+    <span class="missing-if-branch" title="if path not taken" >I</span>if (!parsed.success) {
+<span class="cstat-no" title="statement not covered" >      return next(new AppError(parsed.error.errors[0].message, 400));</span>
+    }
+    req.query = parsed.data;
+    next();
+  };
 }
+&nbsp;
+export function <span class="fstat-no" title="function not covered" >validateBody(s</span>chema: ZodSchema) {
+<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >  return (r</span>eq: Request, _res: Response, next: NextFunction) =&gt; {</span>
+    const parsed = <span class="cstat-no" title="statement not covered" >schema.safeParse(req.body);</span>
+<span class="cstat-no" title="statement not covered" >    if (!parsed.success) {</span>
+<span class="cstat-no" title="statement not covered" >      return next(new AppError(parsed.error.errors[0].message, 400));</span>
+    }
+<span class="cstat-no" title="statement not covered" >    req.body = parsed.data;</span>
+<span class="cstat-no" title="statement not covered" >    next();</span>
+  };
+}
+&nbsp;
+// Schemas reutilizables
+export const jobsQuerySchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  per_page: z.coerce.number().min(1).max(50).default(9),
+  category: z.string().optional(),
+  modality: z.enum(['Presencial', 'Remoto', 'Híbrido']).optional(),
+  location: z.string().optional(),
+  search: z.string().optional(),
+  sort: z.enum(['newest', 'salary-desc', 'salary-asc']).optional(),
+}).strict();
+&nbsp;
+export const workersQuerySchema = z.object({
+  search: z.string().optional(),
+  skill: z.string().optional(),
+  work_type: z.enum(['freelance', 'both']).optional(),
+  page: z.coerce.number().min(1).default(1),
+  per_page: z.coerce.number().min(1).max(50).default(12),
+}).strict();
+&nbsp;
+export const nearbyQuerySchema = z.object({
+  lat: z.coerce.number(),
+  lng: z.coerce.number(),
+  radius: z.coerce.number().min(100).max(50000).default(5000),
+  category: z.string().optional(),
+  modality: z.string().optional(),
+  barrio_id: z.string().uuid().optional(),
+}).strict();
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
