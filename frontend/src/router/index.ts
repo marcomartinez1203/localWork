@@ -83,22 +83,30 @@ const router = createRouter({
 })
 
 router.beforeEach((to, _from) => {
-  // Hack for AuthService due to circular dependency issues if imported top-level
   const isAuth = !!localStorage.getItem('lw_token')
   const userRaw = localStorage.getItem('lw_user')
   const user = userRaw ? JSON.parse(userRaw) : null
 
-  const publicRoutes = ['login', 'register', 'reset-password', 'index']
+  // Ruta raíz: siempre redirigir explícitamente
+  if (to.name === 'index') {
+    if (isAuth) {
+      return user?.role === 'employer' ? '/dashboard' : '/home'
+    }
+    return '/login'
+  }
+
+  const publicRoutes = ['login', 'register', 'reset-password']
   const isPublicRoute = publicRoutes.includes(to.name as string)
 
   if (isPublicRoute) {
-    if (isAuth && to.name !== 'index') {
+    // Si ya está autenticado, redirigir al home correspondiente
+    if (isAuth) {
       return user?.role === 'employer' ? '/dashboard' : '/home'
     }
     return true
   }
 
-  // Protected route, must be auth
+  // Ruta protegida sin token → login
   if (!isAuth) {
     return '/login'
   }
