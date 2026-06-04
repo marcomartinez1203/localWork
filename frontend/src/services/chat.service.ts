@@ -30,7 +30,8 @@ const ChatService = {
   },
 
   async getIncomingRequests(): Promise<unknown[]> {
-    return api.get<unknown[]>('/chat/requests/incoming');
+    const res = await api.get<{ data: unknown[] }>('/chat/requests/incoming');
+    return res.data || [];
   },
 
   async respondRequest(requestId: string, action: 'accept' | 'reject'): Promise<unknown> {
@@ -42,7 +43,8 @@ const ChatService = {
   },
 
   async listConversations(): Promise<ConversationSummary[]> {
-    return api.get<ConversationSummary[]>('/chat/conversations');
+    const res = await api.get<{ data: ConversationSummary[] }>('/chat/conversations');
+    return res.data || [];
   },
 
   async getMessages(conversationId: string, filters: { page?: number; perPage?: number } = {}): Promise<MessagesResponse> {
