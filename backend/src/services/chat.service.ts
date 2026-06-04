@@ -436,7 +436,7 @@ export class ChatService {
       })
       .select('*')
       .single();
-    if (error) throw new AppError('No se pudo enviar el mensaje', 500);
+    if (error) throw new AppError(`No se pudo enviar el mensaje: ${error.message}`, 500);
 
     const recipientId = conversation.seeker_id === userId ? conversation.employer_id : conversation.seeker_id;
     const preview = cleanContent ? cleanContent.slice(0, 120) : `Adjunto: ${payload.attachment_name || 'archivo'}`;
