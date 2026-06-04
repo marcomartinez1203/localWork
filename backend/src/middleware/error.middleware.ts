@@ -25,15 +25,16 @@ export function errorHandler(
   const status = err instanceof AppError ? err.status : 500;
   const message = err.message || 'Error interno del servidor';
 
-  // Siempre loguear errores en el servidor (nunca exponerlos al cliente)
   logger.error('Unhandled error', {
     message: err.message,
     stack: err.stack,
     ...(err instanceof AppError ? { details: err.details } : {}),
   });
 
+  // TEMPORARY: Return full error to client for debugging
   res.status(status).json({
     message,
+    stack: err.stack,
     ...(err instanceof AppError && err.details ? { details: err.details } : {}),
   });
 }
