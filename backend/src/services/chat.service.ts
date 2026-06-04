@@ -208,7 +208,7 @@ export class ChatService {
       return { request_id: requestId, status: 'rejected' };
     }
 
-    const conversation = await this.getOrCreateDirectConversation(row.sender_id, row.target_id, userId);
+    const conversation = await this.getOrCreateDirectConversation(row.sender_id, row.target_id);
     const { error: acceptError } = await supabaseAdmin
       .from('chat_requests')
       .update({
@@ -505,8 +505,7 @@ export class ChatService {
 
   private static async getOrCreateDirectConversation(
     userA: string,
-    userB: string,
-    createdBy: string
+    userB: string
   ): Promise<Conversation> {
     const existing = await this.findDirectConversation(userA, userB);
     if (existing) return existing;
