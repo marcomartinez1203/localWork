@@ -14,6 +14,8 @@ import { swaggerSpec } from './config/swagger';
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // ── Seguridad ──
 app.use(helmet());
 app.use(cors({
