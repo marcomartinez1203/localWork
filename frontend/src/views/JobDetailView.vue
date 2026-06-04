@@ -177,7 +177,7 @@ const jobId = (route.params.id as string) || ''
 const isLoading = ref(true)
 const jobNotFoundError = ref(false)
 const job = ref<Job | null>(null)
-const myApplication = ref<{ status: string } | null>(null)
+const myApplication = ref<{ id?: string, status: string } | null>(null)
 const isSaved = ref(false)
 const isApplyModalOpen = ref(false)
 const isSubmitting = ref(false)
@@ -232,7 +232,7 @@ onMounted(async () => {
     } catch { /* silent */ }
 
     try {
-      myApplication.value = await ApplicationsService.getMineForJob(jobId)
+      myApplication.value = await ApplicationsService.getMineForJob(jobId) as { id: string, status: string }
     } catch { /* silent */ }
 
   } catch {
@@ -255,13 +255,13 @@ const submitApplication = async () => {
       return
     }
 
-    await ApplicationsService.apply(jobId as string, {
+    const app = await ApplicationsService.apply(jobId as string, {
       coverLetter: coverLetter.value.trim(),
       resumeFile
-    })
+    }) as any
     closeApplyModal()
     showToast('¡Postulación enviada con éxito!', 'success')
-    myApplication.value = { status: 'pending' }
+    myApplication.value = { id: app.id, status: 'pending' }
   } catch {
     showToast('Error al postularse', 'error')
   } finally {
@@ -313,9 +313,12 @@ const generateCoverLetter = async () => {
 }
 
 const startChatFromJobDetail = async () => {
-  if (!myApplication.value) return
+  if (!myApplication.value?.id) {
+    showToast('No se encontró el ID de postulación', 'error')
+    return
+  }
   try {
-    const result = await ChatService.startConversation(jobId)
+    const result = await ChatService.startConversation(myApplication.value.id)
     router.push(`/chat?conversation_id=${result.conversation_id}`)
   } catch {
     showToast('No se pudo abrir el chat', 'error')
