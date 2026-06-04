@@ -423,7 +423,7 @@ const getLastText = (c: ConversationItem) => {
 </script>
 
 <style scoped>
-.chat-page { height: calc(100vh - 110px); min-height: 620px; padding: var(--space-4) 0 var(--space-8); }
+.chat-page { height: calc(100vh - var(--navbar-height, 72px)); padding: var(--space-4) 0; }
 .chat-shell { height: 100%; display: grid; grid-template-columns: 340px 1fr; gap: var(--space-3); }
 .chat-card { background: var(--color-surface); border: 1px solid var(--color-border-light); border-radius: var(--radius-2xl); overflow: hidden; }
 .chat-sidebar { display: flex; flex-direction: column; }

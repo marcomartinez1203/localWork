@@ -334,6 +334,9 @@ export class ChatService {
         .is('read_at', null),
     ]);
 
+    console.log('[DEBUG ChatService] otherUserIds:', otherUserIds);
+    console.log('[DEBUG ChatService] profiles fetched:', profiles);
+
     const latestByConversation = new Map<string, ConversationSummary['last_message']>();
     for (const message of messages || []) {
       if (!latestByConversation.has(message.conversation_id)) {
