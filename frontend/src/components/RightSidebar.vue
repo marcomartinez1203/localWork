@@ -223,15 +223,20 @@ const urgencyClass = (job: Job): string => {
 
 onMounted(async () => {
   try {
+    const isSeeker = user.value?.role === 'seeker'
+    
+    const appsPromise = isSeeker ? ApplicationsService.getMyApplications({ page: 1, perPage: 1 }) : Promise.resolve({ total: 0 })
+    const savedPromise = isSeeker ? JobsService.getSavedJobs() : Promise.resolve([])
+    
     const [apps, saved, notifs, jobsRes] = await Promise.all([
-      ApplicationsService.getMyApplications({ page: 1, perPage: 1 }),
-      JobsService.getSavedJobs(),
+      appsPromise,
+      savedPromise,
       NotificationsService.getUnreadCount(),
       JobsService.list({ page: 1, perPage: 20, sort: 'newest' })
     ])
 
     myStats.value = {
-      applications: apps.total || 0,
+      applications: (apps as any).total || 0,
       saved: Array.isArray(saved) ? saved.length : 0,
       notifications: notifs || 0
     }

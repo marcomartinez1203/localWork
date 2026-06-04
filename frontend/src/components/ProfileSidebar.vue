@@ -152,12 +152,16 @@ const goToJob = (id: string) => router.push(`/job/${id}`)
 
 onMounted(async () => {
   try {
+    const isSeeker = user.value?.role === 'seeker'
+    const appsPromise = isSeeker ? ApplicationsService.getMyApplications({ page: 1, perPage: 1 }) : Promise.resolve({ total: 0 })
+    const savedPromise = isSeeker ? JobsService.getSavedJobs() : Promise.resolve([])
+    
     const [apps, saved] = await Promise.all([
-      ApplicationsService.getMyApplications({ page: 1, perPage: 1 }),
-      JobsService.getSavedJobs()
+      appsPromise,
+      savedPromise
     ])
     stats.value = {
-      applications: apps.total || 0,
+      applications: (apps as any).total || 0,
       saved: Array.isArray(saved) ? saved.length : 0,
       views: 0
     }
