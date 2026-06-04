@@ -94,7 +94,6 @@ export class ChatService {
         application_id: applicationId,
         seeker_id: seekerId,
         employer_id: employerId,
-        created_by: userId,
       })
       .select('id')
       .single();
@@ -518,7 +517,6 @@ export class ChatService {
         application_id: null,
         seeker_id: userA,
         employer_id: userB,
-        created_by: createdBy,
       })
       .select('*')
       .single();
