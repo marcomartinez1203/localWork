@@ -135,7 +135,12 @@ const user = ref<User | null>(null)
 const conversations = ref<ConversationItem[]>([])
 const incomingRequests = ref<ChatRequest[]>([])
 const activeConversationId = ref<string | null>(null)
-const activeConversation = computed(() => conversations.value.find(c => c.id === activeConversationId.value) || null)
+// Instead of only searching conversations.value, allow an override or just return a dummy object if missing so the UI doesn't break
+const fallbackConversation = ref<ConversationItem | null>(null)
+const activeConversation = computed(() => {
+  const found = conversations.value.find(c => c.id === activeConversationId.value)
+  return found || fallbackConversation.value
+})
 const messages = ref<Message[]>([])
 const isOnline = ref(false)
 const isTyping = ref(false)
@@ -223,7 +228,22 @@ const openConversation = async (id: string) => {
     router.replace({ query: { conversation_id: id } })
   }
 
-  if (!activeConversation.value) return
+  // Check if conversation exists in our list. If not, wait for it or just try loading anyway.
+  const convExists = conversations.value.find(c => c.id === id)
+  if (!convExists) {
+    // If it's completely new and not in the list yet, we shouldn't block message fetching.
+    fallbackConversation.value = {
+      id,
+      kind: 'direct',
+      application: null,
+      other_user: { full_name: 'Cargando...', avatar_url: null },
+      last_message_at: null,
+      created_at: new Date().toISOString(),
+      unread_count: 0
+    }
+  } else {
+    fallbackConversation.value = null
+  }
 
   try {
     const res = await ChatService.getMessages(id, { page: 1, perPage: 200 })
