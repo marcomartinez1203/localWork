@@ -6,6 +6,22 @@
 
       <!-- Columna Central: Feed Principal -->
       <div class="home-center">
+        <!-- Platform Stats -->
+        <div class="platform-stats" v-if="platformStats" style="display:flex;gap:var(--space-4);margin-bottom:var(--space-6);">
+          <div style="flex:1;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius);padding:var(--space-4);text-align:center;box-shadow:var(--shadow-sm);">
+            <div style="font-size:24px;font-weight:700;color:var(--color-primary);margin-bottom:4px;">{{ platformStats.jobs }}+</div>
+            <div style="font-size:12px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;">Empleos Publicados</div>
+          </div>
+          <div style="flex:1;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius);padding:var(--space-4);text-align:center;box-shadow:var(--shadow-sm);">
+            <div style="font-size:24px;font-weight:700;color:var(--color-primary);margin-bottom:4px;">{{ platformStats.seekers }}+</div>
+            <div style="font-size:12px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;">Trabajadores</div>
+          </div>
+          <div style="flex:1;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius);padding:var(--space-4);text-align:center;box-shadow:var(--shadow-sm);">
+            <div style="font-size:24px;font-weight:700;color:var(--color-primary);margin-bottom:4px;">{{ platformStats.employers }}+</div>
+            <div style="font-size:12px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;">Empresas</div>
+          </div>
+        </div>
+
         <!-- Search Bar -->
         <div class="search-bar">
           <svg class="search-bar__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -139,6 +155,7 @@ const router = useRouter()
 const user = ref<User | null>(null)
 const jobs = ref<Job[]>([])
 const recommendedJobs = ref<Job[]>([])
+const platformStats = ref<{ jobs: number, seekers: number, employers: number } | null>(null)
 const totalJobs = ref(0)
 const totalPages = ref(1)
 const currentPage = ref(1)
@@ -175,6 +192,7 @@ onMounted(async () => {
     return
   }
 
+  JobsService.getStats().then(s => platformStats.value = s).catch(console.error)
   fetchRecommended()
   fetchJobs()
 })

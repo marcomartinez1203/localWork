@@ -237,11 +237,12 @@ export class JobsService {
       .not('availability', 'is', null)
       .limit(100);
 
-    // Filtrar seekers con historial de postulaciones (activos). Limitamos a 50.
+    // Filtrar seekers con historial de postulaciones (activos) en la MISMA categoría
     const { data: relevantSeekers } = await supabaseAdmin
       .from('applications')
-      .select('seeker_id')
+      .select('seeker_id, jobs!inner(category_id)')
       .in('seeker_id', (seekers || []).map(s => s.id))
+      .eq('jobs.category_id', job.category_id)
       .limit(50);
 
     const notifyIds = relevantSeekers && relevantSeekers.length > 0

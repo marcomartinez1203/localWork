@@ -295,4 +295,20 @@ export class ApplicationsService {
 
     if (error) { logger.error('ApplicationsService.withdraw failed', { error }); throw new AppError('Error al retirar la postulación', 500); }
   }
+
+  static async getMyStats(seekerId: string): Promise<Record<string, number>> {
+    const { data, error } = await supabaseAdmin
+      .from('applications')
+      .select('status')
+      .eq('seeker_id', seekerId);
+
+    if (error) { logger.error('ApplicationsService.getMyStats failed', { error }); throw new AppError('Error al obtener estadísticas', 500); }
+
+    const stats: Record<string, number> = { total: 0, pending: 0, reviewed: 0, interview: 0, accepted: 0, rejected: 0, completed: 0 };
+    (data || []).forEach((app: any) => {
+      stats.total++;
+      if (stats[app.status] !== undefined) stats[app.status]++;
+    });
+    return stats;
+  }
 }

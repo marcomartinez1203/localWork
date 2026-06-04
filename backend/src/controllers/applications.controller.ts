@@ -62,7 +62,21 @@ export class ApplicationsController {
         parseInt(req.query.page as string) || 1,
         Math.min(parseInt(req.query.per_page as string) || 20, 50)
       );
-      res.json(result);
+
+      // Flatten nested seeker object into flat fields for the frontend
+      const flatData = result.data.map((app: any) => {
+        const { seeker, ...rest } = app;
+        return {
+          ...rest,
+          seeker_name: seeker?.full_name || null,
+          seeker_email: seeker?.email || null,
+          seeker_avatar: seeker?.avatar_url || null,
+          seeker_phone: seeker?.phone || null,
+          seeker_resume: seeker?.resume_url || null,
+        };
+      });
+
+      res.json({ ...result, data: flatData });
     } catch (err) { next(err); }
   }
 
@@ -89,6 +103,13 @@ export class ApplicationsController {
     try {
       await ApplicationsService.withdraw(req.params.id, req.userId!);
       res.json({ message: 'Postulación retirada' });
+    } catch (err) { next(err); }
+  }
+
+  static async getMyStats(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const stats = await ApplicationsService.getMyStats(req.userId!);
+      res.json(stats);
     } catch (err) { next(err); }
   }
 }

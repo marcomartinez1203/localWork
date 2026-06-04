@@ -95,9 +95,13 @@ const JobsService = {
     return res.data || [];
   },
 
-  async getStats(): Promise<Record<string, unknown>> {
-    return api.get('/jobs/stats');
+  async getEmployerAnalytics(): Promise<any> {
+    return api.get<any>('/jobs/employer-analytics');
   },
+
+  async getStats(): Promise<{ jobs: number, seekers: number, employers: number }> {
+    return api.get<{ jobs: number, seekers: number, employers: number }>('/jobs/stats');
+  }
 };
 
 export default JobsService;

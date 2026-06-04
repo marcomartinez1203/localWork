@@ -50,6 +50,10 @@ const ApplicationsService = {
   async withdraw(applicationId: string): Promise<unknown> {
     return api.delete(`/applications/${applicationId}`);
   },
+
+  async getMyStats(): Promise<Record<string, number>> {
+    return api.get<Record<string, number>>('/applications/mine/stats');
+  },
 };
 
 export default ApplicationsService;

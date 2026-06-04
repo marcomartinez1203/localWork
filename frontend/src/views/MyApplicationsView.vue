@@ -166,7 +166,7 @@
 
 <script setup lang="ts">
 import { showToast } from '@/utils/helpers'
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthService from '@/services/auth.service'
 import ApplicationsService from '@/services/applications.service'
@@ -220,22 +220,22 @@ const timeAgo = (dateStr: string) => {
   return `Hace ${diffDays} días`
 }
 
-const stats = computed(() => {
-  const s = { total: totalApplications.value, pending: 0, interview: 0, accepted: 0, completed: 0 }
-  applications.value.forEach(a => {
-    if (a.status === 'pending') s.pending++
-    if (a.status === 'interview') s.interview++
-    if (a.status === 'accepted') s.accepted++
-    if (a.status === 'completed') s.completed++
-  })
-  return s
-})
+const stats = ref<Record<string, number>>({ total: 0, pending: 0, interview: 0, accepted: 0, completed: 0 })
+
+const loadStats = async () => {
+  try {
+    stats.value = await ApplicationsService.getMyStats()
+  } catch {
+    stats.value = { total: 0, pending: 0, interview: 0, accepted: 0, completed: 0 }
+  }
+}
 
 onMounted(() => {
   const user = AuthService.getUser()
   if (!user) { router.push('/login'); return }
   if (user.role === 'employer') { router.push('/dashboard'); return }
   loadApplications()
+  loadStats()
 })
 
 const loadApplications = async () => {

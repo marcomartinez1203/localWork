@@ -82,6 +82,18 @@ router.post('/', authenticate, requireRole('seeker'), resumeUpload.single('resum
  *               items:
  *                 $ref: '#/components/schemas/Application'
  */
+/**
+ * @swagger
+ * /api/applications/mine/stats:
+ *   get:
+ *     summary: Estadísticas de mis postulaciones por estado (solo seeker)
+ *     tags: [Applications]
+ *     responses:
+ *       200:
+ *         description: Conteos por estado
+ */
+router.get('/mine/stats', authenticate, requireRole('seeker'), ApplicationsController.getMyStats);
+
 router.get('/mine', authenticate, requireRole('seeker'), ApplicationsController.getMyApplications);
 
 /**
