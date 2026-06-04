@@ -234,12 +234,19 @@ const openConversation = async (id: string) => {
     // If it's completely new and not in the list yet, we shouldn't block message fetching.
     fallbackConversation.value = {
       id,
+      application_id: null,
       kind: 'direct',
-      application: null,
-      other_user: { full_name: 'Cargando...', avatar_url: null },
+      other_user: { id: '', full_name: 'Cargando...', avatar_url: null },
       last_message_at: null,
       created_at: new Date().toISOString(),
-      unread_count: 0
+      unread_count: 0,
+      last_message: {
+        content: null,
+        created_at: new Date().toISOString(),
+        sender_id: '',
+        attachment_url: null,
+        attachment_name: null
+      }
     }
   } else {
     fallbackConversation.value = null
