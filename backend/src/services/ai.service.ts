@@ -78,7 +78,7 @@ export class AIService {
     }
 
     const body = JSON.stringify({
-      model: 'moonshotai/kimi-k2:free',
+      model: 'openai/gpt-oss-120b:free',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: maxTokens,
     });

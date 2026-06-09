@@ -439,7 +439,7 @@
           </div>
           <div>
             <h3 style="margin:0;font-size:var(--fs-base);font-weight:var(--fw-semibold);">Sugerencias de IA para tu perfil</h3>
-            <p style="margin:0;font-size:var(--fs-xs);color:var(--color-text-muted);margin-top:2px;">Generado por OpenRouter · Kimi K2</p>
+            <p style="margin:0;font-size:var(--fs-xs);color:var(--color-text-muted);margin-top:2px;">Generado por OpenRouter · GPT-OSS 120B</p>
           </div>
         </div>
         <div style="overflow-y:auto;flex:1;background:var(--color-bg);border:1px solid var(--color-border-light);border-radius:var(--radius-lg);padding:var(--space-4);">
