@@ -430,6 +430,25 @@
       <button class="btn btn--danger btn--sm" @click="logout">Cerrar sesión</button>
     </div>
 
+    <!-- Modal: Confirmar eliminación de foto -->
+    <div v-if="showDeleteAvatarModal" style="position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);">
+      <div style="background:var(--color-surface);border:1px solid var(--color-border-light);border-radius:var(--radius-2xl);padding:var(--space-8);max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+        <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);">
+          <div style="width:40px;height:40px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:var(--fs-base);font-weight:var(--fw-semibold);">Eliminar foto de perfil</h3>
+            <p style="margin:0;font-size:var(--fs-sm);color:var(--color-text-muted);margin-top:2px;">Esta acción no se puede deshacer.</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--space-3);justify-content:flex-end;">
+          <button class="btn btn--ghost btn--sm" @click="showDeleteAvatarModal = false" :disabled="isDeletingAvatar">Cancelar</button>
+          <button class="btn btn--danger btn--sm" @click="confirmDeleteAvatar" :class="{ 'btn--loading': isDeletingAvatar }" :disabled="isDeletingAvatar">Eliminar foto</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -481,6 +500,7 @@ const savedJobs = ref<Job[]>([])
 
 const avatarInput = ref<HTMLInputElement | null>(null)
 const isDeletingAvatar = ref(false)
+const showDeleteAvatarModal = ref(false)
 const portfolioImages = ref<string[]>([])
 const isUploadingPortfolio = ref(false)
 const isGeneratingCV = ref(false)
@@ -634,8 +654,11 @@ const handleAvatarUpload = async (e: Event) => {
   }
 }
 
-const deleteAvatar = async () => {
-  if (!confirm('¿Seguro que deseas eliminar tu foto de perfil?')) return
+const deleteAvatar = () => {
+  showDeleteAvatarModal.value = true
+}
+
+const confirmDeleteAvatar = async () => {
   isDeletingAvatar.value = true
   try {
     const token = localStorage.getItem('lw_token')
@@ -651,6 +674,7 @@ const deleteAvatar = async () => {
         lwUser.avatar_url = undefined
         localStorage.setItem('lw_user', JSON.stringify(lwUser))
       }
+      showDeleteAvatarModal.value = false
       showToast('Foto de perfil eliminada', 'success')
     } else {
       const data = await resp.json().catch(() => ({}))
