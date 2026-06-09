@@ -877,11 +877,14 @@ const aiSuggestionsText = ref('')
 
 const suggestBioImprovements = async () => {
   isSuggestingImprovements.value = true
+  aiSuggestionsText.value = ''
+  aiSuggestionsModal.value = true
   try {
-    const res = await AIService.suggestProfileImprovements()
-    aiSuggestionsText.value = res
-    aiSuggestionsModal.value = true
+    await AIService.suggestProfileImprovementsStream((chunk) => {
+      aiSuggestionsText.value += chunk
+    })
   } catch {
+    aiSuggestionsModal.value = false
     showToast('Error al generar sugerencias', 'error')
   } finally {
     isSuggestingImprovements.value = false

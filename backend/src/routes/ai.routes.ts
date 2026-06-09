@@ -55,5 +55,6 @@ router.post('/cover-letter', authenticate, requireRole('seeker'), AIController.g
  *                   type: string
  */
 router.get('/profile-improvements', authenticate, AIController.suggestProfileImprovements);
+router.get('/profile-improvements/stream', authenticate, AIController.suggestProfileImprovementsStream);
 
 export default router;

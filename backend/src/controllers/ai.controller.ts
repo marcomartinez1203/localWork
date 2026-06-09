@@ -29,4 +29,24 @@ export class AIController {
       res.json({ suggestions });
     } catch (err) { next(err); }
   }
+
+  static async suggestProfileImprovementsStream(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const profile = await AuthService.getProfile(req.userId!);
+      const upstream = await AIService.suggestProfileImprovementsStream(profile);
+
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('X-Accel-Buffering', 'no');
+
+      const reader = upstream.body!.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) { res.write('data: [DONE]\n\n'); res.end(); break; }
+        res.write(decoder.decode(value, { stream: true }));
+      }
+    } catch (err) { next(err); }
+  }
 }

@@ -105,6 +105,42 @@ export class AIService {
   }
 
   /**
+   * Igual que callOpenRouter pero devuelve el ReadableStream crudo de SSE para streaming.
+   */
+  static async callOpenRouterStream(prompt: string, maxTokens = 450): Promise<Response> {
+    const apiKey = env.openRouterApiKey;
+    if (!apiKey || apiKey.includes('tu-api-key')) {
+      throw new Error('OPENROUTER_API_KEY no configurada correctamente');
+    }
+
+    const body = JSON.stringify({
+      model: 'openai/gpt-oss-120b:free',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: maxTokens,
+      stream: true,
+    });
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://local-work-six.vercel.app',
+        'X-Title': 'LocalWork',
+      },
+      body,
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      logger.error('OpenRouter stream error', { status: response.status, body: errText });
+      throw new Error(`OpenRouter respondió con ${response.status}`);
+    }
+
+    return response;
+  }
+
+  /**
    * Genera una carta de presentación para un empleo específico usando OpenRouter.
    */
   static async generateCoverLetter(profile: any, job: any): Promise<string> {
@@ -124,11 +160,28 @@ La carta debe conectar las habilidades del candidato con los requisitos del empl
 No agregues placeholders como [Nombre de la Empresa], adapta lo que puedas con la info provista.`;
 
     try {
-      return await AIService.callOpenRouter(prompt, 800) || 'No se pudo generar la carta.';
+      return await AIService.callOpenRouter(prompt, 450) || 'No se pudo generar la carta.';
     } catch (err) {
       logger.error('Error generando carta de presentación', { error: err });
       throw new Error('Error al generar la carta de presentación mediante IA');
     }
+  }
+
+  /**
+   * Sugiere mejoras al perfil - versión streaming, devuelve el Response de SSE.
+   */
+  static async suggestProfileImprovementsStream(profile: any): Promise<Response> {
+    const prompt = `Actúa como un reclutador experto y coach de carrera.
+Analiza este perfil de un trabajador y sugiere 3 a 5 puntos de mejora específicos y procesables para hacerlo más atractivo a los empleadores.
+Sé constructivo, amigable y directo. Usa formato de lista con viñetas.
+
+Perfil:
+Biografía: ${profile.bio || '(Vacío)'}
+Habilidades: ${(profile.skills || []).join(', ') || '(Vacío)'}
+Disponibilidad: ${profile.availability || '(Vacía)'}
+Tipo de trabajo deseado: ${profile.work_type || '(Vacío)'}`;
+
+    return AIService.callOpenRouterStream(prompt, 450);
   }
 
   /**
