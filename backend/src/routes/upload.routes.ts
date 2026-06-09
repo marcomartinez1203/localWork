@@ -70,7 +70,43 @@ router.post(
   }
 );
 
-// Upload resume/CV
+// Delete avatar
+router.delete(
+  '/avatar',
+  authenticate,
+  async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    try {
+      // Get current avatar_url to extract the storage path
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('avatar_url')
+        .eq('id', req.userId!)
+        .single();
+
+      if (profile?.avatar_url) {
+        // Extract the path after /uploads/ in the URL
+        const pathMatch = profile.avatar_url.match(/\/uploads\/(.+)$/);
+        if (pathMatch?.[1]) {
+          await supabaseAdmin.storage
+            .from('uploads')
+            .remove([decodeURIComponent(pathMatch[1])]);
+        }
+      }
+
+      // Clear avatar_url in profile
+      await supabaseAdmin
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('id', req.userId!);
+
+      res.json({ message: 'Foto de perfil eliminada correctamente' });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+
 router.post(
   '/resume',
   authenticate,

@@ -15,6 +15,9 @@
         <button class="profile-avatar__edit" title="Cambiar foto" @click="avatarInput?.click()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
         </button>
+        <button v-if="user.avatar_url" class="profile-avatar__delete" title="Eliminar foto" @click="deleteAvatar" :disabled="isDeletingAvatar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        </button>
       </div>
       <div class="profile-header__info">
         <h1>{{ user.full_name || 'Sin nombre' }}</h1>
@@ -512,6 +515,7 @@ const savedJobs = ref<Job[]>([])
 
 const avatarInput = ref<HTMLInputElement | null>(null)
 const idDocInput = ref<HTMLInputElement | null>(null)
+const isDeletingAvatar = ref(false)
 const isUploadingIdentity = ref(false)
 const portfolioImages = ref<string[]>([])
 const isUploadingPortfolio = ref(false)
@@ -663,6 +667,35 @@ const handleAvatarUpload = async (e: Event) => {
     }
   } catch {
     showToast('Error al subir foto', 'error')
+  }
+}
+
+const deleteAvatar = async () => {
+  if (!confirm('¿Seguro que deseas eliminar tu foto de perfil?')) return
+  isDeletingAvatar.value = true
+  try {
+    const token = localStorage.getItem('lw_token')
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+    const resp = await fetch(`${apiUrl}/upload/avatar`, {
+      method: 'DELETE',
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    })
+    if (resp.ok) {
+      (user.value as Record<string, unknown>).avatar_url = null
+      const lwUser = AuthService.getUser()
+      if (lwUser) {
+        lwUser.avatar_url = undefined
+        localStorage.setItem('lw_user', JSON.stringify(lwUser))
+      }
+      showToast('Foto de perfil eliminada', 'success')
+    } else {
+      const data = await resp.json().catch(() => ({}))
+      showToast((data as any).message || 'Error al eliminar la foto', 'error')
+    }
+  } catch {
+    showToast('Error al eliminar la foto', 'error')
+  } finally {
+    isDeletingAvatar.value = false
   }
 }
 
@@ -909,6 +942,9 @@ const submitVerification = async () => {
 .profile-avatar { width: 96px; height: 96px; border-radius: var(--radius-full); background: var(--color-primary-50); border: 1px solid var(--color-primary-100); display: flex; align-items: center; justify-content: center; font-size: var(--fs-2xl); font-weight: var(--fw-bold); color: var(--color-primary); flex-shrink: 0; position: relative; }
 .profile-avatar__edit { position: absolute; bottom: 0; right: 0; width: 32px; height: 32px; background: var(--color-primary); color: #fff; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid var(--color-surface); transition: background var(--transition-fast); }
 .profile-avatar__edit:hover { background: var(--color-primary-dark); }
+.profile-avatar__delete { position: absolute; bottom: 0; left: 0; width: 32px; height: 32px; background: var(--color-danger, #dc2626); color: #fff; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid var(--color-surface); transition: background var(--transition-fast); }
+.profile-avatar__delete:hover { background: #b91c1c; }
+.profile-avatar__delete:disabled { opacity: 0.6; cursor: not-allowed; }
 .profile-header__info h1 { font-size: var(--fs-2xl); margin-bottom: var(--space-1); letter-spacing: -0.02em; }
 .profile-header__info p { color: var(--color-text-secondary); margin: 0; }
 .profile-card { background: var(--color-surface); border: 1px solid var(--color-border-light); border-radius: var(--radius-2xl); padding: var(--space-8); margin-bottom: var(--space-6); }
