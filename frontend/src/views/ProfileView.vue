@@ -430,7 +430,28 @@
       <button class="btn btn--danger btn--sm" @click="logout">Cerrar sesión</button>
     </div>
 
-    <!-- Modal: Confirmar eliminación de foto -->
+    <!-- Modal: Sugerencias de IA -->
+    <div v-if="aiSuggestionsModal" style="position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);" @click.self="aiSuggestionsModal=false">
+      <div style="background:var(--color-surface);border:1px solid var(--color-border-light);border-radius:var(--radius-2xl);padding:var(--space-8);max-width:520px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:80vh;display:flex;flex-direction:column;gap:var(--space-4);">
+        <div style="display:flex;align-items:center;gap:var(--space-3);">
+          <div style="width:40px;height:40px;border-radius:50%;background:#ecfdf5;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:var(--fs-base);font-weight:var(--fw-semibold);">Sugerencias de IA para tu perfil</h3>
+            <p style="margin:0;font-size:var(--fs-xs);color:var(--color-text-muted);margin-top:2px;">Generado por OpenRouter · Kimi K2</p>
+          </div>
+        </div>
+        <div style="overflow-y:auto;flex:1;background:var(--color-bg);border:1px solid var(--color-border-light);border-radius:var(--radius-lg);padding:var(--space-4);">
+          <p style="margin:0;font-size:var(--fs-sm);line-height:1.7;white-space:pre-wrap;color:var(--color-text-secondary);">{{ aiSuggestionsText }}</p>
+        </div>
+        <div style="display:flex;justify-content:flex-end;">
+          <button class="btn btn--primary btn--sm" @click="aiSuggestionsModal=false">Entendido</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Eliminar foto de perfil -->
     <div v-if="showDeleteAvatarModal" style="position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);">
       <div style="background:var(--color-surface);border:1px solid var(--color-border-light);border-radius:var(--radius-2xl);padding:var(--space-8);max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
         <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);">
@@ -851,11 +872,15 @@ const downloadCV = async () => {
 
 // ── AI Generative features ──
 const isSuggestingImprovements = ref(false)
+const aiSuggestionsModal = ref(false)
+const aiSuggestionsText = ref('')
+
 const suggestBioImprovements = async () => {
   isSuggestingImprovements.value = true
   try {
     const res = await AIService.suggestProfileImprovements()
-    alert("Sugerencias de IA:\n\n" + res)
+    aiSuggestionsText.value = res
+    aiSuggestionsModal.value = true
   } catch {
     showToast('Error al generar sugerencias', 'error')
   } finally {
