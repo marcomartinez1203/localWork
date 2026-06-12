@@ -179,7 +179,17 @@ const initRealtime = () => {
   if (!token || !window.supabase || !SUPABASE_URL) return
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
     global: { headers: { Authorization: `Bearer ${token}` } },
+    realtime: {
+      params: {
+        apikey: SUPABASE_ANON,
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
   })
+  // Set the session so Realtime WebSocket authenticates with the user's JWT
+  supabaseClient.realtime.setAuth(token)
 }
 
 onMounted(async () => {
@@ -205,6 +215,7 @@ onMounted(async () => {
 onUnmounted(() => {
   if (messageChannel) supabaseClient?.removeChannel(messageChannel)
   if (presenceChannel) supabaseClient?.removeChannel(presenceChannel)
+  if (messagePollingInterval) { clearInterval(messagePollingInterval); messagePollingInterval = null }
 })
 
 const loadConversations = async () => {
@@ -363,26 +374,49 @@ const handleFileSelect = (e: Event) => {
   selectedAttachment.value = target.files && target.files[0] ? target.files[0] : null
 }
 
+let messagePollingInterval: ReturnType<typeof setInterval> | null = null
+
 const subscribeToMessages = (conversationId: string) => {
   if (!supabaseClient) return
   if (messageChannel) supabaseClient.removeChannel(messageChannel)
+  if (messagePollingInterval) { clearInterval(messagePollingInterval); messagePollingInterval = null }
   
+  let realtimeConnected = false
+
   messageChannel = supabaseClient
     .channel(`messages:${conversationId}`)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, async (payload: { new: Message }) => {
       const msg = payload.new
-      if (knownMessageIds.has(msg.id)) return  // already shown (own message or duplicate)
+      if (knownMessageIds.has(msg.id)) return
       knownMessageIds.add(msg.id)
 
       if (activeConversationId.value === conversationId) {
-        // Append the incoming message directly — no full reload needed
         messages.value = [...messages.value, msg]
         scrollToBottom()
         await ChatService.markAsRead(conversationId)
       }
       loadConversations()
     })
-    .subscribe()
+    .subscribe((status: string) => {
+      console.log('[Realtime] messages subscription:', status)
+      if (status === 'SUBSCRIBED') realtimeConnected = true
+    })
+
+  // Polling fallback: check for new messages every 4 seconds
+  // This guarantees near-real-time even if Realtime WebSocket fails
+  messagePollingInterval = setInterval(async () => {
+    if (activeConversationId.value !== conversationId) return
+    try {
+      const res = await ChatService.getMessages(conversationId, { page: 1, perPage: 200 })
+      const serverMessages = res.data || []
+      const newMsgs = serverMessages.filter(m => !knownMessageIds.has(m.id))
+      if (newMsgs.length > 0) {
+        newMsgs.forEach(m => knownMessageIds.add(m.id))
+        messages.value = serverMessages
+        scrollToBottom()
+      }
+    } catch { /* silent */ }
+  }, 4000)
 }
 
 const subscribeToPresence = (conversation: ConversationItem) => {
