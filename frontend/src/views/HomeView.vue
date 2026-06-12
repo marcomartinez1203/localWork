@@ -10,15 +10,15 @@
         <div class="platform-stats" v-if="platformStats" style="display:flex;gap:var(--space-4);margin-bottom:var(--space-6);">
           <div style="flex:1;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius);padding:var(--space-4);text-align:center;box-shadow:var(--shadow-sm);">
             <div style="font-size:24px;font-weight:700;color:var(--color-primary);margin-bottom:4px;">{{ platformStats.jobs }}+</div>
-            <div style="font-size:12px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;">Empleos Publicados</div>
+            <div style="font-size:10px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;word-break:break-word;">Empleos</div>
           </div>
           <div style="flex:1;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius);padding:var(--space-4);text-align:center;box-shadow:var(--shadow-sm);">
             <div style="font-size:24px;font-weight:700;color:var(--color-primary);margin-bottom:4px;">{{ platformStats.seekers }}+</div>
-            <div style="font-size:12px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;">Trabajadores</div>
+            <div style="font-size:10px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;word-break:break-word;">Trabajadores</div>
           </div>
           <div style="flex:1;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius);padding:var(--space-4);text-align:center;box-shadow:var(--shadow-sm);">
             <div style="font-size:24px;font-weight:700;color:var(--color-primary);margin-bottom:4px;">{{ platformStats.employers }}+</div>
-            <div style="font-size:12px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;">Empresas</div>
+            <div style="font-size:10px;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.5px;word-break:break-word;">Empresas</div>
           </div>
         </div>
 

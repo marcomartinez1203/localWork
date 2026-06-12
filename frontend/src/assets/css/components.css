@@ -680,9 +680,11 @@
   letter-spacing: -0.02em;
   color: var(--color-text);
   margin-bottom: var(--space-1);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   transition: color var(--transition-fast);
 }
 

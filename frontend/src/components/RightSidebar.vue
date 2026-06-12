@@ -364,7 +364,7 @@ onMounted(async () => {
   background: var(--color-surface-alt);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: var(--space-3) var(--space-2);
+  padding: var(--space-3) 4px;
   text-align: center;
   transition: border-color var(--transition-fast);
 }
@@ -384,11 +384,13 @@ onMounted(async () => {
 }
 
 .quick-stat-mini__label {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   font-family: var(--font-mono);
+  word-break: break-word;
+  hyphens: auto;
 }
 
 /* ── Filter groups ── */

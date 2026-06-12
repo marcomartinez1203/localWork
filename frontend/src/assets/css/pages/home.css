@@ -6,6 +6,8 @@
 .home-page {
   padding-top: var(--space-6);
   padding-bottom: var(--space-16);
+  max-width: 1800px !important;
+  width: 100% !important;
 }
 
 /* ══════════════════════════════════════════════
@@ -19,15 +21,15 @@
 
 @media (min-width: 1024px) {
   .home-layout {
-    grid-template-columns: 280px 1fr 280px;
-    gap: var(--space-6);
+    grid-template-columns: 220px 1fr 220px;
+    gap: var(--space-5);
   }
 }
 
 @media (min-width: 1280px) {
   .home-layout {
-    grid-template-columns: 300px 1fr 300px;
-    gap: var(--space-8);
+    grid-template-columns: 240px 1fr 240px;
+    gap: var(--space-6);
   }
 }
 
@@ -331,6 +333,10 @@
 }
 
 .filters__select {
+  width: auto;
+  flex: 1;
+  min-width: 140px;
+  max-width: 220px;
   padding: var(--space-2) var(--space-8) var(--space-2) var(--space-3);
   font-family: var(--font-mono);
   font-size: 11px;
@@ -421,14 +427,13 @@
 /* Job cards grid (center column) */
 .jobs-list {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
 }
 
-@media (min-width: 1024px) {
+@media (max-width: 768px) {
   .jobs-list {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-4);
+    grid-template-columns: 1fr;
   }
 }
 
