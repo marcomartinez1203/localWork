@@ -192,7 +192,7 @@ export class ApplicationsService {
 
     const { data: job } = await supabaseAdmin
       .from('jobs')
-      .select('company_id, title')
+      .select('company_id, title, vacancies, status')
       .eq('id', app.job_id)
       .single();
 
@@ -217,6 +217,19 @@ export class ApplicationsService {
       .single();
 
     if (error) { logger.error('ApplicationsService.updateStatus failed', { error }); throw new AppError('Error al actualizar el estado', 500); }
+
+    // If accepted, decrement job vacancies
+    if (status === 'accepted' && job && job.vacancies > 0 && job.status === 'active') {
+      const newVacancies = job.vacancies - 1;
+      const jobUpdates: Record<string, any> = { vacancies: newVacancies };
+      if (newVacancies === 0) {
+        jobUpdates.status = 'closed';
+      }
+      const { error: updateError } = await supabaseAdmin.from('jobs').update(jobUpdates).eq('id', app.job_id);
+      if (updateError) {
+        logger.error('ApplicationsService decrement vacancies failed', { error: updateError });
+      }
+    }
 
     // Notificar al seeker del cambio de estado
     const STATUS_MESSAGES: Record<ApplicationStatus, string> = {

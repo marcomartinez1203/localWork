@@ -271,7 +271,7 @@
             <p v-if="app.cover_letter" class="applicant-row__cover">"{{ app.cover_letter }}"</p>
           </div>
           <div class="applicant-row__actions">
-            <select v-model="app.status" @change="changeAppStatus(app)">
+            <select :value="app.status" @change="changeAppStatus(app, ($event.target as HTMLSelectElement).value, $event.target as HTMLSelectElement)">
               <option v-for="(label, key) in STATUS_LABELS" :key="key" :value="key">{{ label }}</option>
             </select>
             <button v-if="app.status !== 'pending'" class="btn btn--sm" style="background:#007200;border-color:#007200;color:#fff;" @click="openApplicantChat(app.id)">Mensaje</button>
@@ -610,11 +610,34 @@ const viewApplicants = async (job: Job) => {
   }
 }
 const closeApplicantsModal = () => { isApplicantsModalOpen.value = false }
-const changeAppStatus = async (app: Application) => {
-  try {
-    await ApplicationsService.updateStatus(app.id, app.status)
-  } catch {
-    showToast('Error actualizando estado', 'error')
+const changeAppStatus = async (app: Application, newStatus: string, selectEl: HTMLSelectElement) => {
+  if (newStatus === 'accepted') {
+    // Reset UI visually until confirmed
+    selectEl.value = app.status
+    
+    openConfirm(
+      'Contratar postulante',
+      `¿Estás seguro de seleccionar a ${app.seeker_name || 'este candidato'} como CONTRATADO? Esta acción descontará automáticamente 1 vacante de la oferta.`,
+      'Contratar',
+      async () => {
+        try {
+          await ApplicationsService.updateStatus(app.id, 'accepted')
+          app.status = 'accepted' as Application['status']
+          showToast('¡Candidato contratado exitosamente!', 'success')
+          fetchJobs() // Update vacancies count in UI
+        } catch {
+          showToast('Error actualizando estado', 'error')
+        }
+      }
+    )
+  } else {
+    try {
+      await ApplicationsService.updateStatus(app.id, newStatus as Application['status'])
+      app.status = newStatus as Application['status']
+    } catch {
+      selectEl.value = app.status // revert on error
+      showToast('Error actualizando estado', 'error')
+    }
   }
 }
 const openApplicantChat = async (id: string) => {
