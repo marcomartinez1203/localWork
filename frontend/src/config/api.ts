@@ -32,6 +32,8 @@ async function apiFetch<T = unknown>(endpoint: string, options: ApiOptions = {})
   }
 
   if (body instanceof FormData) {
+    // FormData: assign body directly and remove Content-Type so the browser sets it with the correct boundary
+    config.body = body;
     const hdrs = config.headers as Record<string, string>;
     delete hdrs['Content-Type'];
   }
