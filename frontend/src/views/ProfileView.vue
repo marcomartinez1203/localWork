@@ -236,6 +236,25 @@
         </div>
       </div>
 
+      <!-- Mis Calificaciones -->
+      <div v-if="ratingsData.total > 0" class="profile-card" style="margin-bottom:var(--space-6);">
+        <div class="profile-card__title">
+          <span>Mis Calificaciones y Reseñas</span>
+          <span class="profile-badge">⭐ {{ ratingsData.average }} ({{ ratingsData.total }})</span>
+        </div>
+        <div class="rep-reviews" style="margin-top:var(--space-4);">
+          <div class="rep-review" v-for="(r, idx) in ratingsList" :key="idx" style="padding:var(--space-4);border:1px solid var(--color-border-light);border-radius:var(--radius-lg);margin-bottom:var(--space-3);background:var(--color-bg);">
+            <div style="display:flex;justify-content:space-between;margin-bottom:var(--space-2);">
+              <strong style="font-size:var(--fs-sm);">{{ r.rater_name || 'Anónimo' }}</strong>
+              <span style="color:#f59e0b;font-size:var(--fs-sm);">{{ '★'.repeat(Math.round(r.rating)) }}{{ '☆'.repeat(5 - Math.round(r.rating)) }}</span>
+            </div>
+            <p style="font-size:var(--fs-sm);color:var(--color-text-secondary);margin:0;font-style:italic;">
+              "{{ r.comment || 'Sin comentario' }}"
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Portafolio Visual -->
       <div class="profile-card">
         <div class="profile-card__title">
@@ -480,6 +499,7 @@ import api from '@/config/api'
 import AuthService from '@/services/auth.service'
 import CompaniesService from '@/services/companies.service'
 import JobsService from '@/services/jobs.service'
+import RatingsService from '@/services/ratings.service'
 import AIService from '@/services/ai.service'
 import EmployerDashboard from '@/components/EmployerDashboard.vue'
 import { showToast } from '@/utils/helpers'
@@ -518,6 +538,9 @@ const educationList = ref<any[]>([])
 const experienceList = ref<any[]>([])
 
 const savedJobs = ref<Job[]>([])
+
+const ratingsData = ref<{ average: number; total: number }>({ average: 0, total: 0 })
+const ratingsList = ref<any[]>([])
 
 const avatarInput = ref<HTMLInputElement | null>(null)
 const isDeletingAvatar = ref(false)
@@ -601,6 +624,12 @@ const loadSeekerInfo = async () => {
   } catch {
     savedJobs.value = []
   }
+
+  try {
+    const ratings = await RatingsService.getForUser(u.id)
+    ratingsData.value = { average: ratings.average, total: ratings.total ?? ratings.count }
+    ratingsList.value = ratings.data || ratings.ratings || []
+  } catch { /* silent */ }
 }
 
 // Actions
