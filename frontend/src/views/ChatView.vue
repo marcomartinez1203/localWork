@@ -303,17 +303,42 @@ const sendMessage = async () => {
   }
 
   isSending.value = true
+  const tempId = `temp-${Date.now()}`
   try {
     let payload: { content: string; attachment_url?: string; attachment_name?: string } = { content: txt }
     if (file) {
       const upload = await ChatService.uploadAttachment(file)
       payload = { ...payload, ...upload }
     }
-    await ChatService.sendMessage(activeConversation.value.id, payload)
+
+    // Optimistic UI: show message immediately
+    const optimisticMsg: Message = {
+      id: tempId,
+      conversation_id: activeConversation.value!.id,
+      sender_id: user.value!.id,
+      content: payload.content,
+      attachment_url: payload.attachment_url,
+      attachment_name: payload.attachment_name,
+      created_at: new Date().toISOString(),
+      read_at: null,
+    } as unknown as Message
+    messages.value = [...messages.value, optimisticMsg]
+    knownMessageIds.add(tempId)
     messageText.value = ''
     selectedAttachment.value = null
     scrollToBottom()
+
+    // Send to server — realtime will fire but knownMessageIds deduplicates
+    const sent = await ChatService.sendMessage(activeConversation.value!.id, payload) as Message
+    // Replace temp message with real one
+    if (sent?.id) {
+      knownMessageIds.add(sent.id)
+      messages.value = messages.value.map(m => m.id === tempId ? { ...m, id: sent.id } : m)
+    }
   } catch {
+    // Remove optimistic message on failure
+    messages.value = messages.value.filter(m => m.id !== tempId)
+    knownMessageIds.delete(tempId)
     showToast('No se pudo enviar el mensaje', 'error')
   } finally {
     isSending.value = false
@@ -346,16 +371,14 @@ const subscribeToMessages = (conversationId: string) => {
     .channel(`messages:${conversationId}`)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, async (payload: { new: Message }) => {
       const msg = payload.new
-      if (knownMessageIds.has(msg.id)) return
+      if (knownMessageIds.has(msg.id)) return  // already shown (own message or duplicate)
       knownMessageIds.add(msg.id)
 
       if (activeConversationId.value === conversationId) {
-        const res = await ChatService.getMessages(conversationId, { page: 1, perPage: 200 })
-        messages.value = res.data || []
+        // Append the incoming message directly — no full reload needed
+        messages.value = [...messages.value, msg]
         scrollToBottom()
-        if (msg.sender_id !== user.value?.id) {
-          await ChatService.markAsRead(conversationId)
-        }
+        await ChatService.markAsRead(conversationId)
       }
       loadConversations()
     })
