@@ -377,30 +377,33 @@ const handleFileSelect = (e: Event) => {
 let messagePollingInterval: ReturnType<typeof setInterval> | null = null
 
 const subscribeToMessages = (conversationId: string) => {
-  if (!supabaseClient) return
-  if (messageChannel) supabaseClient.removeChannel(messageChannel)
+  // Clean up previous subscriptions
+  if (messageChannel && supabaseClient) supabaseClient.removeChannel(messageChannel)
   if (messagePollingInterval) { clearInterval(messagePollingInterval); messagePollingInterval = null }
 
-  messageChannel = supabaseClient
-    .channel(`messages:${conversationId}`)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, async (payload: { new: Message }) => {
-      const msg = payload.new
-      if (knownMessageIds.has(msg.id)) return
-      knownMessageIds.add(msg.id)
+  // Try Supabase Realtime (may not be available)
+  if (supabaseClient) {
+    messageChannel = supabaseClient
+      .channel(`messages:${conversationId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=eq.${conversationId}` }, async (payload: { new: Message }) => {
+        const msg = payload.new
+        if (knownMessageIds.has(msg.id)) return
+        knownMessageIds.add(msg.id)
 
-      if (activeConversationId.value === conversationId) {
-        messages.value = [...messages.value, msg]
-        scrollToBottom()
-        await ChatService.markAsRead(conversationId)
-      }
-      loadConversations()
-    })
-    .subscribe((status: string) => {
-      console.log('[Realtime] messages subscription:', status)
-    })
+        if (activeConversationId.value === conversationId) {
+          messages.value = [...messages.value, msg]
+          scrollToBottom()
+          await ChatService.markAsRead(conversationId)
+        }
+        loadConversations()
+      })
+      .subscribe((status: string) => {
+        console.log('[Realtime] messages subscription:', status)
+      })
+  }
 
-  // Polling fallback: check for new messages every 4 seconds
-  // This guarantees near-real-time even if Realtime WebSocket fails
+  // Polling fallback: ALWAYS runs regardless of Realtime status
+  // Checks for new messages every 3 seconds
   messagePollingInterval = setInterval(async () => {
     if (activeConversationId.value !== conversationId) return
     try {
@@ -413,7 +416,7 @@ const subscribeToMessages = (conversationId: string) => {
         scrollToBottom()
       }
     } catch { /* silent */ }
-  }, 4000)
+  }, 3000)
 }
 
 const subscribeToPresence = (conversation: ConversationItem) => {
