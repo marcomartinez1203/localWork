@@ -380,8 +380,6 @@ const subscribeToMessages = (conversationId: string) => {
   if (!supabaseClient) return
   if (messageChannel) supabaseClient.removeChannel(messageChannel)
   if (messagePollingInterval) { clearInterval(messagePollingInterval); messagePollingInterval = null }
-  
-  let realtimeConnected = false
 
   messageChannel = supabaseClient
     .channel(`messages:${conversationId}`)
@@ -399,7 +397,6 @@ const subscribeToMessages = (conversationId: string) => {
     })
     .subscribe((status: string) => {
       console.log('[Realtime] messages subscription:', status)
-      if (status === 'SUBSCRIBED') realtimeConnected = true
     })
 
   // Polling fallback: check for new messages every 4 seconds
